@@ -171,7 +171,7 @@ const Navbar = () => {
           <div className="hidden md:block">
             {isMounted && <div className="flex flex-col items-end">
               <WalletMultiButton className="wallet-button" />
-              <TokenBalance/>
+              <TokenBalance />
             </div>}
           </div>
         </div>
@@ -223,7 +223,11 @@ const Navbar = () => {
             )}
             </div>
             <hr className="border-gray-700/50" />
-            {isMounted && <WalletMultiButton className="wallet-button" />}
+
+            {isMounted && <div className="flex flex-col items-end">
+              <WalletMultiButton className="wallet-button" />
+              <TokenBalance />
+            </div>}
           </div>
         </div>
       )}
