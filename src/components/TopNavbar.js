@@ -171,9 +171,15 @@ const Navbar = () => {
           <div className="hidden md:block">
             {isMounted && <div className="flex flex-col items-end">
               <WalletMultiButton className="wallet-button" />
-              <TokenBalance />
             </div>}
           </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4">
+        {/* (Desktop) */}
+        <div className="hidden md:block justify-self-end">
+          <TokenBalance />
         </div>
       </div>
 
@@ -226,7 +232,7 @@ const Navbar = () => {
 
             {isMounted && <div className="flex flex-col items-end">
               <WalletMultiButton className="wallet-button" />
-              <TokenBalance />
+              <TokenBalance direction='col' />
             </div>}
           </div>
         </div>

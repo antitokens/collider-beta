@@ -2,7 +2,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import { ANTI_TOKEN_MINT, getTokenBalance, PRO_TOKEN_MINT } from "../utils/solana";
 
-const TokenBalance = () => {
+const TokenBalance = ({ direction = 'row' }) => {
   const wallet = useWallet()
   const [antiBalance, setAntiBalance] = useState(0)
   const [proBalance, setProBalance] = useState(0)
@@ -23,9 +23,12 @@ const TokenBalance = () => {
 
   if (!wallet.publicKey)
     return
-  return <div className="flex flex-col items-end text-gray-300 text-sm py-1">
-    <div><b>$ANTI:</b> {antiBalance ? antiBalance.toFixed(2) : '-'}</div>
-    <div><b>$PRO:</b> {proBalance ? proBalance.toFixed(2) : '-'}</div>
+
+  const total = (antiBalance || 0) + (proBalance || 0)
+
+  return <div className={`flex flex-${direction} items-end text-gray-300 text-sm py-2 gap-2`}>
+    <div><b>$ANTI:</b> {antiBalance ? `${antiBalance.toFixed(2)} (${(antiBalance / total * 100).toFixed(2)}%)` : '-'}</div>
+    <div><b>$PRO:</b> {proBalance ? `${proBalance.toFixed(2)} (${(proBalance / total * 100).toFixed(2)}%)` : '-'}</div>
   </div>
 };
 
