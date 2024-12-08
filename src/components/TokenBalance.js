@@ -18,8 +18,7 @@ const TokenBalance = () => {
       setAntiBalance(antiBalanceResult)
       setProBalance(proBalanceResult)
     }
-    if (wallet.publicKey)
-      checkBalance()
+    if (wallet.publicKey) checkBalance()
   }, [wallet])
 
   if (!wallet.publicKey)

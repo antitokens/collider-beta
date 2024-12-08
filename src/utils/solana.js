@@ -12,7 +12,7 @@ export const getTokenBalance = async (walletPublicKey, mint) => {
     { mint }
   );
   return accounts.value?.reduce((memo, item) => {
-    return memo + item?.account?.data.parsed.info.tokenAmount.uiAmount || 0
+    return memo + (item?.account?.data.parsed.info.tokenAmount.uiAmount || 0)
   }, 0) || 0
 };
 
