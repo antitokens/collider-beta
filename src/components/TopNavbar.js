@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import TokenBalance from "./TokenBalance";
 
 const Navbar = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -168,8 +169,17 @@ const Navbar = () => {
         <div className="justify-self-end relative">
           {/* (Desktop) */}
           <div className="hidden md:block">
-            {isMounted && <WalletMultiButton className="wallet-button" />}
+            {isMounted && <div className="flex flex-col items-end">
+              <WalletMultiButton className="wallet-button" />
+            </div>}
           </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4">
+        {/* (Desktop) */}
+        <div className="hidden md:block justify-self-end">
+          <TokenBalance />
         </div>
       </div>
 
@@ -219,7 +229,11 @@ const Navbar = () => {
             )}
             </div>
             <hr className="border-gray-700/50" />
-            {isMounted && <WalletMultiButton className="wallet-button" />}
+
+            {isMounted && <div className="flex flex-col items-end">
+              <WalletMultiButton className="wallet-button" />
+              <TokenBalance direction='col' />
+            </div>}
           </div>
         </div>
       )}
