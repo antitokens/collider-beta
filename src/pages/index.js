@@ -29,20 +29,20 @@ const Home = ({BASE_URL}) => {
   return (
     <>
       <Head>
-        <title>Antitoken - Quantum-inspired Token Pair</title>
+        <title>Antitoken | Vote</title>
         <meta
           name="description"
-          content="Experience the future of entangled token pair market making with $ANTI and $PRO tokens."
+          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
         />
 
         {/* Open Graph Meta Tags */}
         <meta
           property="og:title"
-          content="Antitoken - Quantum-inspired Token Pair"
+          content="Antitoken Vote"
         />
         <meta
           property="og:description"
-          content="Experience the future of entangled token pair market making with $ANTI and $PRO tokens."
+          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
         />
         <meta
           property="og:image"
