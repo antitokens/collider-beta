@@ -24,8 +24,7 @@ import BuyTokenModal from "../components/BuyTokenModal";
 import { ANTI_TOKEN_MINT, PRO_TOKEN_MINT } from "../utils/solana";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
-const Home = ({BASE_URL}) => {
-  
+const Home = ({ BASE_URL }) => {
   return (
     <>
       <Head>
@@ -36,10 +35,7 @@ const Home = ({BASE_URL}) => {
         />
 
         {/* Open Graph Meta Tags */}
-        <meta
-          property="og:title"
-          content="Antitoken Vote"
-        />
+        <meta property="og:title" content="Antitoken Voting Station" />
         <meta
           property="og:description"
           content="Experience the future of prediction markets with $ANTI and $PRO tokens."
@@ -53,13 +49,10 @@ const Home = ({BASE_URL}) => {
 
         {/* Twitter Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content="Antitoken - Quantum-inspired Token Pair"
-        />
+        <meta name="twitter:title" content="Antitoken Voting Station" />
         <meta
           name="twitter:description"
-          content="Experience the future of entangled token pair market making with $ANTI and $PRO tokens."
+          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
         />
         <meta
           name="twitter:image"
@@ -126,8 +119,7 @@ const Stars = () => {
   );
 };
 
-const LandingPage = ({BASE_URL}) => {
- 
+const LandingPage = ({ BASE_URL }) => {
   const { connected, publicKey } = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const votersData = {
@@ -157,11 +149,25 @@ const LandingPage = ({BASE_URL}) => {
         <div className="max-w-7xl w-full mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center">
           <div className="flex items-center gap-2">
             <div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-gray-300 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"
+                />
               </svg>
             </div>
-            <p className="text-left">The voting program is built off-chain for demonstration purposes. No funds will be deducted from your wallet.</p>
+            <p className="text-left">
+              The voting program is built off-chain for demonstration purposes.
+              No funds will be deducted from your wallet.
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[70%,30%] items-center gap-8 max-w-7xl mx-auto px-4">
@@ -234,12 +240,18 @@ const LandingPage = ({BASE_URL}) => {
           <p className="text-xl text-gray-300 mb-8">
             Join the future of prediction markets
           </p>
-          <button className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-lg text-lg font-semibold" onClick={() => setShowBuyTokensModal(true)}>
+          <button
+            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-lg text-lg font-semibold"
+            onClick={() => setShowBuyTokensModal(true)}
+          >
             Buy Tokens
           </button>
         </div>
       </section>
-      <BuyTokenModal isVisible={showBuyTokensModal} setIsVisible={setShowBuyTokensModal} />
+      <BuyTokenModal
+        isVisible={showBuyTokensModal}
+        setIsVisible={setShowBuyTokensModal}
+      />
     </>
   );
 };

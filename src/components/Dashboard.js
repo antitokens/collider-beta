@@ -16,7 +16,7 @@ const Dashboard = ({ votersData, tokensData, votesOverTime }) => {
   useEffect(() => {
     // Prepare pie chart data for voters
     setPieChartDataVoters({
-      labels: ["$PRO", "$ANTI", "UNCAST"],
+      labels: ["PRO", "ANTI", "UNCAST"],
       datasets: [
         {
           data: [
@@ -44,7 +44,7 @@ const Dashboard = ({ votersData, tokensData, votesOverTime }) => {
 
     // Prepare pie chart data for tokens
     setPieChartDataTokens({
-      labels: ["$PRO", "$ANTI", "UNUSED"],
+      labels: ["PRO", "ANTI", "UNUSED"],
       datasets: [
         {
           data: [
@@ -75,12 +75,12 @@ const Dashboard = ({ votersData, tokensData, votesOverTime }) => {
       labels: Object.keys(votesOverTime.tokenRangesPro),
       datasets: [
         {
-          label: "$PRO",
+          label: "PRO",
           data: Object.values(votesOverTime.tokenRangesPro),
           backgroundColor: "#00CC8E",
         },
         {
-          label: "$ANTI",
+          label: "ANTI",
           data: Object.values(votesOverTime.tokenRangesAnti),
           backgroundColor: "#D13800",
         },
@@ -124,14 +124,14 @@ const Dashboard = ({ votersData, tokensData, votesOverTime }) => {
       labels: votesOverTime.timestamps,
       datasets: [
         {
-          label: "$PRO",
+          label: "PRO",
           data: votesOverTime.proVotes,
           borderColor: "#00CC8E",
           backgroundColor: "#00CC8E",
           fill: false,
         },
         {
-          label: "$ANTI",
+          label: "ANTI",
           data: votesOverTime.antiVotes,
           borderColor: "#D13800",
           backgroundColor: "#D13800",
