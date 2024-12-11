@@ -22,6 +22,7 @@ import Footer from "../components/BottomFooter";
 import Dashboard from "../components/Dashboard";
 import BuyTokenModal from "../components/BuyTokenModal";
 import { ANTI_TOKEN_MINT, PRO_TOKEN_MINT } from "../utils/solana";
+import { calculateDistribution } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 const Home = ({ BASE_URL }) => {
@@ -122,6 +123,9 @@ const Stars = () => {
 const LandingPage = ({ BASE_URL }) => {
   const { connected, publicKey } = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
+
+  const voterDistribution = calculateDistribution(50, 30);
+  const totalDistribution = calculateDistribution(60, 20);
 
   const votersSeed = Math.random();
   const votersData = {
@@ -254,6 +258,8 @@ const LandingPage = ({ BASE_URL }) => {
           votersData={votersData}
           tokensData={tokensData}
           votesOverTime={votesOverTime}
+          voterDistribution={voterDistribution}
+          totalDistribution={totalDistribution}
         />
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">
