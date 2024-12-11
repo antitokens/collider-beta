@@ -299,6 +299,7 @@ const Dashboard = ({
                   "Displays the percentage of votes cast for PRO and ANTI tokens, along with uncast votes."
                 )
               }
+              title="Displays the percentage of votes cast for PRO and ANTI tokens, along with uncast votes."
             >
               <svg
                 class="w-6 h-6 text-gray-800 dark:text-white"
@@ -336,6 +337,7 @@ const Dashboard = ({
                   "Shows the distribution of PRO and ANTI tokens in the system, along with unused tokens."
                 )
               }
+              title="Shows the distribution of PRO and ANTI tokens in the system, along with unused tokens."
             >
               <svg
                 class="w-6 h-6 text-gray-800 dark:text-white"
@@ -373,6 +375,7 @@ const Dashboard = ({
                   "Highlights the contribution range of voters based on token counts."
                 )
               }
+              title="Highlights the contribution range of voters based on token counts."
             >
               <svg
                 class="w-6 h-6 text-gray-800 dark:text-white"
@@ -407,6 +410,7 @@ const Dashboard = ({
                   "Tracks the number of votes for PRO and ANTI tokens over time."
                 )
               }
+              title="Tracks the number of votes for PRO and ANTI tokens over time."
             >
               <svg
                 class="w-6 h-6 text-gray-800 dark:text-white"
@@ -437,8 +441,9 @@ const Dashboard = ({
             <button
               className="text-gray-300 hover:text-white"
               onClick={() =>
-                alert("Represents a normalised distribution of token holdings.")
+                alert("Represents the distribution of the final outcome.")
               }
+              title="Represents the distribution of the final outcome."
             >
               <svg
                 class="w-6 h-6 text-gray-800 dark:text-white"
@@ -471,11 +476,8 @@ const Dashboard = ({
             <h3 className="text-center font-semibold">Your Distribution</h3>
             <button
               className="text-gray-300 hover:text-white"
-              onClick={() =>
-                alert(
-                  "Displays a normalised distribution of voter participation."
-                )
-              }
+              onClick={() => alert("Represents the distribution of your vote.")}
+              title="Represents the distribution of your vote."
             >
               <svg
                 class="w-6 h-6 text-gray-800 dark:text-white"
