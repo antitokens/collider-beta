@@ -197,7 +197,7 @@ const Dashboard = ({ votersData, tokensData, votesOverTime }) => {
     const rangeTokens = Array.from(
       { length: 100 },
       (_, i) =>
-        tokensMean - 20000 * tokensStdDev + (i / 99) * 40000 * tokensStdDev
+        tokensMean - 100000 * tokensStdDev + (i / 99) * 200000 * tokensStdDev
     );
     const tokensDistData = calculateNormalDistribution(
       rangeTokens,
@@ -258,7 +258,7 @@ const Dashboard = ({ votersData, tokensData, votesOverTime }) => {
     // Define range: [mean - 5 * stdDev, mean + 5 * stdDev], divided into 100 points
     const rangeVoters = Array.from(
       { length: 100 },
-      (_, i) => voterMean - 100 * voterStdDev + (i / 99) * 200 * voterStdDev
+      (_, i) => voterMean - 500 * voterStdDev + (i / 99) * 1000 * voterStdDev
     );
     const voterDistData = calculateNormalDistribution(
       rangeVoters,
@@ -317,11 +317,21 @@ const Dashboard = ({ votersData, tokensData, votesOverTime }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
         <div className="p-4 rounded-lg">
           <h3 className="text-center font-semibold mb-4">Voter Distribution</h3>
-          {pieChartDataVoters && <Pie data={pieChartDataVoters} options={pieChartDataVoters.options} />}
+          {pieChartDataVoters && (
+            <Pie
+              data={pieChartDataVoters}
+              options={pieChartDataVoters.options}
+            />
+          )}
         </div>
         <div className="p-4 rounded-lg">
           <h3 className="text-center font-semibold mb-4">Token Distribution</h3>
-          {pieChartDataTokens && <Pie data={pieChartDataTokens} options={pieChartDataTokens.options} />}
+          {pieChartDataTokens && (
+            <Pie
+              data={pieChartDataTokens}
+              options={pieChartDataTokens.options}
+            />
+          )}
         </div>
         <div className="p-4 rounded-lg">
           <h3 className="text-center font-semibold mb-4">

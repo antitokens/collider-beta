@@ -122,24 +122,46 @@ const Stars = () => {
 const LandingPage = ({ BASE_URL }) => {
   const { connected, publicKey } = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
-  const votersData = {
-    total: 7000,
-    proVoters: 2349,
-    antiVoters: 3290,
-  };
 
+  const votersSeed = Math.random();
+  const votersData = {
+    total: 10000 * votersSeed,
+    proVoters: 10000 * Math.random() * votersSeed,
+    antiVoters: 10000 * Math.random() * (1 - votersSeed),
+  };
+  const tokensSeed = Math.random();
   const tokensData = {
     total: 999987675,
-    proTokens: 230989765,
-    antiTokens: 259087273,
+    proTokens: 999987675 * Math.random() * tokensSeed,
+    antiTokens: 999987675 * Math.random() * (1 - tokensSeed),
   };
-
+  const votesSeed = Math.random();
   const votesOverTime = {
     timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
-    proVotes: [51210286, 10303372, 40281190, 7453850, 121741067],
-    antiVotes: [16543217, 66582982, 145961070, 27472813, 2527191],
-    tokenRangesPro: { "0-100k": 34, "100k-1M": 87, "1-10M": 47 },
-    tokenRangesAnti: { "0-100k": 19, "100k-1M": 59, "1-10M": 42 },
+    proVotes: [
+      51210286 * Math.random() * votesSeed,
+      10303372 * Math.random() * votesSeed,
+      40281190 * Math.random() * votesSeed,
+      74538504 * Math.random() * votesSeed,
+      12174106 * Math.random() * votesSeed,
+    ],
+    antiVotes: [
+      16543217 * Math.random() * (1 - votesSeed),
+      66582982 * Math.random() * (1 - votesSeed),
+      14596107 * Math.random() * (1 - votesSeed),
+      27472813 * Math.random() * (1 - votesSeed),
+      25271918 * Math.random() * (1 - votesSeed),
+    ],
+    tokenRangesPro: {
+      "0-100k": 76 * Math.random(),
+      "100k-1M": 67 * Math.random(),
+      "1-10M": 57 * Math.random(),
+    },
+    tokenRangesAnti: {
+      "0-100k": 49 * Math.random(),
+      "100k-1M": 59 * Math.random(),
+      "1-10M": 62 * Math.random(),
+    },
   };
 
   return (
