@@ -27,7 +27,7 @@ const TokenBalance = () => {
     <div className="relative mt-2 mb-2">
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className={`flex justify-center w-full bg-accent-primary text-white px-4 py-2 rounded-lg text-md hover:bg-gray-500 ${dropdownOpen ? 'bg-gray-500' : ''}`}
+        className={`flex justify-center w-full bg-transparent border-solid border-2 border-accent-primary text-accent-primary px-4 py-[10px] rounded-md text-md hover:border-white hover:text-white ${dropdownOpen ? 'bg-gray-500' : ''}`}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ml-1 transition-transform ${!dropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" />
