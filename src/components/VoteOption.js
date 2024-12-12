@@ -369,9 +369,9 @@ const VoteOption = ({
       {/* Submit Button */}
       <button
         onClick={handleVote}
-        disabled={disabled || loading}
+        disabled={disabled || loading || !loading || !disabled}
         className={`w-40 px-5 py-3 rounded-lg font-semibold text-lg transition-all ${
-          disabled || loading
+          disabled || loading || !loading || !disabled
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
