@@ -7,16 +7,32 @@ import { Pie, Bar, Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
 Chart.register(...registerables);
 
-const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
+const VoteOption = ({
+  wallet,
+  antiBalance,
+  proBalance,
+  baryonBalance,
+  photonBalance,
+  disabled,
+  BASE_URL,
+}) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
+  const [baryonTokens, setBaryonTokens] = useState(0);
+  const [photonTokens, setPhotonTokens] = useState(0);
   const [userDistribution, setUserDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
 
   // Prepare line chart data
   useEffect(() => {
     if (userDistribution) {
+      // Trial
+      const F = (antiTokens + proTokens) / 2;
+      const G = 1 / F;
+
+      setBaryonTokens(F * userDistribution.u);
+      setPhotonTokens(G * userDistribution.s);
       setLineChartData({
         type: "line",
         labels:
@@ -27,7 +43,7 @@ const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
             : "",
         datasets: [
           {
-            label: "",
+            label: "Collider",
             data: userDistribution.distribution.map((item) => item.value),
             borderColor: "#FF9500",
             backgroundColor: "#FF9500", // Match the legend marker color
@@ -44,11 +60,31 @@ const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
                 },
                 color: "#FFFFFFA2",
               },
-              display: false,
+              display: true,
+              position: "top",
+              align: "start",
+            },
+          },
+          layout: {
+            padding: {
+              top: 20, // Add padding to avoid overlapping
+              left: 20,
+              right: 20,
+              bottom: 0,
             },
           },
           scales: {
             x: {
+              title: {
+                display: true,
+                text: "Your Normalised Vote", // Label for the X-axis
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 14,
+                  weight: "bold",
+                },
+                color: "#808080",
+              },
               ticks: {
                 font: {
                   family: "'SF Mono Round'",
@@ -60,6 +96,16 @@ const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
               },
             },
             y: {
+              title: {
+                display: true,
+                text: "Emissions", // Label for the X-axis
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 14,
+                  weight: "bold",
+                },
+                color: "#808080",
+              },
               grid: { color: "#D3D3D322" },
               ticks: {
                 callback: function (value) {
@@ -136,29 +182,6 @@ const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full space-y-6">
-      {/* User Distribution */}
-      {userDistribution && (
-        <>
-          <div className="text-center mt-4">
-            <p className="text-lg text-gray-300 mb-1">Collider Emissions</p>
-            <span className="text-accent-primary">$BARYON</span>:&nbsp;
-            <span className="font-bold text-md text-accent-primary font-sfmono">
-              {userDistribution.u.toFixed(2)}
-            </span>
-            <br />
-            <span className="text-accent-secondary">$PHOTON</span>:&nbsp;
-            <span className="font-bold text-md text-accent-secondary font-sfmono">
-              {userDistribution.s !== 0
-                ? (1 / userDistribution.s).toFixed(2)
-                : (0).toFixed(2)}
-            </span>
-          </div>
-          {lineChartData && (
-            <Line data={lineChartData} options={lineChartData.options} />
-          )}
-        </>
-      )}
-
       {/* Token Input Fields */}
       <div className="flex flex-row items-center justify-between space-x-10">
         <div className="flex flex-col items-start">
@@ -180,7 +203,10 @@ const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
               className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
             />
             <p className="text-sm">
-              Max: <span className="font-sfmono">{antiBalance.toFixed(0)}</span>
+              Max:{" "}
+              <span className="font-sfmono text-accent-primary">
+                {antiBalance.toFixed(0)}
+              </span>
             </p>
           </div>
         </div>
@@ -204,11 +230,90 @@ const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
               className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
             />
             <p className="text-sm">
-              Max: <span className="font-sfmono">{proBalance.toFixed(0)}</span>
+              Max:{" "}
+              <span className="font-sfmono text-accent-secondary">
+                {proBalance.toFixed(0)}
+              </span>
             </p>
           </div>
         </div>
       </div>
+
+      {/* User Distribution */}
+      {userDistribution && (
+        <>
+          {lineChartData && (
+            <Line data={lineChartData} options={lineChartData.options} />
+          )}
+          <div className="flex flex-row items-center justify-between space-x-10">
+            <div className="flex flex-col items-start">
+              <label
+                htmlFor="baryonTokens"
+                className="text-accent-orange font-medium text-lg"
+              >
+                $BARYON
+              </label>
+              <div className="flex flex-col items-start">
+                <input
+                  id="baryonTokens"
+                  type="number"
+                  min="0"
+                  value={baryonTokens.toFixed(2)}
+                  placeholder="0"
+                  className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
+                  readOnly
+                />
+                <p className="text-sm flex flex-row">
+                  <img
+                    src={`${BASE_URL}/assets/baryon.png`}
+                    alt="baryon-logo"
+                    className="w-5 h-5 inline-block"
+                  />
+                  Bal:&nbsp;
+                  <span className="font-sfmono">
+                    {baryonBalance.toFixed(2)}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end">
+              <label
+                htmlFor="photonTokens"
+                className="text-accent-secondary font-medium text-lg"
+              >
+                $PHOTON
+              </label>
+              <div className="flex flex-col items-end">
+                <input
+                  id="photonTokens"
+                  type="number"
+                  min="0"
+                  value={
+                    photonTokens !== 0
+                      ? (1 / photonTokens).toFixed(2)
+                      : (0).toFixed(2)
+                  }
+                  placeholder="0"
+                  className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
+                  readOnly
+                />
+                <p className="text-sm flex flex-row">
+                  <img
+                    src={`${BASE_URL}/assets/photon.png`}
+                    alt="photon-logo"
+                    className="w-5 h-5 inline-block"
+                  />
+                  Bal:&nbsp;
+                  <span className="font-sfmono">
+                    {photonBalance.toFixed(2)}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Submit Button */}
       <button
