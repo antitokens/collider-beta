@@ -30,10 +30,10 @@ const VoteOption = ({
     if (userDistribution) {
       // Trial
       const F = (antiTokens + proTokens) / 2;
-      const G = 1 / F;
+      const G = (antiTokens + proTokens) / 2;
 
-      setBaryonTokens(F * userDistribution.u);
-      setPhotonTokens(G * userDistribution.s);
+      setBaryonTokens(F * (1 * userDistribution.u));
+      setPhotonTokens(G * (1 / userDistribution.s));
       setLineChartData({
         type: "line",
         labels:
@@ -341,11 +341,7 @@ const VoteOption = ({
                   id="photonTokens"
                   type="number"
                   min="0"
-                  value={
-                    photonTokens !== 0
-                      ? (1 / photonTokens).toFixed(2)
-                      : (0).toFixed(2)
-                  }
+                  value={photonTokens.toFixed(2)}
                   placeholder="0"
                   className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
                   readOnly
