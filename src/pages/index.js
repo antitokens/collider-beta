@@ -21,7 +21,7 @@ import Navbar from "../components/TopNavbar";
 import Footer from "../components/BottomFooter";
 import Dashboard from "../components/Dashboard";
 import BuyTokenModal from "../components/BuyTokenModal";
-import { ANTI_TOKEN_MINT, PRO_TOKEN_MINT } from "../utils/solana";
+import { ANTI_TOKEN_MINT, PRO_TOKEN_MINT, getTokenBalance } from "../utils/solana";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
@@ -171,16 +171,16 @@ const LandingPage = ({ BASE_URL }) => {
   };
 
   useEffect(() => {
-    const fetchBalances = async () => {
-      if (!publicKey) return;
-      // Replace these with actual balance fetch functions
-      const fetchedAntiBalance = 100; // Simulated value
-      const fetchedProBalance = 50; // Simulated value
-      setAntiBalance(fetchedAntiBalance);
-      setProBalance(fetchedProBalance);
+    const checkBalance = async () => {
+      const [antiBalanceResult, proBalanceResult] = await Promise.all([
+        getTokenBalance(publicKey, ANTI_TOKEN_MINT),
+        getTokenBalance(publicKey, PRO_TOKEN_MINT),
+      ]);
+      setAntiBalance(antiBalanceResult);
+      setProBalance(proBalanceResult);
     };
 
-    fetchBalances();
+    if (publicKey) checkBalance();
   }, [publicKey]);
 
   return (
@@ -237,11 +237,37 @@ const LandingPage = ({ BASE_URL }) => {
         </div>
 
         {/* Voting Section */}
-        <div className="text-center mt-10 w-full px-4">
-          <h3 className="font-grotesk text-2xl font-medium text-gray-400 mb-6">
+        <div className="border border-gray-500 rounded-lg p-12 text-center mt-20 px-24 bg-gray-800 bg-opacity-50">
+          <h3 className="font-grotesk text-2xl font-medium text-white mb-6">
             Should Dev launch a token on Base?
           </h3>
-
+          <button
+              className="text-accent-primary hover:text-white"
+              onClick={() =>
+                alert(
+                  "Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote."
+                )
+              }
+              title="Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote."
+            >
+              <svg
+                className="w-8 h-8 text-accent-primary dark:text-white"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="#ff4d00"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+            </button>
           {/* Voting Options */}
           <div className="flex justify-center max-w-md mx-auto">
             <VoteOption
@@ -254,22 +280,24 @@ const LandingPage = ({ BASE_URL }) => {
 
           {/* Connection Status */}
           <p
-            className={`mt-4 text-sm ${
+            className={`mt-0 text-sm ${
               connected ? "text-gray-300" : "text-red-500 animate-pulse"
             }`}
           >
             {connected
-              ? "Choose your option"
+              ? ""
               : "Connect your wallet to enable voting"}
           </p>
         </div>
-        <Dashboard
-          votersData={votersData}
-          tokensData={tokensData}
-          votesOverTime={votesOverTime}
-          voterDistribution={voterDistribution}
-          totalDistribution={totalDistribution}
-        />
+        <div className="mt-12">
+            <Dashboard
+              votersData={votersData}
+              tokensData={tokensData}
+              votesOverTime={votesOverTime}
+              voterDistribution={voterDistribution}
+              totalDistribution={totalDistribution}
+            />
+        </div>
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">
             Ready to dive in?

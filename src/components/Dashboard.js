@@ -22,7 +22,6 @@ const Dashboard = ({
 
   useEffect(() => {
     // Prepare pie chart data for voters
-    console.log(voterDistribution);
     setPieChartDataVoters({
       labels: ["Pro", "Anti", "Uncast"],
       datasets: [

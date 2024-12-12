@@ -1,13 +1,16 @@
-import { useState } from "react";
-import { checkTokenBalance } from "../utils/solana";
+import { useState, useEffect } from "react";
 import { recordVote, hasVoted } from "../utils/api";
+import { calculateDistribution } from "../utils/colliderAlpha";
 import { ToastContainer, toast } from "react-toastify";
+import { Chart, registerables } from "chart.js";
 import "react-toastify/dist/ReactToastify.css";
+Chart.register(...registerables);
 
 const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
+  const [userDistribution, setUserDistribution] = useState(null);
 
   const handleVote = async () => {
     if (disabled || loading) return;
@@ -53,40 +56,78 @@ const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
     }
   };
 
+  useEffect(() => {
+    if (antiTokens || proTokens) {
+      const distribution = calculateDistribution(antiTokens, proTokens);
+      setUserDistribution(distribution);
+    } else {
+      setUserDistribution(null);
+    }
+  }, [antiTokens, proTokens]);
+
   return (
     <div className="flex flex-col items-center justify-center w-full space-y-6">
-      <div className="flex justify-center space-x-6">
+      {/* User Distribution */}
+      {userDistribution && (
+        <div className="text-center mt-4">
+          <p className="text-md text-gray-300 mb-1">Your Vote Distribution:</p>
+          Stake:&nbsp;
+          <span className="font-bold text-lg text-accent-primary">
+            {userDistribution.u.toFixed(2)}
+          </span><br/>
+          Confidence:&nbsp;
+          <span className="font-bold text-lg text-accent-primary">
+            {userDistribution.s.toFixed(2)}
+          </span>
+        </div>
+      )}
+
+      {/* Token Input Fields */}
+      <div className="flex flex-row items-center justify-between space-x-10">
         <div className="flex flex-col items-center">
-          <label htmlFor="antiTokens" className="text-accent-primary font-medium">
+          <label htmlFor="antiTokens" className="text-accent-orange font-medium text-lg">
             $ANTI
           </label>
-          <input
-            id="antiTokens"
-            type="number"
-            min="0"
-            max={antiBalance}
-            value={antiTokens}
-            onChange={(e) => setAntiTokens(Number(e.target.value))}
-            placeholder="0"
-            className="px-3 py-2 border rounded-lg w-32 text-gray-700 text-center font-sfmono"
-          />
+          <div className="flex flex-col items-center">
+            <input
+              id="antiTokens"
+              type="number"
+              min="0"
+              max={antiBalance}
+              value={antiTokens}
+              onChange={(e) => setAntiTokens(Number(e.target.value))}
+              placeholder="0"
+              className="px-3 py-2 border rounded-lg w-32 text-gray-700 text-center font-sfmono"
+            />
+            <p className="text-sm">
+              Max: <span className="font-sfmono">{antiBalance}</span>
+            </p>
+          </div>
         </div>
+
         <div className="flex flex-col items-center">
-          <label htmlFor="proTokens" className="text-accent-secondary font-medium">
+          <label htmlFor="proTokens" className="text-accent-secondary font-medium text-lg">
             $PRO
           </label>
-          <input
-            id="proTokens"
-            type="number"
-            min="0"
-            max={proBalance}
-            value={proTokens}
-            onChange={(e) => setProTokens(Number(e.target.value))}
-            placeholder="0"
-            className="px-3 py-2 border rounded-lg w-32 text-gray-700 text-center font-sfmono"
-          />
+          <div className="flex flex-col items-center">
+            <input
+              id="proTokens"
+              type="number"
+              min="0"
+              max={proBalance}
+              value={proTokens}
+              onChange={(e) => setProTokens(Number(e.target.value))}
+              placeholder="0"
+              className="px-3 py-2 border rounded-lg w-32 text-gray-700 text-center font-sfmono"
+            />
+            <p className="text-sm">
+              Max: <span className="font-sfmono">{proBalance}</span>
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Submit Button */}
       <button
         onClick={handleVote}
         disabled={disabled || loading}
@@ -104,3 +145,4 @@ const VoteOption = ({ wallet, antiBalance, proBalance, disabled }) => {
 };
 
 export default VoteOption;
+

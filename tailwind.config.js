@@ -14,7 +14,7 @@ export default {
         "dark-card": "rgba(20, 20, 20, 1)",
         "accent-primary": "#D13800",
         "accent-secondary": "#00CC8E",
-        "accent-orange": "#D66035",
+        "accent-orange": "#FF4D00",
       },
       fontFamily: {
         grotesk: ["Space Grotesk", "sans-serif"],
