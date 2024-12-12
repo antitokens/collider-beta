@@ -4,15 +4,14 @@
 
 @font-face {
   font-family: "Space Grotesk";
-  src: url("/fonts/SpaceGrotesk-VariableFont_wght.ttf")
-    format("truetype-variations");
+  src: url("/fonts/SF-Mono-Round.woff2") format("woff2");
   font-weight: 300 700; /* weight range from light to bold */
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Outfit";
-  src: url("/fonts/Outfit-VariableFont_wght.ttf") format("truetype-variations");
+  src: url("/fonts/OCR-A-Std.woff2") format("woff2");
   font-weight: 100 900; /* weight range from thin to black */
   font-style: normal;
   font-display: swap;
@@ -87,9 +86,9 @@ code {
 }
 
 .wallet-adapter-dropdown {
-  @apply w-full flex md:w-auto md:block;
+  @apply w-full flex md:w-auto md:block font-sfmono;
 }
 
 button.wallet-adapter-button-trigger {
-  @apply bg-accent-primary rounded-md text-sm w-full justify-center md:w-auto;
+  @apply bg-accent-primary rounded-md text-sm w-full justify-center md:w-auto font-sfmono;
 }
