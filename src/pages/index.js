@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Head from "next/head";
 import Script from "next/script";
 import {
@@ -123,6 +123,8 @@ const Stars = () => {
 const LandingPage = ({ BASE_URL }) => {
   const { connected, publicKey } = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
+  const [antiBalance, setAntiBalance] = useState(0);
+  const [proBalance, setProBalance] = useState(0);
 
   const voterDistribution = calculateDistribution(50, 30);
   const totalDistribution = calculateDistribution(60, 20);
@@ -167,6 +169,19 @@ const LandingPage = ({ BASE_URL }) => {
       "1-10M": 62 * Math.random(),
     },
   };
+
+  useEffect(() => {
+    const fetchBalances = async () => {
+      if (!publicKey) return;
+      // Replace these with actual balance fetch functions
+      const fetchedAntiBalance = 100; // Simulated value
+      const fetchedProBalance = 50; // Simulated value
+      setAntiBalance(fetchedAntiBalance);
+      setProBalance(fetchedProBalance);
+    };
+
+    fetchBalances();
+  }, [publicKey]);
 
   return (
     <>
@@ -228,17 +243,11 @@ const LandingPage = ({ BASE_URL }) => {
           </h3>
 
           {/* Voting Options */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto">
+          <div className="flex justify-center max-w-md mx-auto">
             <VoteOption
               wallet={publicKey}
-              option="YES with $PRO"
-              mint={ANTI_TOKEN_MINT}
-              disabled={!connected}
-            />
-            <VoteOption
-              wallet={publicKey}
-              option="NO with $ANTI"
-              mint={PRO_TOKEN_MINT}
+              antiBalance={antiBalance}
+              proBalance={proBalance}
               disabled={!connected}
             />
           </div>

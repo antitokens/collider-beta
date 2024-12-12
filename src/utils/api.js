@@ -8,7 +8,7 @@ export const recordVote = async (walletAddress, option) => {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to record vote");
+    throw new Error("FAILED_TO_RECORD_VOTE");
   }
 
   return response.json();
