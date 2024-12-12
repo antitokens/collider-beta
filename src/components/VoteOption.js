@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
+import { color } from "chart.js/helpers";
 Chart.register(...registerables);
 
 const VoteOption = ({
@@ -49,6 +50,13 @@ const VoteOption = ({
             backgroundColor: "#FF9500", // Match the legend marker color
             pointStyle: "line",
           },
+          {
+            label: "Trapper",
+            data: userDistribution.curve.map((item) => item.value),
+            borderColor: "#DD099D",
+            backgroundColor: "#DD099D", // Match the legend marker color
+            pointStyle: "line",
+          },
         ],
         options: {
           responsive: true,
@@ -62,7 +70,7 @@ const VoteOption = ({
               },
               display: true,
               position: "top",
-              align: "start",
+              align: "end",
             },
           },
           layout: {
@@ -75,6 +83,7 @@ const VoteOption = ({
           },
           scales: {
             x: {
+              position: "bottom",
               title: {
                 display: true,
                 text: "Your Normalised Vote", // Label for the X-axis
@@ -90,6 +99,35 @@ const VoteOption = ({
                   family: "'SF Mono Round'",
                   size: 10,
                 },
+                color: "#FF9500",
+              },
+              grid: {
+                color: antiTokens !== proTokens ? "#D3D3D322" : "D3D3D300",
+              },
+            },
+            x2: {
+              position: "top",
+              title: {
+                display: false,
+                text: "Your Normalised Vote", // Label for the X-axis
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 14,
+                  weight: "bold",
+                },
+                color: "#808080",
+              },
+              ticks: {
+                callback: function (value, index) {
+                  // Map index to a new labels array for the second axis
+                  const range2 = userDistribution.short;
+                  return range2[index].toFixed(2);
+                },
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 10,
+                },
+                color: "#DD099D",
               },
               grid: {
                 color: antiTokens !== proTokens ? "#D3D3D322" : "D3D3D300",
@@ -176,6 +214,11 @@ const VoteOption = ({
           { x: 0, value: 0 },
           { x: 1, value: 0 },
         ],
+        short: [0, 1],
+        curve: [
+          { x: 0, value: 0 },
+          { x: 1, value: 0 },
+        ],
       });
     }
   }, [antiTokens, proTokens]);
@@ -202,9 +245,14 @@ const VoteOption = ({
               placeholder="0"
               className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
             />
-            <p className="text-sm">
-              Max:{" "}
-              <span className="font-sfmono text-accent-primary">
+            <p className="text-sm font-sfmono">
+              <img
+                src={`${BASE_URL}/assets/anti.png`}
+                alt="anti-logo"
+                className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+              />
+              BAL:{" "}
+              <span className="font-sfmono text-accent-primary text-sm">
                 {antiBalance.toFixed(0)}
               </span>
             </p>
@@ -229,9 +277,14 @@ const VoteOption = ({
               placeholder="0"
               className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
             />
-            <p className="text-sm">
-              Max:{" "}
-              <span className="font-sfmono text-accent-secondary">
+            <p className="text-sm font-sfmono">
+              <img
+                src={`${BASE_URL}/assets/pro.png`}
+                alt="pro-logo"
+                className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+              />
+              BAL:{" "}
+              <span className="font-sfmono text-accent-secondary text-sm">
                 {proBalance.toFixed(0)}
               </span>
             </p>
@@ -269,9 +322,8 @@ const VoteOption = ({
                     alt="baryon-logo"
                     className="w-5 h-5 inline-block"
                   />
-                  Bal:&nbsp;
-                  <span className="font-sfmono">
-                    {baryonBalance.toFixed(2)}
+                  <span className="font-sfmono text-sm">
+                    BAL:&nbsp;{baryonBalance.toFixed(2)}
                   </span>
                 </p>
               </div>
@@ -304,9 +356,8 @@ const VoteOption = ({
                     alt="photon-logo"
                     className="w-5 h-5 inline-block"
                   />
-                  Bal:&nbsp;
-                  <span className="font-sfmono">
-                    {photonBalance.toFixed(2)}
+                  <span className="font-sfmono text-sm">
+                    BAL:&nbsp;{photonBalance.toFixed(2)}
                   </span>
                 </p>
               </div>

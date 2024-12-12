@@ -31,7 +31,7 @@ const TokenBalance = () => {
     <div className="relative mt-2 mb-2">
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className={`flex justify-center w-full bg-transparent border-solid border-2 border-accent-primary text-accent-primary px-4 py-[10px] rounded-md text-md hover:border-white hover:text-white ${
+        className={`flex justify-center w-full bg-transparent border-solid border sm:border-0 border-accent-primary text-accent-primary px-4 py-[10px] rounded-md text-md hover:border-white hover:text-white ${
           dropdownOpen ? "bg-gray-500" : ""
         }`}
       >
@@ -58,7 +58,7 @@ const TokenBalance = () => {
             strokeLinejoin="round"
           />
         </svg>
-        &nbsp;&nbsp;My Account
+        &nbsp;&nbsp;My Balances
       </button>
       {dropdownOpen && (
         <div className="absolute right-0 mt-2 bg-gray-900 text-gray-300 rounded-lg shadow-lg p-4">
