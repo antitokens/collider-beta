@@ -280,7 +280,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   />
                 </svg>
               </div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full md:-translate-x-1/2 -translate-y-full -mt-4 md:-mt-8 text-center text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration:200">
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full md:-translate-x-1/2 -translate-y-full -mt-4 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote.
               </span>
             </div>
