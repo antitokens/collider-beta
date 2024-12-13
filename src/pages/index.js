@@ -286,13 +286,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     </svg>
                   </button>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    Switch to Invert Collider
+                    Switch to Inverter
                   </span>
                 </div>
               </div>
             </div>
             <div className="flex flex-col justify-between items-center mb-6">
-              <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-6">
+              <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-4">
                 Should Dev launch a token on Base?
               </h2>
             </div>
@@ -350,7 +350,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               </div>
             </div>
             <div className="flex flex-col justify-between items-center mb-6">
-              <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-6">
+              <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-8">
                 Invert your Collider Emissions
               </h2>
             </div>
