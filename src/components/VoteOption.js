@@ -33,8 +33,8 @@ const VoteOption = ({
       const F = (antiTokens + proTokens) / 2;
       const G = (antiTokens + proTokens) / 2;
 
-      setBaryonTokens(F * (1 * userDistribution.u));
-      setPhotonTokens(G * (1 / userDistribution.s));
+      setBaryonTokens((F * (1 * userDistribution.u)).toFixed(2));
+      setPhotonTokens((G * (1 / userDistribution.s)).toFixed(2));
       setLineChartData({
         type: "line",
         labels:
