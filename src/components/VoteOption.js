@@ -165,7 +165,7 @@ const VoteOption = ({
 
       // Validate input
       if (antiTokens <= 0 && proTokens <= 0) {
-        toast.error("You must vote with at least some Anti or Pro tokens!");
+        toast.error("You must vote with at least some tokens!");
         return;
       }
 
@@ -175,23 +175,35 @@ const VoteOption = ({
       }
 
       // Check if the user has already voted
-      if (await hasVoted(wallet.toString())) {
+      /*
+      if (await hasVoted(wallet.publicKey.toString())) {
         toast.error("You have already voted!");
         return;
       }
+      */
 
       // Prompt for Solana signature
-      const message = `Requesting signature to vote with ${antiTokens} Anti and ${proTokens} Pro tokens with account ${wallet.toString()}`;
-      const signature = await wallet.signMessage(
+      const message = `Requesting signature to vote with:
+        ${antiTokens} $ANTI,
+        ${proTokens} $PRO,
+        for
+        ${baryonTokens} $BARYON,
+        ${photonTokens} $PHOTON
+        with account ${wallet.publicKey.toString()}`;
+      const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
       );
+      const signature = btoa(String.fromCharCode(...signatureUint8Array));
 
       // Record the vote
-      await recordVote(wallet.toString(), {
+      await recordVote(wallet.publicKey.toString(), {
         antiTokens,
         proTokens,
+        baryonTokens,
+        photonTokens,
         signature,
       });
+
       toast.success("Your vote has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
@@ -365,9 +377,9 @@ const VoteOption = ({
       {/* Submit Button */}
       <button
         onClick={handleVote}
-        disabled={disabled || loading || !loading || !disabled}
-        className={`w-40 px-5 py-3 rounded-lg font-semibold text-lg transition-all ${
-          disabled || loading || !loading || !disabled
+        disabled={disabled || loading}
+        className={`w-40 mt-16 px-5 py-3 rounded-md font-semibold text-lg transition-all ${
+          disabled || loading
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}

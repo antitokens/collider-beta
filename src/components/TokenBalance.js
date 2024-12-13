@@ -5,11 +5,14 @@ import {
   getTokenBalance,
   PRO_TOKEN_MINT,
 } from "../utils/solana";
+import { getKVBalance } from "../utils/api";
 
 const TokenBalance = () => {
   const wallet = useWallet();
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
+  const [baryonBalance, setBaryonBalance] = useState(0);
+  const [photonBalance, setPhotonBalance] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -18,8 +21,12 @@ const TokenBalance = () => {
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      setAntiBalance(antiBalanceResult);
-      setProBalance(proBalanceResult);
+      const _balance = await getKVBalance(wallet.publicKey);
+      const balance = JSON.parse(_balance.message);
+      setAntiBalance(antiBalanceResult - balance.anti);
+      setProBalance(proBalanceResult - balance.pro);
+      setBaryonBalance(balance.baryon);
+      setPhotonBalance(balance.photon);
     };
 
     if (wallet.publicKey) checkBalance();
@@ -63,7 +70,7 @@ const TokenBalance = () => {
       {dropdownOpen && (
         <div className="absolute right-0 mt-2 bg-gray-900 text-gray-300 rounded-lg shadow-lg p-4">
           <div className="grid grid-cols-[auto,auto] gap-2 items-center font-sfmono text-sm">
-            <b className="text-accent-orange">
+            <b className="text-accent-primary">
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$ANTI:
             </b>
             <span>{antiBalance ? antiBalance.toFixed(2) : "-"}</span>
@@ -72,12 +79,20 @@ const TokenBalance = () => {
             </b>
             <span>{proBalance ? proBalance.toFixed(2) : "-"}</span>
             <b className="text-gray-400">
-              RATIO (<span className="text-accent-orange">A</span>/
+              RATIO (<span className="text-accent-primary">A</span>/
               <span className="text-accent-secondary">P</span>):
             </b>
             <span>
               {proBalance ? (antiBalance / proBalance).toFixed(2) : "-"}
             </span>
+            <b className="text-accent-primary">
+              &nbsp;&nbsp;&nbsp;&nbsp;$BARYON:
+            </b>
+            <span>{proBalance ? baryonBalance.toFixed(2) : "-"}</span>
+            <b className="text-accent-secondary">
+              &nbsp;&nbsp;&nbsp;&nbsp;$PHOTON:
+            </b>
+            <span>{proBalance ? photonBalance.toFixed(2) : "-"}</span>
           </div>
         </div>
       )}

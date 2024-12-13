@@ -1,20 +1,44 @@
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
 
-export const recordVote = async (walletAddress, option) => {
+export const recordVote = async (walletAddress, voteData) => {
   const response = await fetch(`${API_URL}/vote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ walletAddress, option }),
+    body: JSON.stringify({
+      wallet: walletAddress,
+      antiTokens: voteData.antiTokens,
+      proTokens: voteData.proTokens,
+      baryonTokens: voteData.baryonTokens,
+      photonTokens: voteData.photonTokens,
+      signature: voteData.signature,
+    }),
   });
 
   if (!response.ok) {
-    throw new Error("FAILED_TO_RECORD_VOTE");
+    const errorText = await response.text(); // Safely get the error message
+    throw new Error(errorText || "FAILED_TO_RECORD_VOTE");
   }
 
-  return response.json();
+  if (response.headers.get("Content-Type")?.includes("application/json")) {
+    return response.json(); // Parse JSON if the response is JSON
+  } else {
+    return { message: await response.text() }; // Fallback for plain text responses
+  }
 };
 
 export const hasVoted = async (walletAddress) => {
   const response = await fetch(`${API_URL}/check/${walletAddress}`);
-  return response.ok && (await response.json()).hasVoted;
+  if (!response.ok) {
+    throw new Error("FAILED_TO_CHECK_VOTE");
+  }
+  return (await response.json()).hasVoted;
+};
+
+// Get token balances from KV
+export const getKVBalance = async (walletAddress) => {
+  const response = await fetch(`${API_URL}/balances/${walletAddress}`);
+  if (!response.ok) {
+    throw new Error("FAILED_TO_GET_BALANCES");
+  }
+  return response.json();
 };

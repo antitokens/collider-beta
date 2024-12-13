@@ -26,6 +26,7 @@ import {
   PRO_TOKEN_MINT,
   getTokenBalance,
 } from "../utils/solana";
+import { getKVBalance } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
@@ -125,7 +126,7 @@ const Stars = () => {
 };
 
 const LandingPage = ({ BASE_URL }) => {
-  const { connected, publicKey } = useWallet();
+  const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
@@ -179,15 +180,19 @@ const LandingPage = ({ BASE_URL }) => {
   useEffect(() => {
     const checkBalance = async () => {
       const [antiBalanceResult, proBalanceResult] = await Promise.all([
-        getTokenBalance(publicKey, ANTI_TOKEN_MINT),
-        getTokenBalance(publicKey, PRO_TOKEN_MINT),
+        getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
+        getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      setAntiBalance(antiBalanceResult);
-      setProBalance(proBalanceResult);
+      const _balance = await getKVBalance(wallet.publicKey);
+      const balance = JSON.parse(_balance.message);
+      setAntiBalance(antiBalanceResult - balance.anti);
+      setProBalance(proBalanceResult - balance.pro);
+      setBaryonBalance(balance.baryon);
+      setPhotonBalance(balance.photon);
     };
 
-    if (publicKey) checkBalance();
-  }, [publicKey]);
+    if (wallet.publicKey) checkBalance();
+  }, [wallet]);
 
   return (
     <>
@@ -276,12 +281,12 @@ const LandingPage = ({ BASE_URL }) => {
           {/* Voting Options */}
           <div className="flex justify-center max-w-md mx-auto">
             <VoteOption
-              wallet={publicKey}
+              wallet={wallet}
               antiBalance={antiBalance}
               proBalance={proBalance}
               baryonBalance={baryonBalance}
               photonBalance={photonBalance}
-              disabled={!connected}
+              disabled={!wallet.connected}
               BASE_URL={BASE_URL}
             />
           </div>
@@ -289,10 +294,10 @@ const LandingPage = ({ BASE_URL }) => {
           {/* Connection Status */}
           <p
             className={`mt-0 text-sm ${
-              connected ? "text-gray-300" : "text-red-500 animate-pulse"
+              wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"
             }`}
           >
-            {connected ? "" : "Connect your wallet to enable voting"}
+            {wallet.connected ? "" : "Connect your wallet to enable voting"}
           </p>
         </div>
         <div className="mt-12">
