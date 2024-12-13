@@ -133,6 +133,8 @@ const LandingPage = ({ BASE_URL }) => {
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
 
+  const [updatedData, setUpdatedData] = useState(false);
+
   const voterDistribution = calculateDistribution(50, 30);
   const totalDistribution = calculateDistribution(60, 20);
 
@@ -177,6 +179,11 @@ const LandingPage = ({ BASE_URL }) => {
     },
   };
 
+  const handleVoteSubmitted = (voteData) => {
+    setUpdatedData(true);
+    //console.log("Updated Data:", voteData); // Handle the data as needed
+  };
+
   useEffect(() => {
     const checkBalance = async () => {
       const [antiBalanceResult, proBalanceResult] = await Promise.all([
@@ -192,7 +199,8 @@ const LandingPage = ({ BASE_URL }) => {
     };
 
     if (wallet.publicKey) checkBalance();
-  }, [wallet]);
+    if (updatedData) checkBalance();
+  }, [wallet, updatedData]);
 
   return (
     <>
@@ -288,6 +296,7 @@ const LandingPage = ({ BASE_URL }) => {
               photonBalance={photonBalance}
               disabled={!wallet.connected}
               BASE_URL={BASE_URL}
+              onVoteSubmitted={handleVoteSubmitted}
             />
           </div>
 

@@ -16,6 +16,7 @@ const VoteOption = ({
   photonBalance,
   disabled,
   BASE_URL,
+  onVoteSubmitted,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -203,7 +204,8 @@ const VoteOption = ({
         photonTokens,
         signature,
       });
-
+      // Emit the updated data
+      onVoteSubmitted(voteData);
       toast.success("Your vote has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
