@@ -205,7 +205,7 @@ const VoteOption = ({
         signature,
       });
       // Emit the updated data
-      onVoteSubmitted(voteData);
+      onVoteSubmitted(true);
       toast.success("Your vote has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);

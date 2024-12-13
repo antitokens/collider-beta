@@ -31,6 +31,7 @@ import { calculateDistribution } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 const Home = ({ BASE_URL }) => {
+  const [trigger, setTrigger] = useState(null); // Shared state
   return (
     <>
       <Head>
@@ -88,8 +89,8 @@ const Home = ({ BASE_URL }) => {
       </Head>
       <div className="bg-dark text-gray-100 min-h-screen relative overflow-x-hidden font-grotesk">
         <Stars />
-        <Navbar />
-        <LandingPage BASE_URL={BASE_URL} />
+        <Navbar trigger={trigger} />
+        <LandingPage BASE_URL={BASE_URL} setTrigger={setTrigger} />
         <Footer />
       </div>
     </>
@@ -125,7 +126,7 @@ const Stars = () => {
   );
 };
 
-const LandingPage = ({ BASE_URL }) => {
+const LandingPage = ({ BASE_URL, setTrigger }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
@@ -179,9 +180,9 @@ const LandingPage = ({ BASE_URL }) => {
     },
   };
 
-  const handleVoteSubmitted = (voteData) => {
-    setUpdatedData(true);
-    //console.log("Updated Data:", voteData); // Handle the data as needed
+  const handleVoteSubmitted = (state) => {
+    setUpdatedData(state);
+    setTrigger(state);
   };
 
   useEffect(() => {

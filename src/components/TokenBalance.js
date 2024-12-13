@@ -7,7 +7,7 @@ import {
 } from "../utils/solana";
 import { getKVBalance } from "../utils/api";
 
-const TokenBalance = () => {
+const TokenBalance = (trigger) => {
   const wallet = useWallet();
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
@@ -30,7 +30,7 @@ const TokenBalance = () => {
     };
 
     if (wallet.publicKey) checkBalance();
-  }, [wallet]);
+  }, [wallet, trigger]);
 
   if (!wallet.publicKey) return null;
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import TokenBalance from "./TokenBalance";
 
-const Navbar = () => {
+const Navbar = (trigger) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCommunityDropdownOpen, setIsCommunityDropdownOpen] = useState(false);
@@ -196,7 +196,7 @@ const Navbar = () => {
           <div className="hidden md:block">
             {isMounted && (
               <div className="flex flex-row items-center">
-                <TokenBalance />
+                <TokenBalance trigger={trigger} />
                 &nbsp;&nbsp;
                 <WalletMultiButton className="wallet-button" />
               </div>
