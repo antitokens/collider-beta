@@ -256,6 +256,7 @@ const VoteOption = ({
               max={antiBalance}
               value={antiTokens}
               onChange={(e) => setAntiTokens(Number(e.target.value))}
+              onFocus={(e) => e.target.select()}
               placeholder="0"
               className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
             />
@@ -288,6 +289,7 @@ const VoteOption = ({
               max={proBalance}
               value={proTokens}
               onChange={(e) => setProTokens(Number(e.target.value))}
+              onFocus={(e) => e.target.select()}
               placeholder="0"
               className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
             />

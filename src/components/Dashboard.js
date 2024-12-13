@@ -287,37 +287,34 @@ const Dashboard = ({
   return (
     <section className="py-12 text-gray-100">
       <h2 className="text-center text-2xl font-bold mb-6">Statistics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <div className="p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-center font-semibold">Voter Participation</h3>
-            <button
-              className="text-gray-300 hover:text-white"
-              onClick={() =>
-                alert(
-                  "Displays the percentage of votes cast for PRO and ANTI tokens, along with uncast votes."
-                )
-              }
-              title="Displays the percentage of votes cast for PRO and ANTI tokens, along with uncast votes."
-            >
-              <svg
-                className="w-6 h-6 text-gray-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="#ffffff66"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
+          <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
+            <div>Voter Participation</div>
+            <div className="relative group">
+              <div className="cursor-pointer">
+                <svg
+                  className="w-4 h-4 text-gray-200"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Displays the percentage of votes cast for PRO and ANTI tokens, along with uncast votes.
+              </span>
+            </div>
           </div>
           {pieChartDataVoters && (
             <Pie
@@ -327,35 +324,32 @@ const Dashboard = ({
           )}
         </div>
         <div className="p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-center font-semibold">Token Participation</h3>
-            <button
-              className="text-gray-300 hover:text-white"
-              onClick={() =>
-                alert(
-                  "Shows the distribution of PRO and ANTI tokens in the system, along with unused tokens."
-                )
-              }
-              title="Shows the distribution of PRO and ANTI tokens in the system, along with unused tokens."
-            >
-              <svg
-                className="w-6 h-6 text-gray-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="#ffffff66"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
+          <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
+            <div>Token Participation</div>
+            <div className="relative group">
+              <div className="cursor-pointer">
+                <svg
+                  className="w-4 h-4 text-gray-200"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Shows the distribution of PRO and ANTI tokens in the system, along with unused tokens.
+              </span>
+            </div>
           </div>
           {pieChartDataTokens && (
             <Pie
@@ -365,103 +359,96 @@ const Dashboard = ({
           )}
         </div>
         <div className="p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-center font-semibold">Voter Contributions</h3>
-            <button
-              className="text-gray-300 hover:text-white"
-              onClick={() =>
-                alert(
-                  "Highlights the contribution range of voters based on token counts."
-                )
-              }
-              title="Highlights the contribution range of voters based on token counts."
-            >
-              <svg
-                className="w-6 h-6 text-gray-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="#ffffff66"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
+          <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
+            <div>Voter Participation</div>
+            <div className="relative group">
+              <div className="cursor-pointer">
+                <svg
+                  className="w-4 h-4 text-gray-200"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Highlights the contribution range of voters based on token counts.
+              </span>
+            </div>
           </div>
           {barChartData && (
             <Bar data={barChartData} options={barChartData.options} />
           )}
         </div>
         <div className="p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-center font-semibold">Votes Over Time</h3>
-            <button
-              className="text-gray-300 hover:text-white"
-              onClick={() =>
-                alert(
-                  "Tracks the number of votes for PRO and ANTI tokens over time."
-                )
-              }
-              title="Tracks the number of votes for PRO and ANTI tokens over time."
-            >
-              <svg
-                className="w-6 h-6 text-gray-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="#ffffff66"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
+          <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
+            <div>Votes Over Time</div>
+            <div className="relative group">
+              <div className="cursor-pointer">
+                <svg
+                  className="w-4 h-4 text-gray-200"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Tracks the number of votes for PRO and ANTI tokens over time.
+              </span>
+            </div>
           </div>
           {lineChartData && (
             <Line data={lineChartData} options={lineChartData.options} />
           )}
         </div>
         <div className="p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-center font-semibold">Outcome Distribution</h3>
-            <button
-              className="text-gray-300 hover:text-white"
-              onClick={() =>
-                alert("Represents the distribution of the final outcome.")
-              }
-              title="Represents the distribution of the final outcome."
-            >
-              <svg
-                className="w-6 h-6 text-gray-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="#ffffff66"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
+          <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
+            <div>Outcome Distribution</div>
+            <div className="relative group">
+              <div className="cursor-pointer">
+                <svg
+                  className="w-4 h-4 text-gray-200"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Represents the distribution of the final outcome.
+              </span>
+            </div>
           </div>
           {finalDistribution && (
             <Line
@@ -471,31 +458,32 @@ const Dashboard = ({
           )}
         </div>
         <div className="p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-center font-semibold">Your Distribution</h3>
-            <button
-              className="text-gray-300 hover:text-white"
-              onClick={() => alert("Represents the distribution of your vote.")}
-              title="Represents the distribution of your vote."
-            >
-              <svg
-                className="w-6 h-6 text-gray-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="#ffffff66"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
+          <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
+            <div>Your Distribution</div>
+            <div className="relative group">
+              <div className="cursor-pointer">
+                <svg
+                  className="w-4 h-4 text-gray-200"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Represents the distribution of your vote.
+              </span>
+            </div>
           </div>
           {userDistribution && (
             <Line data={userDistribution} options={userDistribution.options} />
