@@ -17,6 +17,7 @@ const Collider = ({
   disabled,
   BASE_URL,
   onVoteSubmitted,
+  clearFields,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -25,6 +26,16 @@ const Collider = ({
   const [photonTokens, setPhotonTokens] = useState(0);
   const [userDistribution, setUserDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
+  
+  // Clear input fields when `clearFields` changes
+  useEffect(() => {
+    if (clearFields) {
+      setAntiTokens(0);
+      setProTokens(0);
+      setBaryonTokens(0);
+      setPhotonTokens(0);
+    }
+  }, [clearFields]);
 
   // Prepare line chart data
   useEffect(() => {
@@ -268,7 +279,7 @@ const Collider = ({
               />
               BAL:{" "}
               <span className="font-sfmono text-accent-primary text-sm">
-                {antiBalance.toFixed(0)}
+                {Number(antiBalance).toFixed(0)}
               </span>
             </p>
           </div>
@@ -301,7 +312,7 @@ const Collider = ({
               />
               BAL:{" "}
               <span className="font-sfmono text-accent-secondary text-sm">
-                {proBalance.toFixed(0)}
+                {Number(proBalance).toFixed(0)}
               </span>
             </p>
           </div>
@@ -339,7 +350,7 @@ const Collider = ({
                     className="w-5 h-5 inline-block"
                   />
                   <span className="font-sfmono text-sm text-white">
-                    BAL:&nbsp;{baryonBalance.toFixed(2)}
+                    BAL:&nbsp;{Number(baryonBalance).toFixed(2)}
                   </span>
                 </p>
               </div>
@@ -369,7 +380,7 @@ const Collider = ({
                     className="w-5 h-5 inline-block"
                   />
                   <span className="font-sfmono text-sm text-white">
-                    BAL:&nbsp;{photonBalance.toFixed(2)}
+                    BAL:&nbsp;{Number(photonBalance).toFixed(2)}
                   </span>
                 </p>
               </div>

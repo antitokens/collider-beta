@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { recordVote, hasVoted } from "../utils/api";
+import { recordClaim, hasVoted } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import { ToastContainer, toast } from "react-toastify";
 import { Chart, registerables } from "chart.js";
@@ -16,7 +16,8 @@ const InvertCollider = ({
   photonBalance,
   disabled,
   BASE_URL,
-  onVoteSubmitted,
+  onClaimSubmitted,
+  clearFields,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -25,6 +26,16 @@ const InvertCollider = ({
   const [photonTokens, setPhotonTokens] = useState(0);
   const [userDistribution, setUserDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
+
+  // Clear input fields when `clearFields` changes
+  useEffect(() => {
+    if (clearFields) {
+      setAntiTokens(0);
+      setProTokens(0);
+      setBaryonTokens(0);
+      setPhotonTokens(0);
+    }
+  }, [clearFields]);
 
   // Prepare line chart data
   useEffect(() => {
@@ -184,12 +195,12 @@ const InvertCollider = ({
       */
 
       // Prompt for Solana signature
-      const message = `Requesting signature to vote with:
-        ${baryonTokens} $ANTI,
-        ${photonTokens} $PRO,
-        for
+      const message = `Requesting signature to claim with:
         ${baryonTokens} $BARYON,
-        ${photonTokens} $PHOTON
+        ${photonTokens} $PHOTON,
+        for
+        ${baryonTokens} $ANTI,
+        ${photonTokens} $PRO
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
@@ -197,19 +208,19 @@ const InvertCollider = ({
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
 
       // Record the vote
-      await recordVote(wallet.publicKey.toString(), {
-        baryonTokens,
-        photonTokens,
+      await recordClaim(wallet.publicKey.toString(), {
+        antiTokens,
+        proTokens,
         baryonTokens,
         photonTokens,
         signature,
       });
       // Emit the updated data
-      onVoteSubmitted(true);
-      toast.success("Your vote has been recorded!");
+      onClaimSubmitted(true);
+      toast.success("Your claim has been recorded!");
     } catch (error) {
-      console.error("VOTE_SUBMISSION_FAILED:", error);
-      toast.error("An error occurred while recording your vote.");
+      console.error("CLAIM_SUBMISSION_FAILED:", error);
+      toast.error("An error occurred while recording your claim.");
     } finally {
       setLoading(false);
     }
@@ -269,7 +280,7 @@ const InvertCollider = ({
               />
               MAX:&nbsp;
               <span className="font-sfmono text-sm text-accent-primary">
-                {baryonBalance.toFixed(2)}
+                {Number(baryonBalance).toFixed(2)}
               </span>
             </p>
           </div>
@@ -303,7 +314,7 @@ const InvertCollider = ({
               <span className="font-sfmono text-sm">
                 MAX:&nbsp;
                 <span className="font-sfmono text-accent-secondary text-sm">
-                  {photonBalance.toFixed(2)}
+                  {Number(photonBalance).toFixed(2)}
                 </span>
               </span>
             </p>
@@ -341,7 +352,10 @@ const InvertCollider = ({
                     alt="anti-logo"
                     className="w-3 h-3 mt-[-2px] mr-1 inline-block"
                   />
-                  BAL: {antiBalance.toFixed(0)}
+                  BAL:{" "}
+                  <span className="font-sfmono text-white text-sm">
+                    {Number(antiBalance).toFixed(0)}
+                  </span>
                 </p>
               </div>
             </div>
@@ -371,7 +385,7 @@ const InvertCollider = ({
                   />
                   BAL:{" "}
                   <span className="font-sfmono text-white text-sm">
-                    {proBalance.toFixed(0)}
+                    {Number(proBalance).toFixed(0)}
                   </span>
                 </p>
               </div>

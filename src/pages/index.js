@@ -136,6 +136,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [photonBalance, setPhotonBalance] = useState(0);
   const [showFirstCollider, setShowFirstCollider] = useState(true);
   const [updatedData, setUpdatedData] = useState(false);
+  const [clearFields, setClearFields] = useState(false);
 
   const voterDistribution = calculateDistribution(50, 30);
   const totalDistribution = calculateDistribution(60, 20);
@@ -184,6 +185,17 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const handleVoteSubmitted = (state) => {
     setUpdatedData(state);
     setTrigger(state);
+    // Trigger field clearing
+    setClearFields(true);
+    setTimeout(() => setClearFields(false), 100); // Reset after clearing
+  };
+
+  const handleClaimSubmitted = (state) => {
+    setUpdatedData(state);
+    setTrigger(state);
+    // Trigger field clearing
+    setClearFields(true);
+    setTimeout(() => setClearFields(false), 100); // Reset after clearing
   };
 
   useEffect(() => {
@@ -198,6 +210,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       setProBalance(proBalanceResult - balance.pro);
       setBaryonBalance(balance.baryon);
       setPhotonBalance(balance.photon);
+      setUpdatedData(false);
     };
 
     if (wallet.publicKey) checkBalance();
@@ -305,6 +318,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               disabled={!wallet.connected}
               BASE_URL={BASE_URL}
               onVoteSubmitted={handleVoteSubmitted}
+              clearFields={clearFields}
             />
             <p
               className={`mt-0 text-sm ${
@@ -362,7 +376,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               photonBalance={photonBalance}
               disabled={!wallet.connected}
               BASE_URL={BASE_URL}
-              onVoteSubmitted={handleVoteSubmitted}
+              onClaimSubmitted={handleClaimSubmitted}
+              clearFields={clearFields}
             />
             <p
               className={`mt-0 text-sm ${

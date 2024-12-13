@@ -26,6 +26,33 @@ export const recordVote = async (walletAddress, voteData) => {
   }
 };
 
+export const recordClaim = async (walletAddress, claimData) => {
+  const response = await fetch(`${API_URL}/claim`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      wallet: walletAddress,
+      antiTokens: claimData.antiTokens,
+      proTokens: claimData.proTokens,
+      baryonTokens: claimData.baryonTokens,
+      photonTokens: claimData.photonTokens,
+      signature: claimData.signature,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text(); // Safely get the error message
+    throw new Error(errorText || "FAILED_TO_RECORD_VOTE");
+  }
+
+  if (response.headers.get("Content-Type")?.includes("application/json")) {
+    return response.json(); // Parse JSON if the response is JSON
+  } else {
+    return { message: await response.text() }; // Fallback for plain text responses
+  }
+};
+
+/*
 export const hasVoted = async (walletAddress) => {
   const response = await fetch(`${API_URL}/check/${walletAddress}`);
   if (!response.ok) {
@@ -33,6 +60,7 @@ export const hasVoted = async (walletAddress) => {
   }
   return (await response.json()).hasVoted;
 };
+*/
 
 // Get token balances from KV
 export const getKVBalance = async (walletAddress) => {
