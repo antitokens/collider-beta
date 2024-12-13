@@ -16,7 +16,8 @@ import {
   TorusWalletAdapter,
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
-import VoteOption from "../components/VoteOption";
+import Collider from "../components/Collider";
+import InvertCollider from "../components/InvertCollider";
 import Navbar from "../components/TopNavbar";
 import Footer from "../components/BottomFooter";
 import Dashboard from "../components/Dashboard";
@@ -133,7 +134,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [proBalance, setProBalance] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
-
+  const [showFirstCollider, setShowFirstCollider] = useState(true);
   const [updatedData, setUpdatedData] = useState(false);
 
   const voterDistribution = calculateDistribution(50, 30);
@@ -237,8 +238,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300/90 font-semibold font-outfit">
               Vote with{" "}
               <span className="text-accent-primary font-semibold">$ANTI</span>{" "}
-              and{" "}
-              <span className="text-accent-secondary font-semibold">$PRO</span>{" "}
+              and
+              <span className="text-accent-secondary font-semibold">$PRO</span>
             </h1>
             <p className="font-open font-medium text-xl md:text-[1.35rem] text-gray-300 mb-6">
               Experience the future of prediction markets with Antitoken
@@ -256,38 +257,46 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           </div>
         </div>
 
-        {/* Voting Section */}
-        <div className="border border-gray-800 bg-dark-card/50 rounded-lg md:py-12 md:px-24 p-2 text-center mt-20 bg-black bg-opacity-50 max-w-7xl mx-auto">
-          <div className="flex justify-center gap-2 items-center font-grotesk text-md sm:text-xl md:text-2xl font-medium text-gray-200 mb-6">
-            <div>Should Dev launch a token on Base?</div>
-            <div className="relative group">
-              <div className="cursor-pointer">
-                <svg
-                  className="w-4 h-4 sm:w-6 sm:h-6 text-gray-200"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
+        {/* Collider Sections Toggle */}
+        {showFirstCollider ? (
+          <div className="border border-accent-primary/50 bg-dark-card/50 rounded-lg md:py-12 md:px-24 p-2 text-center mt-20 bg-black bg-opacity-50 max-w-7xl mx-auto text-accent-primary">
+            <div className="w-full flex flex-row justify-end mb-8">
+              <div className="relative group">
+                <div className="cursor-pointer">
+                  <button
+                    className="text-accent-primary hover:text-white bg-transparent px-4 py-2 rounded border border-accent-primary hover:border-white"
+                    onClick={() => setShowFirstCollider(false)}
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"
+                      />
+                    </svg>
+                  </button>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    Switch to Invert Collider
+                  </span>
+                </div>
               </div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full md:-translate-x-1/2 -translate-y-full -mt-4 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote.
-              </span>
             </div>
-          </div>
-          {/* Voting Options */}
-          <div className="flex justify-center max-w-md mx-auto">
-            <VoteOption
+            <div className="flex flex-col justify-between items-center mb-6">
+              <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-6">
+                Should Dev launch a token on Base?
+              </h2>
+            </div>
+            <Collider
               wallet={wallet}
               antiBalance={antiBalance}
               proBalance={proBalance}
@@ -297,17 +306,76 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               BASE_URL={BASE_URL}
               onVoteSubmitted={handleVoteSubmitted}
             />
+            <p
+              className={`mt-0 text-sm ${
+                wallet.connected
+                  ? "text-gray-300"
+                  : "text-red-500 animate-pulse"
+              }`}
+            >
+              {wallet.connected ? "" : "Connect your wallet to enable voting"}
+            </p>
           </div>
+        ) : (
+          <div className="border border-accent-secondary/50 bg-dark-card/50 rounded-lg md:py-12 md:px-24 p-2 text-center mt-20 bg-black bg-opacity-50 max-w-7xl mx-auto">
+            <div className="w-full flex flex-row justify-end mb-8">
+              <div className="relative group">
+                <div className="cursor-pointer">
+                  <button
+                    className="text-accent-secondary hover:text-white bg-transparent px-4 py-2 rounded border border-accent-secondary hover:border-white"
+                    onClick={() => setShowFirstCollider(true)}
+                  >
+                    <svg
+                      className="w-6 h-6 rotate-180"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"
+                      />
+                    </svg>
+                  </button>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    Switch to Collider
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col justify-between items-center mb-6">
+              <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-6">
+                Invert your Collider Emissions
+              </h2>
+            </div>
+            <InvertCollider
+              wallet={wallet}
+              antiBalance={antiBalance}
+              proBalance={proBalance}
+              baryonBalance={baryonBalance}
+              photonBalance={photonBalance}
+              disabled={!wallet.connected}
+              BASE_URL={BASE_URL}
+              onVoteSubmitted={handleVoteSubmitted}
+            />
+            <p
+              className={`mt-0 text-sm ${
+                wallet.connected
+                  ? "text-gray-300"
+                  : "text-red-500 animate-pulse"
+              }`}
+            >
+              {wallet.connected ? "" : "Connect your wallet to enable voting"}
+            </p>
+          </div>
+        )}
 
-          {/* Connection Status */}
-          <p
-            className={`mt-0 text-sm ${
-              wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"
-            }`}
-          >
-            {wallet.connected ? "" : "Connect your wallet to enable voting"}
-          </p>
-        </div>
         <div className="mt-12">
           <Dashboard
             votersData={votersData}
@@ -317,6 +385,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             totalDistribution={totalDistribution}
           />
         </div>
+
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">
             Ready to dive in?

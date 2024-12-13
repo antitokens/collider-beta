@@ -311,8 +311,9 @@ const Dashboard = ({
                   />
                 </svg>
               </div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays the percentage of votes cast for PRO and ANTI tokens, along with uncast votes.
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Displays the percentage of votes cast for PRO and ANTI tokens,
+                along with uncast votes.
               </span>
             </div>
           </div>
@@ -346,8 +347,9 @@ const Dashboard = ({
                   />
                 </svg>
               </div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Shows the distribution of PRO and ANTI tokens in the system, along with unused tokens.
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Shows the distribution of PRO and ANTI tokens in the system,
+                along with unused tokens.
               </span>
             </div>
           </div>
@@ -381,8 +383,9 @@ const Dashboard = ({
                   />
                 </svg>
               </div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Highlights the contribution range of voters based on token counts.
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Highlights the contribution range of voters based on token
+                counts.
               </span>
             </div>
           </div>
@@ -413,7 +416,7 @@ const Dashboard = ({
                   />
                 </svg>
               </div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Tracks the number of votes for PRO and ANTI tokens over time.
               </span>
             </div>
@@ -445,7 +448,7 @@ const Dashboard = ({
                   />
                 </svg>
               </div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Represents the distribution of the final outcome.
               </span>
             </div>
@@ -480,7 +483,7 @@ const Dashboard = ({
                   />
                 </svg>
               </div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Represents the distribution of your vote.
               </span>
             </div>

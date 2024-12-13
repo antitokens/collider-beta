@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { color } from "chart.js/helpers";
 Chart.register(...registerables);
 
-const VoteOption = ({
+const InvertCollider = ({
   wallet,
   antiBalance,
   proBalance,
@@ -30,29 +30,29 @@ const VoteOption = ({
   useEffect(() => {
     if (userDistribution) {
       // Trial
-      const F = (antiTokens + proTokens) / 2;
-      const G = (antiTokens + proTokens) / 2;
+      const F = (baryonTokens + photonTokens) / 2;
+      const G = (baryonTokens + photonTokens) / 2;
 
-      setBaryonTokens((F * (1 * userDistribution.u)).toFixed(2));
-      setPhotonTokens((G * (1 / userDistribution.s)).toFixed(2));
+      setAntiTokens((F * (1 * userDistribution.u)).toFixed(2));
+      setProTokens((G * (1 / userDistribution.s)).toFixed(2));
       setLineChartData({
         type: "line",
         labels:
-          antiTokens !== proTokens || antiTokens > 0 || proTokens > 0
+          baryonTokens !== photonTokens || baryonTokens > 0 || photonTokens > 0
             ? userDistribution.range.map((value) =>
                 value ? value.toFixed(2) : ""
               )
             : "",
         datasets: [
           {
-            label: "Collider",
+            label: "Inverter",
             data: userDistribution.distribution.map((item) => item.value),
             borderColor: "#FF9500",
             backgroundColor: "#FF9500", // Match the legend marker color
             pointStyle: "line",
           },
           {
-            label: "Trapper",
+            label: "Reclaimer",
             data: userDistribution.curve.map((item) => item.value),
             borderColor: "#DD099D",
             backgroundColor: "#DD099D", // Match the legend marker color
@@ -87,7 +87,7 @@ const VoteOption = ({
               position: "bottom",
               title: {
                 display: true,
-                text: "Your Normalised Vote", // Label for the X-axis
+                text: "Probability Range", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
                   size: 14,
@@ -103,14 +103,14 @@ const VoteOption = ({
                 color: "#FF9500",
               },
               grid: {
-                color: antiTokens !== proTokens ? "#D3D3D322" : "D3D3D300",
+                color: baryonTokens !== photonTokens ? "#D3D3D322" : "D3D3D300",
               },
             },
             x2: {
               position: "top",
               title: {
                 display: false,
-                text: "Your Normalised Vote", // Label for the X-axis
+                text: "Probability Range", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
                   size: 14,
@@ -131,13 +131,13 @@ const VoteOption = ({
                 color: "#DD099D",
               },
               grid: {
-                color: antiTokens !== proTokens ? "#D3D3D322" : "D3D3D300",
+                color: baryonTokens !== photonTokens ? "#D3D3D322" : "D3D3D300",
               },
             },
             y: {
               title: {
                 display: true,
-                text: "Emissions", // Label for the X-axis
+                text: "Reclaim", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
                   size: 14,
@@ -156,21 +156,21 @@ const VoteOption = ({
         },
       });
     }
-  }, [userDistribution, antiTokens, proTokens]);
+  }, [userDistribution, baryonTokens, photonTokens]);
 
-  const handleVote = async () => {
+  const handleReclaim = async () => {
     if (disabled || loading) return;
 
     try {
       setLoading(true);
 
       // Validate input
-      if (antiTokens <= 0 && proTokens <= 0) {
+      if (baryonTokens <= 0 && photonTokens <= 0) {
         toast.error("You must vote with at least some tokens!");
         return;
       }
 
-      if (antiTokens > antiBalance || proTokens > proBalance) {
+      if (baryonTokens > baryonBalance || photonTokens > photonBalance) {
         toast.error("You cannot vote with more tokens than you have!");
         return;
       }
@@ -185,8 +185,8 @@ const VoteOption = ({
 
       // Prompt for Solana signature
       const message = `Requesting signature to vote with:
-        ${antiTokens} $ANTI,
-        ${proTokens} $PRO,
+        ${baryonTokens} $ANTI,
+        ${photonTokens} $PRO,
         for
         ${baryonTokens} $BARYON,
         ${photonTokens} $PHOTON
@@ -198,8 +198,8 @@ const VoteOption = ({
 
       // Record the vote
       await recordVote(wallet.publicKey.toString(), {
-        antiTokens,
-        proTokens,
+        baryonTokens,
+        photonTokens,
         baryonTokens,
         photonTokens,
         signature,
@@ -216,8 +216,8 @@ const VoteOption = ({
   };
 
   useEffect(() => {
-    if (antiTokens || proTokens) {
-      const distribution = calculateDistribution(antiTokens, proTokens);
+    if (baryonTokens || photonTokens) {
+      const distribution = calculateDistribution(baryonTokens, photonTokens);
       setUserDistribution(distribution);
     } else {
       setUserDistribution({
@@ -235,40 +235,41 @@ const VoteOption = ({
         ],
       });
     }
-  }, [antiTokens, proTokens]);
+  }, [baryonTokens, photonTokens]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full space-y-6">
-      {/* Token Input Fields */}
+      {/* Emission Input */}
+
       <div className="flex flex-row items-center justify-between space-x-10">
         <div className="flex flex-col items-start">
           <label
-            htmlFor="antiTokens"
+            htmlFor="baryonTokens"
             className="text-accent-orange font-medium text-lg"
           >
-            $ANTI
+            $BARYON
           </label>
           <div className="flex flex-col items-start">
             <input
-              id="antiTokens"
+              id="baryonTokens"
               type="number"
               min="0"
-              max={antiBalance}
-              value={antiTokens}
-              onChange={(e) => setAntiTokens(Number(e.target.value))}
+              max={baryonBalance}
+              value={baryonTokens.toFixed(2)}
+              onChange={(e) => setBaryonTokens(Number(e.target.value))}
               onFocus={(e) => e.target.select()}
               placeholder="0"
               className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
             />
-            <p className="text-sm font-sfmono">
+            <p className="text-sm flex flex-row">
               <img
-                src={`${BASE_URL}/assets/anti.png`}
-                alt="anti-logo"
-                className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+                src={`${BASE_URL}/assets/baryon.png`}
+                alt="baryon-logo"
+                className="w-5 h-5 inline-block"
               />
-              BAL:{" "}
-              <span className="font-sfmono text-accent-primary text-sm">
-                {antiBalance.toFixed(0)}
+              MAX:&nbsp;
+              <span className="font-sfmono text-sm text-accent-primary">
+                {baryonBalance.toFixed(2)}
               </span>
             </p>
           </div>
@@ -276,39 +277,41 @@ const VoteOption = ({
 
         <div className="flex flex-col items-end">
           <label
-            htmlFor="proTokens"
+            htmlFor="photonTokens"
             className="text-accent-secondary font-medium text-lg"
           >
-            $PRO
+            $PHOTON
           </label>
           <div className="flex flex-col items-end">
             <input
-              id="proTokens"
+              id="photonTokens"
               type="number"
               min="0"
-              max={proBalance}
-              value={proTokens}
-              onChange={(e) => setProTokens(Number(e.target.value))}
+              max={photonBalance}
+              value={photonTokens.toFixed(2)}
+              onChange={(e) => setPhotonTokens(Number(e.target.value))}
               onFocus={(e) => e.target.select()}
               placeholder="0"
               className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
             />
-            <p className="text-sm font-sfmono">
+            <p className="text-sm flex flex-row">
               <img
-                src={`${BASE_URL}/assets/pro.png`}
-                alt="pro-logo"
-                className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+                src={`${BASE_URL}/assets/photon.png`}
+                alt="photon-logo"
+                className="w-5 h-5 inline-block"
               />
-              BAL:{" "}
-              <span className="font-sfmono text-accent-secondary text-sm">
-                {proBalance.toFixed(0)}
+              <span className="font-sfmono text-sm">
+                MAX:&nbsp;
+                <span className="font-sfmono text-accent-secondary text-sm">
+                  {photonBalance.toFixed(2)}
+                </span>
               </span>
             </p>
           </div>
         </div>
       </div>
 
-      {/* User Distribution */}
+      {/* Token Output Fields */}
       {userDistribution && (
         <>
           {lineChartData && (
@@ -317,59 +320,58 @@ const VoteOption = ({
           <div className="flex flex-row items-center justify-between space-x-10">
             <div className="flex flex-col items-start">
               <label
-                htmlFor="baryonTokens"
+                htmlFor="antiTokens"
                 className="text-accent-orange font-medium text-lg"
               >
-                $BARYON
+                $ANTI
               </label>
               <div className="flex flex-col items-start">
                 <input
-                  id="baryonTokens"
+                  id="antiTokens"
                   type="number"
                   min="0"
-                  value={baryonTokens.toFixed(2)}
-                  placeholder="0"
+                  value={antiTokens > 0 ? antiTokens : "-"}
+                  placeholder="-"
                   className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
                   readOnly
                 />
-                <p className="text-sm flex flex-row">
+                <p className="text-sm font-sfmono">
                   <img
-                    src={`${BASE_URL}/assets/baryon.png`}
-                    alt="baryon-logo"
-                    className="w-5 h-5 inline-block"
+                    src={`${BASE_URL}/assets/anti.png`}
+                    alt="anti-logo"
+                    className="w-3 h-3 mt-[-2px] mr-1 inline-block"
                   />
-                  <span className="font-sfmono text-sm">
-                    BAL:&nbsp;{baryonBalance.toFixed(2)}
-                  </span>
+                  BAL: {antiBalance.toFixed(0)}
                 </p>
               </div>
             </div>
 
             <div className="flex flex-col items-end">
               <label
-                htmlFor="photonTokens"
+                htmlFor="proTokens"
                 className="text-accent-secondary font-medium text-lg"
               >
-                $PHOTON
+                $PRO
               </label>
               <div className="flex flex-col items-end">
                 <input
-                  id="photonTokens"
+                  id="proTokens"
                   type="number"
                   min="0"
-                  value={photonTokens.toFixed(2)}
-                  placeholder="0"
+                  value={proTokens > 0 ? proTokens : "-"}
+                  placeholder="-"
                   className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
                   readOnly
                 />
-                <p className="text-sm flex flex-row">
+                <p className="text-sm font-sfmono">
                   <img
-                    src={`${BASE_URL}/assets/photon.png`}
-                    alt="photon-logo"
-                    className="w-5 h-5 inline-block"
+                    src={`${BASE_URL}/assets/pro.png`}
+                    alt="pro-logo"
+                    className="w-3 h-3 mt-[-2px] mr-1 inline-block"
                   />
-                  <span className="font-sfmono text-sm">
-                    BAL:&nbsp;{photonBalance.toFixed(2)}
+                  BAL:{" "}
+                  <span className="font-sfmono text-white text-sm">
+                    {proBalance.toFixed(0)}
                   </span>
                 </p>
               </div>
@@ -377,10 +379,9 @@ const VoteOption = ({
           </div>
         </>
       )}
-
       {/* Submit Button */}
       <button
-        onClick={handleVote}
+        onClick={handleReclaim}
         disabled={disabled || loading}
         className={`w-40 mt-16 px-5 py-3 rounded-md font-semibold text-lg transition-all ${
           disabled || loading
@@ -388,11 +389,11 @@ const VoteOption = ({
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {loading ? "Submitting..." : "Submit Vote"}
+        {loading ? "Reclaiming..." : "Reclaim"}
       </button>
       <ToastContainer />
     </div>
   );
 };
 
-export default VoteOption;
+export default InvertCollider;
