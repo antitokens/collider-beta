@@ -257,36 +257,34 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         </div>
 
         {/* Voting Section */}
-        <div className="border border-gray-500 rounded-lg p-12 text-center mt-20 px-24 bg-black bg-opacity-50">
-          <h3 className="font-grotesk text-2xl font-medium text-white mb-6">
-            Should Dev launch a token on Base?&nbsp;
-            <button
-              onClick={() =>
-                alert(
-                  "Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote."
-                )
-              }
-              title="Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote."
-            >
-              <svg
-                className="w-6 h-6 text-white dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="#ffffff95"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
-          </h3>
+        <div className="border border-gray-800 bg-dark-card/50 rounded-lg md:py-12 md:px-24 p-2 text-center mt-20 bg-black bg-opacity-50 max-w-7xl mx-auto">
+          <div className="flex justify-center gap-2 items-center font-grotesk text-md sm:text-xl md:text-2xl font-medium text-gray-200 mb-6">
+            <div>Should Dev launch a token on Base?</div>
+            <div className="relative group">
+              <div className="cursor-pointer">
+                <svg
+                  className="w-4 h-4 sm:w-6 sm:h-6 text-gray-200"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full md:-translate-x-1/2 -translate-y-full -mt-4 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote.
+              </span>
+            </div>
+          </div>
           {/* Voting Options */}
           <div className="flex justify-center max-w-md mx-auto">
             <VoteOption

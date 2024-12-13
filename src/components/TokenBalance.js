@@ -35,37 +35,39 @@ const TokenBalance = (trigger) => {
   if (!wallet.publicKey) return null;
 
   return (
-    <div className="relative mt-2 mb-2">
+    <div className="mt-2 mb-2">
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className={`flex justify-center w-full bg-transparent border-solid border sm:border-0 border-accent-primary text-accent-primary px-4 py-[10px] rounded-md text-md hover:border-white hover:text-white ${
+        className={`flex justify-center flex-nowrap text-nowrap gap-2 border border-accent-primary/50 w-full bg-transparent text-accent-primary px-4 py-[10px] rounded-md text-md hover:text-gray-300 hover:border-gray-300 ${
           dropdownOpen ? "bg-gray-500" : ""
         }`}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className={`h-6 w-6 ml-1 transition-transform ${
-            !dropdownOpen ? "rotate-180" : ""
-          }`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="9"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M8 12l4-4 4 4M12 8v8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        &nbsp;&nbsp;My Balances
+        <span className="block">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-6 w-6 ml-1 transition-transform ${
+              !dropdownOpen ? "rotate-180" : ""
+            }`}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M8 12l4-4 4 4M12 8v8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        My Balances
       </button>
       {dropdownOpen && (
         <div className="absolute right-0 mt-2 bg-gray-900 text-gray-300 rounded-lg shadow-lg p-4">
