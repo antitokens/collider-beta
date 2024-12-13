@@ -365,7 +365,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             </div>
             <div className="flex flex-col justify-between items-center mb-6">
               <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-8">
-                Invert your Collider Emissions
+                Claim your Collider Emissions
               </h2>
             </div>
             <InvertCollider
