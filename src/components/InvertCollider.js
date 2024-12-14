@@ -258,7 +258,7 @@ const InvertCollider = ({
             htmlFor="baryonTokens"
             className="text-accent-orange font-medium text-lg"
           >
-            $BARYON
+            $tBARYON
           </label>
           <div className="flex flex-col items-start">
             <input
@@ -291,7 +291,7 @@ const InvertCollider = ({
             htmlFor="photonTokens"
             className="text-accent-secondary font-medium text-lg"
           >
-            $PHOTON
+            $tPHOTON
           </label>
           <div className="flex flex-col items-end">
             <input
@@ -334,7 +334,7 @@ const InvertCollider = ({
                 htmlFor="antiTokens"
                 className="text-accent-orange font-medium text-lg"
               >
-                $ANTI
+                $tANTI
               </label>
               <div className="flex flex-col items-start">
                 <input
@@ -365,7 +365,7 @@ const InvertCollider = ({
                 htmlFor="proTokens"
                 className="text-accent-secondary font-medium text-lg"
               >
-                $PRO
+                $tPRO
               </label>
               <div className="flex flex-col items-end">
                 <input
