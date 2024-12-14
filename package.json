@@ -1,6 +1,6 @@
 {
   "name": "collider-beta",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha",
   "description": "A frontend application for voting using Solana tokens and storing results in Cloudflare Workers KV.",
   "main": "src/pages/index.js",
   "scripts": {
