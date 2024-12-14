@@ -29,6 +29,7 @@ import {
 } from "../utils/solana";
 import { getKVBalance } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
+import BinaryOrbit from "../components/BinaryOrbit";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 const Home = ({ BASE_URL }) => {
@@ -251,7 +252,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300/90 font-semibold font-outfit">
               Vote with{" "}
               <span className="text-accent-primary font-semibold">$ANTI</span>{" "}
-              and
+              and{" "}
               <span className="text-accent-secondary font-semibold">$PRO</span>
             </h1>
             <p className="font-open font-medium text-xl md:text-[1.35rem] text-gray-300 mb-6">
@@ -277,26 +278,24 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               <div className="relative group">
                 <div className="cursor-pointer">
                   <button
-                    className="text-accent-primary hover:text-white bg-transparent px-4 py-2 rounded border border-accent-primary hover:border-white"
+                    className="text-accent-primary hover:text-white bg-transparent px-4 py-2 rounded"
                     onClick={() => setShowFirstCollider(false)}
                   >
-                    <svg
-                      className="w-6 h-6"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
                     >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"
+                      <BinaryOrbit
+                        size={40}
+                        orbitRadius={10}
+                        particleRadius={4}
+                        padding={4}
+                        invert={false}
                       />
-                    </svg>
+                    </div>
                   </button>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                     Switch to Inverter
@@ -336,26 +335,24 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               <div className="relative group">
                 <div className="cursor-pointer">
                   <button
-                    className="text-accent-secondary hover:text-white bg-transparent px-4 py-2 rounded border border-accent-secondary hover:border-white"
+                    className="text-accent-secondary hover:text-white bg-transparent px-4 py-2 rounded"
                     onClick={() => setShowFirstCollider(true)}
                   >
-                    <svg
-                      className="w-6 h-6 rotate-180"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
                     >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"
+                      <BinaryOrbit
+                        size={40}
+                        orbitRadius={10}
+                        particleRadius={4}
+                        padding={4}
+                        invert={true}
                       />
-                    </svg>
+                    </div>
                   </button>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                     Switch to Collider
