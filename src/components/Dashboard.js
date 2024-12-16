@@ -31,7 +31,7 @@ const Dashboard = ({
             votersData.antiVoters,
             votersData.total - (votersData.proVoters + votersData.antiVoters),
           ],
-          backgroundColor: ["#00CC8E", "#D13800", "#808080"],
+          backgroundColor: ["#00BB7A", "#C12F00", "#808080"], // Reduced hue by 5%
           borderColor: ["#000000", "#000000", "#000000"],
         },
       ],
@@ -60,7 +60,7 @@ const Dashboard = ({
             tokensData.antiTokens,
             tokensData.total - (tokensData.proTokens + tokensData.antiTokens),
           ],
-          backgroundColor: ["#00CC8E", "#D13800", "#808080"],
+          backgroundColor: ["#00BB7A", "#C12F00", "#808080"], // Reduced hue by 5%
           borderColor: ["#000000", "#000000", "#000000"],
         },
       ],
@@ -86,12 +86,12 @@ const Dashboard = ({
         {
           label: "Pro",
           data: Object.values(votesOverTime.tokenRangesPro),
-          backgroundColor: "#00CC8E",
+          backgroundColor: "#00BB7A",
         },
         {
           label: "Anti",
           data: Object.values(votesOverTime.tokenRangesAnti),
-          backgroundColor: "#D13800",
+          backgroundColor: "#C12F00",
         },
       ],
       options: {
@@ -136,15 +136,15 @@ const Dashboard = ({
         {
           label: "Pro",
           data: votesOverTime.proVotes,
-          borderColor: "#00CC8E",
-          backgroundColor: "#00CC8E",
+          borderColor: "#00BB7A",
+          backgroundColor: "#00BB7A",
           fill: false,
         },
         {
           label: "Anti",
           data: votesOverTime.antiVotes,
-          borderColor: "#D13800",
-          backgroundColor: "#D13800",
+          borderColor: "#C12F00",
+          backgroundColor: "#C12F00",
           fill: false,
         },
       ],
@@ -285,9 +285,11 @@ const Dashboard = ({
   ]);
 
   return (
-    <section className="py-12 text-gray-100">
-      <h2 className="text-center text-2xl font-bold mb-6">Statistics</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+    <section className="mt-20 text-gray-100">
+      <h2 className="px-4 py-2 text-xl text-gray-300 text-left font-medium border border-gray-800 rounded-t-lg bg-dark-card">
+        Statistics
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-black border-x border-b border-gray-800 rounded-b-lg">
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
             <div>Voter Participation</div>
