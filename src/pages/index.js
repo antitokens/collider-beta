@@ -249,15 +249,33 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         <div className="grid grid-cols-1 lg:grid-cols-[70%,30%] items-center gap-8 max-w-7xl mx-auto px-4">
           {/* Hero Text */}
           <div>
-            <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300/90 font-semibold font-outfit">
-              Vote with{" "}
-              <span className="text-accent-primary font-semibold">$ANTI</span>{" "}
+            <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300 font-bold font-outfit">
+              VOTE WITH
+              <br/>
+              <span className="text-accent-primary">$ANTI</span>{" "}
               and{" "}
-              <span className="text-accent-secondary font-semibold">$PRO</span>
+              <span className="text-accent-secondary">$PRO</span>
             </h1>
             <p className="font-open font-medium text-xl md:text-[1.35rem] text-gray-300 mb-6">
               Experience the future of prediction markets with Antitoken
             </p>
+            <button
+              className="bg-accent-primary hover:opacity-90 text-gray-100 px-8 py-3 rounded-full text-lg font-semibold flex items-center gap-2"
+              onClick={() => setShowBuyTokensModal(true)}
+            >
+              <span>
+                Buy Tokens
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-gray-100 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
           </div>
 
           {/* Hero Image */}
@@ -272,123 +290,78 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         </div>
 
         {/* Collider Sections Toggle */}
-        {showFirstCollider ? (
-          <div className="border border-accent-primary/50 bg-dark-card/50 rounded-lg md:py-12 md:px-24 p-2 text-center mt-20 bg-black bg-opacity-50 max-w-7xl mx-auto text-accent-primary">
-            <div className="w-full flex flex-row justify-end mb-8">
-              <div className="relative group">
-                <div className="cursor-pointer">
-                  <button
-                    className="text-accent-primary hover:text-white bg-transparent px-4 py-2 rounded"
-                    onClick={() => setShowFirstCollider(false)}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <BinaryOrbit
-                        size={40}
-                        orbitRadius={10}
-                        particleRadius={4}
-                        padding={4}
-                        invert={false}
-                      />
-                    </div>
-                  </button>
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    Switch to Inverter
-                  </span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto">
+          <div className="lg:col-span-1 xl:col-span-2 mx-2 md:mx-0">
+          {showFirstCollider ? (
+            <div className="text-center mt-20">
+              <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
+                <h2 className="text-xl text-gray-300 text-left font-medium">
+                  Collider
+                </h2>
+                <button
+                  className="text-sm text-accent-primary hover:text-gray-300"
+                  onClick={() => setShowFirstCollider(false)}
+                >
+                  Switch to Inverter
+                </button>
+              </div>
+              <Collider
+                wallet={wallet}
+                antiBalance={antiBalance}
+                proBalance={proBalance}
+                baryonBalance={baryonBalance}
+                photonBalance={photonBalance}
+                disabled={!wallet.connected}
+                BASE_URL={BASE_URL}
+                onVoteSubmitted={handleVoteSubmitted}
+                clearFields={clearFields}
+              />
+            </div>
+          ) : (
+            <div className="mt-20">
+              <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
+                <h2 className="text-xl text-gray-300 text-left font-medium">
+                  Inverter
+                </h2>
+                <button
+                  className="text-sm text-accent-primary hover:text-gray-300"
+                  onClick={() => setShowFirstCollider(true)}
+                >
+                  Switch to Collider
+                </button>
+              </div>
+              <div className="border border-gray-800 rounded-b-lg p-5 bg-black text-center">
+                <div className="bg-dark-card p-4 rounded w-full mb-4">
+                  <h2 className="text-lg text-gray-300 text-left font-medium">
+                    Claim your Inverter Emissions
+                  </h2>
                 </div>
+                <InvertCollider
+                  wallet={wallet}
+                  antiBalance={antiBalance}
+                  proBalance={proBalance}
+                  baryonBalance={baryonBalance}
+                  photonBalance={photonBalance}
+                  disabled={!wallet.connected}
+                  BASE_URL={BASE_URL}
+                  onClaimSubmitted={handleClaimSubmitted}
+                  clearFields={clearFields}
+                />
+                <p
+                  className={`mt-0 text-sm ${
+                    wallet.connected
+                      ? "text-gray-300"
+                      : "text-red-500 animate-pulse"
+                  }`}
+                >
+                  {wallet.connected ? "" : "Connect your wallet to enable voting"}
+                </p>
               </div>
             </div>
-            <div className="flex flex-col justify-between items-center mb-6">
-              <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-4">
-                Should Dev launch a token on Base?
-              </h2>
-            </div>
-            <Collider
-              wallet={wallet}
-              antiBalance={antiBalance}
-              proBalance={proBalance}
-              baryonBalance={baryonBalance}
-              photonBalance={photonBalance}
-              disabled={!wallet.connected}
-              BASE_URL={BASE_URL}
-              onVoteSubmitted={handleVoteSubmitted}
-              clearFields={clearFields}
-            />
-            <p
-              className={`mt-0 text-sm ${
-                wallet.connected
-                  ? "text-gray-300"
-                  : "text-red-500 animate-pulse"
-              }`}
-            >
-              {wallet.connected ? "" : "Connect your wallet to enable voting"}
-            </p>
-          </div>
-        ) : (
-          <div className="border border-accent-secondary/50 bg-dark-card/50 rounded-lg md:py-12 md:px-24 p-2 text-center mt-20 bg-black bg-opacity-50 max-w-7xl mx-auto">
-            <div className="w-full flex flex-row justify-end mb-8">
-              <div className="relative group">
-                <div className="cursor-pointer">
-                  <button
-                    className="text-accent-secondary hover:text-white bg-transparent px-4 py-2 rounded"
-                    onClick={() => setShowFirstCollider(true)}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <BinaryOrbit
-                        size={40}
-                        orbitRadius={10}
-                        particleRadius={4}
-                        padding={4}
-                        invert={true}
-                      />
-                    </div>
-                  </button>
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    Switch to Collider
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col justify-between items-center mb-6">
-              <h2 className="text-gray-200 font-medium text-xl md:text-3xl mx-8">
-                Claim your Collider Emissions
-              </h2>
-            </div>
-            <InvertCollider
-              wallet={wallet}
-              antiBalance={antiBalance}
-              proBalance={proBalance}
-              baryonBalance={baryonBalance}
-              photonBalance={photonBalance}
-              disabled={!wallet.connected}
-              BASE_URL={BASE_URL}
-              onClaimSubmitted={handleClaimSubmitted}
-              clearFields={clearFields}
-            />
-            <p
-              className={`mt-0 text-sm ${
-                wallet.connected
-                  ? "text-gray-300"
-                  : "text-red-500 animate-pulse"
-              }`}
-            >
-              {wallet.connected ? "" : "Connect your wallet to enable voting"}
-            </p>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="mt-12">
+        <div className="xl:col-span-3 mx-2 md:mx-0">
           <Dashboard
             votersData={votersData}
             tokensData={tokensData}
@@ -397,6 +370,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             totalDistribution={totalDistribution}
           />
         </div>
+      </div>
 
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">
@@ -406,7 +380,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             Join the future of prediction markets
           </p>
           <button
-            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-lg text-lg font-semibold"
+            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-b-lg text-lg font-semibold"
             onClick={() => setShowBuyTokensModal(true)}
           >
             Buy Tokens

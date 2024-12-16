@@ -249,51 +249,19 @@ const InvertCollider = ({
   }, [baryonTokens, photonTokens]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full space-y-6">
+    <div className="flex flex-col items-center justify-center w-full">
       {/* Emission Input */}
 
-      <div className="flex flex-row items-center justify-between space-x-10">
-        <div className="flex flex-col items-start">
-          <label
-            htmlFor="baryonTokens"
-            className="text-accent-orange font-medium text-lg"
-          >
-            $tBARYON
-          </label>
-          <div className="flex flex-col items-start">
-            <input
-              id="baryonTokens"
-              type="number"
-              min="0"
-              max={baryonBalance}
-              value={baryonTokens.toFixed(2)}
-              onChange={(e) => setBaryonTokens(Number(e.target.value))}
-              onFocus={(e) => e.target.select()}
-              placeholder="0"
-              className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
-            />
-            <p className="text-sm flex flex-row">
-              <img
-                src={`${BASE_URL}/assets/baryon.png`}
-                alt="baryon-logo"
-                className="w-5 h-5 inline-block"
-              />
-              MAX:&nbsp;
-              <span className="font-sfmono text-sm text-accent-primary">
-                {Number(baryonBalance).toFixed(2)}
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end">
-          <label
-            htmlFor="photonTokens"
-            className="text-accent-secondary font-medium text-lg"
-          >
-            $tPHOTON
-          </label>
-          <div className="flex flex-col items-end">
+      <div className="flex flex-row items-center justify-between bg-dark-card w-full p-4 rounded gap-2">
+        <div className="flex flex-col items-start w-full">
+          <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
+            <label
+              htmlFor="photonTokens"
+              className="text-accent-secondary font-medium text-xs sm:text-sm"
+            >
+              $tPHOTON
+            </label>
+            <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
             <input
               id="photonTokens"
               type="number"
@@ -303,101 +271,145 @@ const InvertCollider = ({
               onChange={(e) => setPhotonTokens(Number(e.target.value))}
               onFocus={(e) => e.target.select()}
               placeholder="0"
-              className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
+              className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
             />
-            <p className="text-sm flex flex-row">
-              <img
-                src={`${BASE_URL}/assets/photon.png`}
-                alt="photon-logo"
-                className="w-5 h-5 inline-block"
-              />
-              <span className="font-sfmono text-sm">
-                MAX:&nbsp;
-                <span className="font-sfmono text-accent-secondary text-sm">
-                  {Number(photonBalance).toFixed(2)}
-                </span>
-              </span>
-            </p>
           </div>
+          <p className="text-sm flex flex-row">
+            <img
+              src={`${BASE_URL}/assets/photon.png`}
+              alt="photon-logo"
+              className="w-5 h-5 inline-block"
+            />
+            <span className="font-sfmono text-sm">
+              MAX:&nbsp;
+              <span className="font-sfmono text-accent-secondary text-sm">
+                {Number(photonBalance).toFixed(2)}
+              </span>
+            </span>
+          </p>
         </div>
+
+        <div className="flex flex-col items-end w-full">
+          <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
+            <label
+              htmlFor="baryonTokens"
+              className="text-accent-orange font-medium text-xs sm:text-sm"
+            >
+              $tBARYON
+            </label>
+            <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+            <input
+              id="baryonTokens"
+              type="number"
+              min="0"
+              max={baryonBalance}
+              value={baryonTokens.toFixed(2)}
+              onChange={(e) => setBaryonTokens(Number(e.target.value))}
+              onFocus={(e) => e.target.select()}
+              placeholder="0"
+              className="w-full text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+            />
+          </div>
+          <p className="text-sm flex flex-row">
+            <img
+              src={`${BASE_URL}/assets/baryon.png`}
+              alt="baryon-logo"
+              className="w-5 h-5 inline-block"
+            />
+            MAX:&nbsp;
+            <span className="font-sfmono text-sm text-accent-primary">
+              {Number(baryonBalance).toFixed(2)}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 2L6 14L2 10" stroke="rgb(107, 114, 128)" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
+          <path d="M10 14L10 2L14 6" stroke="rgb(107, 114, 128)" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
+        </svg>
       </div>
 
       {/* Token Output Fields */}
       {userDistribution && (
-        <>
+        <div className="bg-dark-card p-4 rounded w-full">
           {lineChartData && (
             <Line data={lineChartData} options={lineChartData.options} />
           )}
-          <div className="flex flex-row items-center justify-between space-x-10">
-            <div className="flex flex-col items-start">
-              <label
-                htmlFor="antiTokens"
-                className="text-accent-orange font-medium text-lg"
-              >
-                $tANTI
-              </label>
-              <div className="flex flex-col items-start">
-                <input
-                  id="antiTokens"
-                  type="number"
-                  min="0"
-                  value={antiTokens > 0 ? antiTokens : "-"}
-                  placeholder="-"
-                  className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
-                  readOnly
-                />
-                <p className="text-sm font-sfmono">
-                  <img
-                    src={`${BASE_URL}/assets/anti.png`}
-                    alt="anti-logo"
-                    className="w-3 h-3 mt-[-2px] mr-1 inline-block"
-                  />
-                  BAL:{" "}
-                  <span className="font-sfmono text-white text-sm">
-                    {Number(antiBalance).toFixed(0)}
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end">
-              <label
-                htmlFor="proTokens"
-                className="text-accent-secondary font-medium text-lg"
-              >
-                $tPRO
-              </label>
-              <div className="flex flex-col items-end">
+          <div className="mt-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
+            <div className="flex flex-col items-start justify-between w-full">
+              <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
+                <label
+                  htmlFor="antiTokens"
+                  className="text-accent-secondary font-medium text-xs sm:text-sm"
+                >
+                  $tPRO
+                </label>
+                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
                   id="proTokens"
                   type="number"
                   min="0"
                   value={proTokens > 0 ? proTokens : "-"}
                   placeholder="-"
-                  className="px-3 py-2 border border-gray-400 rounded-md w-32 text-gray-700 text-center font-sfmono bg-black text-white"
+                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
                   readOnly
                 />
-                <p className="text-sm font-sfmono">
-                  <img
-                    src={`${BASE_URL}/assets/pro.png`}
-                    alt="pro-logo"
-                    className="w-3 h-3 mt-[-2px] mr-1 inline-block"
-                  />
-                  BAL:{" "}
-                  <span className="font-sfmono text-white text-sm">
-                    {Number(proBalance).toFixed(0)}
-                  </span>
-                </p>
               </div>
+              <p className="text-sm font-sfmono">
+                <img
+                  src={`${BASE_URL}/assets/pro.png`}
+                  alt="pro-logo"
+                  className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+                />
+                BAL:{" "}
+                <span className="font-sfmono text-white text-sm">
+                  {Number(proBalance).toFixed(0)}
+                </span>
+              </p>
             </div>
+
+            <div className="flex flex-col items-end justify-between w-full">
+              <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
+                <label
+                  htmlFor="antiTokens"
+                  className="text-accent-orange font-medium text-xs sm:text-sm"
+                >
+                  $tANTI
+                </label>
+                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+                <input
+                  id="antiTokens"
+                  type="number"
+                  min="0"
+                  value={antiTokens > 0 ? antiTokens : "-"}
+                  placeholder="-"
+                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+                  readOnly
+                />
+              </div>
+              <p className="text-sm font-sfmono">
+                <img
+                  src={`${BASE_URL}/assets/anti.png`}
+                  alt="anti-logo"
+                  className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+                />
+                BAL:{" "}
+                <span className="font-sfmono text-white text-sm">
+                  {Number(antiBalance).toFixed(0)}
+                </span>
+              </p>
+            </div>
+
           </div>
-        </>
+        </div>
       )}
       {/* Submit Button */}
       <button
         onClick={handleReclaim}
         disabled={disabled || loading}
-        className={`w-40 mt-16 px-5 py-3 rounded-md font-semibold text-lg transition-all ${
+        className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled || loading
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
