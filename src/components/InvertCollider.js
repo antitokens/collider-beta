@@ -58,15 +58,15 @@ const InvertCollider = ({
           {
             label: "Inverter",
             data: userDistribution.distribution.map((item) => item.value),
-            borderColor: "#FF9500",
-            backgroundColor: "#FF9500", // Match the legend marker color
+            borderColor: "#FFFFFF",
+            backgroundColor: "#FFFFFF", // Match the legend marker color
             pointStyle: "line",
           },
           {
             label: "Reclaimer",
             data: userDistribution.curve.map((item) => item.value),
-            borderColor: "#DD099D",
-            backgroundColor: "#DD099D", // Match the legend marker color
+            borderColor: "#a6a6a6",
+            backgroundColor: "#a6a6a6", // Match the legend marker color
             pointStyle: "line",
           },
         ],
@@ -111,7 +111,7 @@ const InvertCollider = ({
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color: "#FF9500",
+                color: "#FFFFFF",
               },
               grid: {
                 color: baryonTokens !== photonTokens ? "#D3D3D322" : "D3D3D300",
@@ -139,7 +139,7 @@ const InvertCollider = ({
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color: "#DD099D",
+                color: "#a6a6a6",
               },
               grid: {
                 color: baryonTokens !== photonTokens ? "#D3D3D322" : "D3D3D300",
