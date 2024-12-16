@@ -132,3 +132,9 @@ input[type='range']::-moz-range-thumb {
   border: none;
   transition: .2s ease-in-out;
 }
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
