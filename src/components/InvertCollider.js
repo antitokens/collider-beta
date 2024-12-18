@@ -65,8 +65,8 @@ const InvertCollider = ({
           {
             label: "Reclaimer",
             data: userDistribution.curve.map((item) => item.value),
-            borderColor: "#a6a6a6",
-            backgroundColor: "#a6a6a6", // Match the legend marker color
+            borderColor: "#ff5f3b",
+            backgroundColor: "#ff5f3b", // Match the legend marker color
             pointStyle: "line",
           },
         ],
@@ -139,7 +139,7 @@ const InvertCollider = ({
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color: "#a6a6a6",
+                color: "#ff5f3b",
               },
               grid: {
                 color: baryonTokens !== photonTokens ? "#D3D3D322" : "D3D3D300",
@@ -257,7 +257,7 @@ const InvertCollider = ({
           <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
             <label
               htmlFor="photonTokens"
-              className="text-accent-secondary font-medium text-xs sm:text-sm"
+              className="text-gray-300 font-medium text-xs sm:text-sm"
             >
               $tPHOTON
             </label>
@@ -271,29 +271,27 @@ const InvertCollider = ({
               onChange={(e) => setPhotonTokens(Number(e.target.value))}
               onFocus={(e) => e.target.select()}
               placeholder="0"
-              className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+              className="font-sfmono bg-black text-white text-xs sm:text-sm w-full"
             />
           </div>
-          <p className="text-sm flex flex-row">
+          <div className="text-xs text-gray-300">
             <img
               src={`${BASE_URL}/assets/photon.png`}
               alt="photon-logo"
-              className="w-5 h-5 inline-block"
+              className="w-3 h-3 mt-[-2px] mr-1 inline-block"
             />
-            <span className="font-sfmono text-sm">
-              MAX:&nbsp;
-              <span className="font-sfmono text-accent-secondary text-sm">
-                {Number(photonBalance).toFixed(2)}
-              </span>
+            MAX:&nbsp;
+            <span className="font-sfmono text-white">
+              {Number(photonBalance).toFixed(2)}
             </span>
-          </p>
+          </div>
         </div>
 
         <div className="flex flex-col items-end w-full">
           <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
             <label
               htmlFor="baryonTokens"
-              className="text-accent-orange font-medium text-xs sm:text-sm"
+              className="text-gray-300 font-medium text-xs sm:text-sm"
             >
               $tBARYON
             </label>
@@ -307,27 +305,45 @@ const InvertCollider = ({
               onChange={(e) => setBaryonTokens(Number(e.target.value))}
               onFocus={(e) => e.target.select()}
               placeholder="0"
-              className="w-full text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+              className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full"
             />
           </div>
-          <p className="text-sm flex flex-row">
+          <div className="text-xs text-gray-300">
             <img
               src={`${BASE_URL}/assets/baryon.png`}
               alt="baryon-logo"
-              className="w-5 h-5 inline-block"
+              className="w-3 h-3 mt-[-2px] mr-1 inline-block"
             />
             MAX:&nbsp;
-            <span className="font-sfmono text-sm text-accent-primary">
+            <span className="font-sfmono text-white">
               {Number(baryonBalance).toFixed(2)}
             </span>
-          </p>
+          </div>
         </div>
       </div>
 
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6 2L6 14L2 10" stroke="rgb(107, 114, 128)" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
-          <path d="M10 14L10 2L14 6" stroke="rgb(107, 114, 128)" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M6 2L6 14L2 10"
+            stroke="rgb(107, 114, 128)"
+            strokeWidth="2"
+            strokeLinecap="square"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M10 14L10 2L14 6"
+            stroke="rgb(107, 114, 128)"
+            strokeWidth="2"
+            strokeLinecap="square"
+            strokeLinejoin="round"
+          />
         </svg>
       </div>
 
@@ -351,21 +367,21 @@ const InvertCollider = ({
                   disabled={true}
                   value={proTokens > 0 ? proTokens : "-"}
                   placeholder="-"
-                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
+                  className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
-              <p className="text-sm font-sfmono">
+              <div className="text-xs text-gray-300">
                 <img
                   src={`${BASE_URL}/assets/pro.png`}
                   alt="pro-logo"
                   className="w-3 h-3 mt-[-2px] mr-1 inline-block"
                 />
                 BAL:{" "}
-                <span className="font-sfmono text-white text-sm">
+                <span className="font-sfmono text-accent-secondary">
                   {Number(proBalance).toFixed(0)}
                 </span>
-              </p>
+              </div>
             </div>
 
             <div className="flex flex-col items-end justify-between w-full">
@@ -384,21 +400,21 @@ const InvertCollider = ({
                   value={antiTokens > 0 ? antiTokens : "-"}
                   placeholder="-"
                   disabled={true}
-                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
+                  className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
-              <p className="text-sm font-sfmono">
+              <div className="text-xs text-gray-300">
                 <img
                   src={`${BASE_URL}/assets/anti.png`}
                   alt="anti-logo"
                   className="w-3 h-3 mt-[-2px] mr-1 inline-block"
                 />
                 BAL:{" "}
-                <span className="font-sfmono text-white text-sm">
+                <span className="font-sfmono text-accent-primary">
                   {Number(antiBalance).toFixed(0)}
                 </span>
-              </p>
+              </div>
             </div>
           </div>
           {lineChartData && (

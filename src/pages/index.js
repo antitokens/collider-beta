@@ -173,13 +173,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     ],
     tokenRangesPro: {
       "0-100k": 76 * Math.random(),
-      "100k-1M": 67 * Math.random(),
-      "1-10M": 57 * Math.random(),
+      "100k-1m": 67 * Math.random(),
+      "1-10m": 57 * Math.random(),
     },
     tokenRangesAnti: {
       "0-100k": 49 * Math.random(),
-      "100k-1M": 59 * Math.random(),
-      "1-10M": 62 * Math.random(),
+      "100k-1m": 59 * Math.random(),
+      "1-10m": 62 * Math.random(),
     },
   };
 
@@ -222,7 +222,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     <>
       <section className="min-h-screen pt-16 md:pt-20 flex flex-col items-center relative mt-10 mb-10">
         {/* Hero Section */}
-        <div className="max-w-7xl w-full mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center">
+        <div className="max-w-7xl w-full mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center rounded-md">
           <div className="flex items-center gap-2">
             <div>
               <svg
@@ -251,9 +251,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           <div>
             <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300 font-bold font-outfit">
               VOTE WITH
-              <br/>
-              <span className="text-accent-primary">$ANTI</span>{" "}
-              and{" "}
+              <br />
+              <span className="text-accent-primary">$ANTI</span> and{" "}
               <span className="text-accent-secondary">$PRO</span>
             </h1>
             <p className="font-open font-medium text-xl md:text-[1.35rem] text-gray-300 mb-6">
@@ -263,9 +262,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               className="bg-accent-primary hover:opacity-90 text-gray-100 px-8 py-3 rounded-full text-lg font-semibold flex items-center gap-2"
               onClick={() => setShowBuyTokensModal(true)}
             >
-              <span>
-                Buy Tokens
-              </span>
+              <span>Buy Tokens</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 text-gray-100 mr-2"
@@ -273,7 +270,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </button>
           </div>
@@ -292,51 +294,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         {/* Collider Sections Toggle */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto">
           <div className="lg:col-span-1 xl:col-span-2 mx-2 md:mx-0">
-          {showFirstCollider ? (
-            <div className="text-center mt-20">
-              <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
-                <h2 className="text-xl text-gray-300 text-left font-medium">
-                  Collider
-                </h2>
-                <button
-                  className="text-sm text-accent-primary hover:text-gray-300"
-                  onClick={() => setShowFirstCollider(false)}
-                >
-                  Switch to Inverter
-                </button>
-              </div>
-              <Collider
-                wallet={wallet}
-                antiBalance={antiBalance}
-                proBalance={proBalance}
-                baryonBalance={baryonBalance}
-                photonBalance={photonBalance}
-                disabled={!wallet.connected}
-                BASE_URL={BASE_URL}
-                onVoteSubmitted={handleVoteSubmitted}
-                clearFields={clearFields}
-              />
-            </div>
-          ) : (
-            <div className="mt-20">
-              <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
-                <h2 className="text-xl text-gray-300 text-left font-medium">
-                  Inverter
-                </h2>
-                <button
-                  className="text-sm text-accent-primary hover:text-gray-300"
-                  onClick={() => setShowFirstCollider(true)}
-                >
-                  Switch to Collider
-                </button>
-              </div>
-              <div className="border border-gray-800 rounded-b-lg p-5 bg-black text-center">
-                <div className="bg-dark-card p-4 rounded w-full mb-4">
-                  <h2 className="text-lg text-gray-300 text-left font-medium">
-                    Claim your Inverter Emissions
+            {showFirstCollider ? (
+              <div className="text-center mt-20">
+                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
+                  <h2 className="text-xl text-gray-300 text-left font-medium">
+                    Collider
                   </h2>
+                  <button
+                    className="text-sm text-accent-primary hover:text-gray-300"
+                    onClick={() => setShowFirstCollider(false)}
+                  >
+                    Switch to Inverter
+                  </button>
                 </div>
-                <InvertCollider
+                <Collider
                   wallet={wallet}
                   antiBalance={antiBalance}
                   proBalance={proBalance}
@@ -344,33 +315,66 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   photonBalance={photonBalance}
                   disabled={!wallet.connected}
                   BASE_URL={BASE_URL}
-                  onClaimSubmitted={handleClaimSubmitted}
+                  onVoteSubmitted={handleVoteSubmitted}
                   clearFields={clearFields}
                 />
-                <p
-                  className={`mt-0 text-sm ${
-                    wallet.connected
-                      ? "text-gray-300"
-                      : "text-red-500 animate-pulse"
-                  }`}
-                >
-                  {wallet.connected ? "" : "Connect your wallet to enable voting"}
-                </p>
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="mt-20">
+                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
+                  <h2 className="text-xl text-gray-300 text-left font-medium">
+                    Inverter
+                  </h2>
+                  <button
+                    className="text-sm text-accent-primary hover:text-gray-300"
+                    onClick={() => setShowFirstCollider(true)}
+                  >
+                    Switch to Collider
+                  </button>
+                </div>
+                <div className="border border-gray-800 rounded-b-lg p-5 bg-black text-center">
+                  <div className="bg-dark-card p-4 rounded w-full mb-4 flex flex-row justify-center">
+                    <h2 className="text-lg text-gray-300 text-left font-medium">
+                      Claim your Collider Emissions
+                    </h2>
+                  </div>
+                  <InvertCollider
+                    wallet={wallet}
+                    antiBalance={antiBalance}
+                    proBalance={proBalance}
+                    baryonBalance={baryonBalance}
+                    photonBalance={photonBalance}
+                    disabled={!wallet.connected}
+                    BASE_URL={BASE_URL}
+                    onClaimSubmitted={handleClaimSubmitted}
+                    clearFields={clearFields}
+                  />
+                  <p
+                    className={`mt-0 text-sm ${
+                      wallet.connected
+                        ? "text-gray-300"
+                        : "text-red-500 animate-pulse"
+                    }`}
+                  >
+                    {wallet.connected
+                      ? ""
+                      : "Connect your wallet to enable voting"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
 
-        <div className="xl:col-span-3 mx-2 md:mx-0">
-          <Dashboard
-            votersData={votersData}
-            tokensData={tokensData}
-            votesOverTime={votesOverTime}
-            voterDistribution={voterDistribution}
-            totalDistribution={totalDistribution}
-          />
+          <div className="xl:col-span-3 mx-2 md:mx-0">
+            <Dashboard
+              votersData={votersData}
+              tokensData={tokensData}
+              votesOverTime={votesOverTime}
+              voterDistribution={voterDistribution}
+              totalDistribution={totalDistribution}
+            />
+          </div>
         </div>
-      </div>
 
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">

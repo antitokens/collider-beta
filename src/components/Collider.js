@@ -27,6 +27,9 @@ const Collider = ({
   const [userDistribution, setUserDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
+  const [dollarBet, setDollarbet] = useState(0);
+  const [antiData, setAntiData] = useState(null);
+  const [proData, setProData] = useState(null);
   const [splitPercentage, setSplitPercentage] = useState(50);
   const sliderRef = useRef(null);
   // Clear input fields when `clearFields` changes
@@ -38,6 +41,44 @@ const Collider = ({
       setPhotonTokens(0);
     }
   }, [clearFields]);
+
+  useEffect(() => {
+    const fetchTokenData = async () => {
+      try {
+        // Fetch data for both tokens
+        const [antiResponse, proResponse] = await Promise.all([
+          fetch(
+            "https://api.dexscreener.com/latest/dex/tokens/HB8KrN7Bb3iLWUPsozp67kS4gxtbA4W5QJX4wKPvpump"
+          ),
+          fetch(
+            "https://api.dexscreener.com/latest/dex/tokens/CWFa2nxUMf5d1WwKtG9FS9kjUKGwKXWSjH8hFdWspump"
+          ),
+        ]);
+
+        const antiData = await antiResponse.json();
+        const proData = await proResponse.json();
+
+        // Update state for $ANTI and $PRO
+        if (antiData.pairs && antiData.pairs[0]) {
+          setAntiData({
+            priceUsd: parseFloat(antiData.pairs[0].priceUsd).toFixed(5),
+            marketCap: antiData.pairs[0].fdv,
+          });
+        }
+
+        if (proData.pairs && proData.pairs[0]) {
+          setProData({
+            priceUsd: parseFloat(proData.pairs[0].priceUsd).toFixed(5),
+            marketCap: proData.pairs[0].fdv,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching token data:", error);
+      }
+    };
+
+    fetchTokenData();
+  }, []);
 
   // Prepare line chart data
   useEffect(() => {
@@ -67,8 +108,8 @@ const Collider = ({
           {
             label: "Emitter",
             data: userDistribution.curve.map((item) => item.value),
-            borderColor: "#a6a6a6",
-            backgroundColor: "#a6a6a6", // Match the legend marker color
+            borderColor: "#ff5f3b",
+            backgroundColor: "#ff5f3b", // Match the legend marker color
             pointStyle: "line",
           },
         ],
@@ -141,7 +182,7 @@ const Collider = ({
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color: "#a6a6a6",
+                color: "#ff5f3b",
               },
               grid: {
                 color: antiTokens !== proTokens ? "#D3D3D322" : "D3D3D300",
@@ -253,37 +294,40 @@ const Collider = ({
   const updateSplit = (total, percentage) => {
     const pro = Math.floor((percentage / 100) * total);
     const anti = total - pro;
-
+    if (!proData || !antiData) {
+      return;
+    }
+    setDollarbet(pro * proData.priceUsd + anti * antiData.priceUsd);
     setProTokens(pro);
     setAntiTokens(anti);
-  }
+  };
 
   const handleTotalInvestChange = (e) => {
     const total = Number(e.target.value);
     setTotalInvest(total);
     updateSplit(total, splitPercentage);
-  }
+  };
 
   const handlePercentageChange = (e) => {
     const percentage = e.target.value;
     setSplitPercentage(percentage);
     updateSplit(totalInvest, percentage);
     handleSliderInput(percentage);
-  }
+  };
 
   const handleProTokensChange = (e) => {
     const pro = Number(e.target.value);
     const newTotal = pro + antiTokens;
-    udpateForm(newTotal, pro, antiTokens);
-  }
+    updateForm(newTotal, pro, antiTokens);
+  };
 
   const handleAntiTokensChange = (e) => {
     const anti = Number(e.target.value);
     const newTotal = proTokens + anti;
-    udpateForm(newTotal, proTokens, anti);
-  }
+    updateForm(newTotal, proTokens, anti);
+  };
 
-  const udpateForm = (total, pro, anti) => {
+  const updateForm = (total, pro, anti) => {
     setTotalInvest(total);
     setProTokens(pro);
     setAntiTokens(anti);
@@ -292,14 +336,13 @@ const Collider = ({
     if (total != 0) {
       percentage = Math.floor((pro / total) * 100);
     }
-
     setSplitPercentage(percentage);
     handleSliderInput(percentage);
-  }
+  };
 
   const handleSliderInput = (value) => {
     sliderRef.current.style.background = `linear-gradient(to right, var(--accent-secondary) ${value}%, var(--accent-primary) ${value}%)`;
-  }
+  };
 
   useEffect(() => {
     if (sliderRef.current) {
@@ -316,17 +359,85 @@ const Collider = ({
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
       <div className="bg-dark-card p-4 rounded w-full mb-4">
-        <h2 className="text-lg text-gray-300 text-left font-medium">
-          Do you think Dev should launch a token on Base?
+        <h2 className="text-2xl text-gray-200 text-left font-medium">
+          Should Dev launch a token on Base?
         </h2>
+        <div className="flex flex-row justify-between">
+          <div className="text-[12px] text-gray-500 text-left">
+            <span className="relative group">
+              <span className="cursor-pointer">
+                &#9432;
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-1/4 lg:translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  Poll opening date & time
+                </span>
+              </span>
+            </span>{" "}
+            &nbsp;Open:{" "}
+            <span className="font-sfmono text-gray-400 text-[11px]">
+              10.12.2024 16:00 UTC
+            </span>{" "}
+          </div>
+          <div className="text-[12px] text-gray-500 text-right">
+            Close:{" "}
+            <span className="font-sfmono text-gray-400 text-[11px]">
+              12.12.2024 21:00 UTC
+            </span>{" "}
+            &nbsp;
+            <span className="relative group">
+              <span className="cursor-pointer">
+                &#9432;
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/4 lg:translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  Poll closing date & time
+                </span>
+              </span>
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-row justify-between">
+          <div className="text-[12px] text-gray-500 text-left">
+            <span className="relative group">
+              <span className="cursor-pointer">&#9432;</span>
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-1/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Total amount of ANTI & PRO in the prediction pool
+              </span>
+            </span>{" "}
+            &nbsp;Total Pool:{" "}
+            <span className="font-sfmono text-accent-primary text-[12px] text-opacity-80">
+              20.3m
+            </span>
+            {"/"}
+            <span className="font-sfmono text-accent-secondary text-[12px] text-opacity-80">
+              21.0m
+            </span>
+          </div>
+          <div className="text-[12px] text-gray-500 text-right">
+            Pool Ratio:{" "}
+            <span className="font-sfmono text-gray-400 text-[11px]">0.987</span>{" "}
+            &nbsp;
+            <span className="relative group">
+              <span className="cursor-pointer">
+                &#9432;
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  Ratio ANTI:PRO in the prediction pool
+                </span>
+              </span>
+            </span>
+          </div>
+        </div>
       </div>
       {/* Token Input Fields */}
-      <div className="flex flex-col items-start bg-dark-card p-4 rounded w-full">
-        <div className="text-sm text-gray-300">
-          Bet
-        </div>
-        <div className="w-full space-y-2 mt-8">
-          <div className="text-left text-sm text-gray-500">Total Invest</div>
+      <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full">
+        <div className="text-lg text-gray-300">Predict</div>
+        <div className="w-full space-y-2 mt-4">
+          <div className="flex flex-row justify-between text-sm text-gray-500">
+            <div>Total Tokens in Stake &nbsp;</div>
+            <div>
+              USD Value:{" "}
+              <span className="text-[12px] text-white font-sfmono">
+                ${dollarBet.toFixed(2)}
+              </span>
+            </div>
+          </div>
           <input
             id="totalInvest"
             type="number"
@@ -335,14 +446,27 @@ const Collider = ({
             onChange={handleTotalInvestChange}
             className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
           />
-          <input className="w-full" ref={sliderRef} onInput={handleSliderInput} type="range" min="0" max="100" value={splitPercentage} onChange={handlePercentageChange}/>
-          <div className="flex flex-row items-center justify-between text-xs">
-            <span className="text-accent-secondary">{splitPercentage}%</span>
-            <span className="text-accent-primary">{100 - splitPercentage}%</span>
+          <input
+            className="w-full"
+            ref={sliderRef}
+            onInput={handleSliderInput}
+            type="range"
+            min="0"
+            max="100"
+            value={splitPercentage}
+            onChange={handlePercentageChange}
+          />
+          <div className="flex flex-row items-center justify-between text-[14px]">
+            <span className="text-accent-secondary font-sfmono">
+              {splitPercentage}%
+            </span>
+            <span className="text-accent-primary font-sfmono">
+              {100 - splitPercentage}%
+            </span>
           </div>
         </div>
         <div className="w-full flex gap-2 sm:gap-4 mt-4 justify-between">
-          <div className="flex flex-col items-start gap-2 w-full">
+          <div className="flex flex-col items-start gap-0 w-full">
             <div className="flex items-center bg-black px-3 py-2 rounded gap-3 w-full">
               <label
                 htmlFor="proTokens"
@@ -360,23 +484,23 @@ const Collider = ({
                 onChange={handleProTokensChange}
                 onFocus={(e) => e.target.select()}
                 placeholder="0"
-                className="w-full text-gray-700 font-sfmono bg-black text-white text-sm"
+                className="w-full font-sfmono bg-black text-white text-sm"
               />
             </div>
-            <p className="text-sm font-sfmono text-white">
+            <div className="text-xs">
               <img
                 src={`${BASE_URL}/assets/pro.png`}
                 alt="pro-logo"
-                className="w-3 h-3 mt-[-2px] mr-1 inline-block "
+                className="w-3 h-3 mr-1 mt-[-2.5px] inline-block"
               />
-              <span className="text-accent-secondary">BAL: </span>
-              <span className="font-sfmono text-gray-200 text-sm">
-                {Number(antiBalance).toFixed(0)}
+              <span className="text-gray-300">MAX</span>:&nbsp;
+              <span className="font-sfmono text-accent-secondary">
+                {Number(proBalance).toFixed(0)}
               </span>
-            </p>
+            </div>
           </div>
 
-          <div className="flex flex-col items-end gap-2 w-full">
+          <div className="flex flex-col items-end gap-0 w-full">
             <div className="flex items-center bg-black px-3 py-2 rounded gap-3 w-full">
               <label
                 htmlFor="antiTokens"
@@ -394,28 +518,46 @@ const Collider = ({
                 onChange={handleAntiTokensChange}
                 onFocus={(e) => e.target.select()}
                 placeholder="0"
-                className="w-full text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm"
+                className="w-full font-sfmono bg-black text-white text-xs sm:text-sm"
               />
             </div>
-            <p className="text-sm font-sfmono">
+            <div className="text-xs">
               <img
                 src={`${BASE_URL}/assets/anti.png`}
                 alt="anti-logo"
-                className="w-3 h-3 mt-[-2px] mr-1 inline-block "
+                className="w-3 h-3 mr-1 mt-[-2.5px] inline-block "
               />
-              <span className="text-accent-primary">BAL: </span>
-              <span className="font-sfmono text-gray-200 text-sm">
+              <span className="text-gray-300">MAX</span>:&nbsp;
+              <span className="font-sfmono text-accent-primary">
                 {Number(antiBalance).toFixed(0)}
               </span>
-            </p>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6 2L6 14L2 10" stroke="rgb(107, 114, 128)" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
-          <path d="M10 14L10 2L14 6" stroke="rgb(107, 114, 128)" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M6 2L6 14L2 10"
+            stroke="rgb(107, 114, 128)"
+            strokeWidth="2"
+            strokeLinecap="square"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M10 14L10 2L14 6"
+            stroke="rgb(107, 114, 128)"
+            strokeWidth="2"
+            strokeLinecap="square"
+            strokeLinejoin="round"
+          />
         </svg>
       </div>
 
@@ -427,7 +569,7 @@ const Collider = ({
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <label
                   htmlFor="photonTokens"
-                  className="text-accent-secondary font-medium text-xs sm:text-sm"
+                  className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
                   $tPHOTON
                 </label>
@@ -439,27 +581,30 @@ const Collider = ({
                   value={photonTokens || "-"}
                   disabled={true}
                   placeholder="-"
-                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
+                  className="text-white font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
-              <p className="text-sm flex flex-row mt-2">
+              <div className="text-sm flex flex-row items-center">
                 <img
                   src={`${BASE_URL}/assets/photon.png`}
                   alt="photon-logo"
-                  className="w-5 h-5 inline-block"
+                  className="w-3 h-3 inline-block mr-1"
                 />
-                <span className="font-sfmono text-xs sm:text-sm text-white">
-                  <span className="text-accent-secondary text-semibold">BAL</span>: {Number(photonBalance).toFixed(2)}
+                <span className="text-xs">
+                  <span className="text-gray-300 text-semibold">BAL</span>:{" "}
+                  <span className="font-sfmono text-white">
+                    {Number(photonBalance).toFixed(2)}
+                  </span>
                 </span>
-              </p>
+              </div>
             </div>
 
             <div className="flex flex-col items-end w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <label
                   htmlFor="baryonTokens"
-                  className="text-accent-orange font-medium text-xs sm:text-sm"
+                  className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
                   $tBARYON
                 </label>
@@ -471,20 +616,23 @@ const Collider = ({
                   value={baryonTokens > 0 ? baryonTokens : "-"}
                   disabled={true}
                   placeholder="-"
-                  className="w-full text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm disabled:cursor-not-allowed"
+                  className="w-full text-white font-sfmono bg-black text-white text-xs sm:text-sm disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
-              <p className="text-sm flex flex-row items-center mt-2">
+              <div className="text-sm flex flex-row items-center">
                 <img
                   src={`${BASE_URL}/assets/baryon.png`}
                   alt="baryon-logo"
-                  className="w-5 h-5 inline-block"
+                  className="w-3 h-3 inline-block mr-1"
                 />
-                <span className="font-sfmono text-sm text-white">
-                  <span className="text-accent-orange text-semibold">BAL</span>: {Number(baryonBalance).toFixed(2)}
+                <span className="text-xs">
+                  <span className="text-gray-300 text-semibold">BAL</span>:{" "}
+                  <span className="font-sfmono text-white">
+                    {Number(baryonBalance).toFixed(2)}
+                  </span>
                 </span>
-              </p>
+              </div>
             </div>
           </div>
           {lineChartData && (
@@ -508,9 +656,7 @@ const Collider = ({
       <ToastContainer />
       <p
         className={`mt-0 text-sm ${
-          wallet.connected
-            ? "text-gray-300"
-            : "text-red-500 animate-pulse"
+          wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"
         }`}
       >
         {wallet.connected ? "" : "Connect your wallet to enable voting"}
