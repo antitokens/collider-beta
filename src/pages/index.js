@@ -380,7 +380,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             Join the future of prediction markets
           </p>
           <button
-            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-lg text-lg font-semibold"
+            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-full text-lg font-semibold"
             onClick={() => setShowBuyTokensModal(true)}
           >
             Buy Tokens

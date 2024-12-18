@@ -273,23 +273,28 @@ const Collider = ({
 
   const handleProTokensChange = (e) => {
     const pro = Number(e.target.value);
-    setProTokens(pro);
-    setAntiTokens(totalInvest - pro);
-
-    const percentage = Math.floor((pro / totalInvest) * 100);
-    setSplitPercentage(percentage);
-    handleSliderInput(percentage);
+    const newTotal = pro + antiTokens;
+    udpateForm(newTotal, pro, antiTokens);
   }
 
   const handleAntiTokensChange = (e) => {
     const anti = Number(e.target.value);
+    const newTotal = proTokens + anti;
+    udpateForm(newTotal, proTokens, anti);
+  }
 
+  const udpateForm = (total, pro, anti) => {
+    setTotalInvest(total);
+    setProTokens(pro);
     setAntiTokens(anti);
-    setProTokens(totalInvest - anti);
 
-    const percentage = Math.floor((anti / totalInvest) * 100);
-    setSplitPercentage(100 - percentage);
-    handleSliderInput(100 - percentage);
+    let percentage = 50;
+    if (total != 0) {
+      percentage = Math.floor((pro / total) * 100);
+    }
+
+    setSplitPercentage(percentage);
+    handleSliderInput(percentage);
   }
 
   const handleSliderInput = (value) => {
@@ -417,10 +422,7 @@ const Collider = ({
       {/* User Distribution */}
       {userDistribution && (
         <div className="bg-dark-card p-4 rounded w-full">
-          {lineChartData && (
-            <Line data={lineChartData} options={lineChartData.options} />
-          )}
-          <div className="mt-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
+          <div className="mb-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
             <div className="flex flex-col items-start justify-between w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <label
@@ -435,8 +437,9 @@ const Collider = ({
                   type="number"
                   min="0"
                   value={photonTokens || "-"}
+                  disabled={true}
                   placeholder="-"
-                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
@@ -466,8 +469,9 @@ const Collider = ({
                   type="number"
                   min="0"
                   value={baryonTokens > 0 ? baryonTokens : "-"}
+                  disabled={true}
                   placeholder="-"
-                  className="w-full text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm"
+                  className="w-full text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
@@ -483,6 +487,9 @@ const Collider = ({
               </p>
             </div>
           </div>
+          {lineChartData && (
+            <Line data={lineChartData} options={lineChartData.options} />
+          )}
         </div>
       )}
 

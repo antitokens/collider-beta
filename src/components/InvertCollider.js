@@ -334,10 +334,7 @@ const InvertCollider = ({
       {/* Token Output Fields */}
       {userDistribution && (
         <div className="bg-dark-card p-4 rounded w-full">
-          {lineChartData && (
-            <Line data={lineChartData} options={lineChartData.options} />
-          )}
-          <div className="mt-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
+          <div className="mb-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
             <div className="flex flex-col items-start justify-between w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <label
@@ -351,9 +348,10 @@ const InvertCollider = ({
                   id="proTokens"
                   type="number"
                   min="0"
+                  disabled={true}
                   value={proTokens > 0 ? proTokens : "-"}
                   placeholder="-"
-                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
@@ -385,7 +383,8 @@ const InvertCollider = ({
                   min="0"
                   value={antiTokens > 0 ? antiTokens : "-"}
                   placeholder="-"
-                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+                  disabled={true}
+                  className="text-gray-700 font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
@@ -401,8 +400,10 @@ const InvertCollider = ({
                 </span>
               </p>
             </div>
-
           </div>
+          {lineChartData && (
+            <Line data={lineChartData} options={lineChartData.options} />
+          )}
         </div>
       )}
       {/* Submit Button */}
