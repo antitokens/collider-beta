@@ -359,8 +359,8 @@ const Collider = ({
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
       <div className="bg-dark-card p-4 rounded w-full mb-4">
-        <h2 className="text-2xl text-gray-200 text-left font-medium">
-          Should Dev launch a token on Base?
+        <h2 className="text-2xl text-gray-200 text-center font-medium mb-2">
+          Will BTC hit $1m in 2025?
         </h2>
         <div className="flex flex-row justify-between">
           <div className="text-[12px] text-gray-500 text-left">
