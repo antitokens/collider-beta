@@ -495,7 +495,7 @@ const Collider = ({
                 alt="pro-logo"
                 className="w-3 h-3 mr-1 mt-[-2.5px] inline-block opacity-75"
               />
-              <span className="text-gray-500">MAX</span>:&nbsp;
+              <span className="text-gray-500">MAX:</span>&nbsp;
               <span className="font-sfmono text-accent-secondary text-opacity-75">
                 {Number(proBalance)
                   .toFixed(0)
@@ -532,7 +532,7 @@ const Collider = ({
                 alt="anti-logo"
                 className="w-3 h-3 mr-1 mt-[-2.5px] inline-block opacity-75"
               />
-              <span className="text-gray-500">MAX</span>:&nbsp;
+              <span className="text-gray-500">MAX:</span>&nbsp;
               <span className="font-sfmono text-accent-primary text-opacity-75">
                 {Number(antiBalance)
                   .toFixed(0)
@@ -608,7 +608,7 @@ const Collider = ({
                   className="w-3 h-3 inline-block mr-1 opacity-75"
                 />
                 <span className="text-xs">
-                  <span className="text-gray-500 text-semibold">BAL</span>:{" "}
+                  <span className="text-gray-500 text-semibold">BAL:</span>{" "}
                   <span className="font-sfmono text-gray-400">
                     {Number(photonBalance)
                       .toFixed(2)
@@ -646,7 +646,7 @@ const Collider = ({
                   className="w-3 h-3 inline-block mr-1 opacity-75"
                 />
                 <span className="text-xs">
-                  <span className="text-gray-500 text-semibold">BAL</span>:{" "}
+                  <span className="text-gray-500 text-semibold">BAL:</span>{" "}
                   <span className="font-sfmono text-gray-400">
                     {Number(baryonBalance)
                       .toFixed(2)
