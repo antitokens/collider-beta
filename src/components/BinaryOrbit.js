@@ -1,6 +1,12 @@
 import React, { useRef, useEffect } from "react";
 
-const BinaryOrbit = ({ size, orbitRadius, particleRadius, padding, invert }) => {
+const BinaryOrbit = ({
+  size,
+  orbitRadius,
+  particleRadius,
+  padding,
+  invert,
+}) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -35,14 +41,14 @@ const BinaryOrbit = ({ size, orbitRadius, particleRadius, padding, invert }) => 
       // Draw first particle
       ctx.beginPath();
       ctx.arc(x1, y1, particleRadius, 0, Math.PI * 2);
-      ctx.fillStyle = "#FF5733"; // Orange
+      ctx.fillStyle = "#D13800"; // Orange
       ctx.fill();
       ctx.closePath();
 
       // Draw second particle
       ctx.beginPath();
       ctx.arc(x2, y2, particleRadius, 0, Math.PI * 2);
-      ctx.fillStyle = "#33A1FF"; // Blue
+      ctx.fillStyle = "#00CC8E"; // Green
       ctx.fill();
       ctx.closePath();
 

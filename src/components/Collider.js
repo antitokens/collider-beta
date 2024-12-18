@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { recordVote, hasVoted } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
+import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer, toast } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import { Pie, Bar, Line } from "react-chartjs-2";
@@ -402,12 +403,12 @@ const Collider = ({
               </span>
             </span>{" "}
             &nbsp;Total Pool:{" "}
-            <span className="font-sfmono text-accent-primary text-[12px] text-opacity-80">
-              20.3m
-            </span>
-            {"/"}
             <span className="font-sfmono text-accent-secondary text-[12px] text-opacity-80">
               21.0m
+            </span>
+            {"/"}
+            <span className="font-sfmono text-accent-primary text-[12px] text-opacity-80">
+              20.3m
             </span>
           </div>
           <div className="text-[12px] text-gray-500 text-right">
@@ -492,10 +493,10 @@ const Collider = ({
               <img
                 src={`${BASE_URL}/assets/pro.png`}
                 alt="pro-logo"
-                className="w-3 h-3 mr-1 mt-[-2.5px] inline-block"
+                className="w-3 h-3 mr-1 mt-[-2.5px] inline-block opacity-75"
               />
-              <span className="text-gray-300">MAX</span>:&nbsp;
-              <span className="font-sfmono text-accent-secondary">
+              <span className="text-gray-500">MAX</span>:&nbsp;
+              <span className="font-sfmono text-accent-secondary text-opacity-75">
                 {Number(proBalance)
                   .toFixed(0)
                   .toString()
@@ -529,10 +530,10 @@ const Collider = ({
               <img
                 src={`${BASE_URL}/assets/anti.png`}
                 alt="anti-logo"
-                className="w-3 h-3 mr-1 mt-[-2.5px] inline-block "
+                className="w-3 h-3 mr-1 mt-[-2.5px] inline-block opacity-75"
               />
-              <span className="text-gray-300">MAX</span>:&nbsp;
-              <span className="font-sfmono text-accent-primary">
+              <span className="text-gray-500">MAX</span>:&nbsp;
+              <span className="font-sfmono text-accent-primary text-opacity-75">
                 {Number(antiBalance)
                   .toFixed(0)
                   .toString()
@@ -544,6 +545,7 @@ const Collider = ({
       </div>
 
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
+        {/*
         <svg
           width="13"
           height="13"
@@ -565,7 +567,14 @@ const Collider = ({
             strokeLinecap="square"
             strokeLinejoin="round"
           />
-        </svg>
+          */}
+        <BinaryOrbit
+          size={25}
+          orbitRadius={10}
+          particleRadius={3}
+          padding={0}
+          invert={false}
+        />
       </div>
 
       {/* User Distribution */}
@@ -596,11 +605,11 @@ const Collider = ({
                 <img
                   src={`${BASE_URL}/assets/photon.png`}
                   alt="photon-logo"
-                  className="w-3 h-3 inline-block mr-1"
+                  className="w-3 h-3 inline-block mr-1 opacity-75"
                 />
                 <span className="text-xs">
-                  <span className="text-gray-300 text-semibold">BAL</span>:{" "}
-                  <span className="font-sfmono text-white">
+                  <span className="text-gray-500 text-semibold">BAL</span>:{" "}
+                  <span className="font-sfmono text-gray-400">
                     {Number(photonBalance)
                       .toFixed(2)
                       .toString()
@@ -634,11 +643,11 @@ const Collider = ({
                 <img
                   src={`${BASE_URL}/assets/baryon.png`}
                   alt="baryon-logo"
-                  className="w-3 h-3 inline-block mr-1"
+                  className="w-3 h-3 inline-block mr-1 opacity-75"
                 />
                 <span className="text-xs">
-                  <span className="text-gray-300 text-semibold">BAL</span>:{" "}
-                  <span className="font-sfmono text-white">
+                  <span className="text-gray-500 text-semibold">BAL</span>:{" "}
+                  <span className="font-sfmono text-gray-400">
                     {Number(baryonBalance)
                       .toFixed(2)
                       .toString()

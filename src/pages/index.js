@@ -29,7 +29,6 @@ import {
 } from "../utils/solana";
 import { getKVBalance } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
-import BinaryOrbit from "../components/BinaryOrbit";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 const Home = ({ BASE_URL }) => {
@@ -304,7 +303,32 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     className="text-sm text-accent-primary hover:text-gray-300"
                     onClick={() => setShowFirstCollider(false)}
                   >
-                    Switch to Inverter
+                    <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
+                      <div className="mr-1">Switch to Inverter</div>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="rotate-90 hover:rotate-180 transition-transform duration-200 ease-in-out"
+                      >
+                        <path
+                          d="M6 2L6 14L2 10"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="square"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M10 14L10 2L14 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="square"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
                   </button>
                 </div>
                 <Collider
@@ -329,7 +353,32 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     className="text-sm text-accent-primary hover:text-gray-300"
                     onClick={() => setShowFirstCollider(true)}
                   >
-                    Switch to Collider
+                    <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
+                      <div className="mr-1">Switch to Collider</div>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="rotate-90 hover:rotate-180 transition-transform duration-200 ease-in-out"
+                      >
+                        <path
+                          d="M6 2L6 14L2 10"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="square"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M10 14L10 2L14 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="square"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
                   </button>
                 </div>
                 <div className="border border-gray-800 rounded-b-lg p-5 bg-black text-center">

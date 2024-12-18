@@ -37,7 +37,9 @@ const TokenBalance = (trigger) => {
   return (
     <div className="mt-2 mb-2">
       <button
-        onClick={() => setDropdownOpen(!dropdownOpen)}
+        onClick={() => setDropdownOpen(true)}
+        onMouseEnter={() => setDropdownOpen(!dropdownOpen)}
+        onMouseLeave={() => setDropdownOpen(false)}
         className={`flex justify-center flex-nowrap text-nowrap gap-2 border border-accent-primary/50 w-full bg-transparent text-accent-primary px-3 py-[8px] rounded-3xl text-sm hover:text-gray-300 hover:border-gray-300 ${
           dropdownOpen ? "bg-gray-500" : ""
         }`}

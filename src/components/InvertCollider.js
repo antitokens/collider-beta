@@ -3,6 +3,7 @@ import { recordClaim, hasVoted } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import { ToastContainer, toast } from "react-toastify";
 import { Chart, registerables } from "chart.js";
+import BinaryOrbit from "../components/BinaryOrbit";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
 import { color } from "chart.js/helpers";
@@ -274,14 +275,14 @@ const InvertCollider = ({
               className="font-sfmono bg-black text-white text-xs sm:text-sm w-full"
             />
           </div>
-          <div className="text-xs text-gray-300">
+          <div className="text-xs text-gray-500">
             <img
               src={`${BASE_URL}/assets/photon.png`}
               alt="photon-logo"
-              className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+              className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
             />
             MAX:&nbsp;
-            <span className="font-sfmono text-white">
+            <span className="font-sfmono text-gray-400">
               {Number(photonBalance)
                 .toFixed(2)
                 .toString()
@@ -311,14 +312,14 @@ const InvertCollider = ({
               className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full"
             />
           </div>
-          <div className="text-xs text-gray-300">
+          <div className="text-xs text-gray-500">
             <img
               src={`${BASE_URL}/assets/baryon.png`}
               alt="baryon-logo"
-              className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+              className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
             />
             MAX:&nbsp;
-            <span className="font-sfmono text-white">
+            <span className="font-sfmono text-gray-400">
               {Number(baryonBalance)
                 .toFixed(2)
                 .toString()
@@ -329,7 +330,7 @@ const InvertCollider = ({
       </div>
 
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
-        <svg
+        {/*<svg
           width="13"
           height="13"
           viewBox="0 0 16 16"
@@ -350,7 +351,14 @@ const InvertCollider = ({
             strokeLinecap="square"
             strokeLinejoin="round"
           />
-        </svg>
+        </svg>*/}
+        <BinaryOrbit
+          size={25}
+          orbitRadius={10}
+          particleRadius={3}
+          padding={0}
+          invert={true}
+        />
       </div>
 
       {/* Token Output Fields */}
@@ -377,14 +385,14 @@ const InvertCollider = ({
                   readOnly
                 />
               </div>
-              <div className="text-xs text-gray-300">
+              <div className="text-xs text-gray-500">
                 <img
                   src={`${BASE_URL}/assets/pro.png`}
                   alt="pro-logo"
-                  className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+                  className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
                 />
                 BAL:{" "}
-                <span className="font-sfmono text-accent-secondary">
+                <span className="font-sfmono text-accent-secondary text-opacity-75">
                   {Number(proBalance)
                     .toFixed(0)
                     .toString()
@@ -413,14 +421,14 @@ const InvertCollider = ({
                   readOnly
                 />
               </div>
-              <div className="text-xs text-gray-300">
+              <div className="text-xs text-gray-500">
                 <img
                   src={`${BASE_URL}/assets/anti.png`}
                   alt="anti-logo"
-                  className="w-3 h-3 mt-[-2px] mr-1 inline-block"
+                  className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
                 />
                 BAL:{" "}
-                <span className="font-sfmono text-accent-primary">
+                <span className="font-sfmono text-accent-primary text-opacity-75">
                   {Number(antiBalance)
                     .toFixed(0)
                     .toString()
