@@ -282,7 +282,10 @@ const InvertCollider = ({
             />
             MAX:&nbsp;
             <span className="font-sfmono text-white">
-              {Number(photonBalance).toFixed(2)}
+              {Number(photonBalance)
+                .toFixed(2)
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
             </span>
           </div>
         </div>
@@ -316,7 +319,10 @@ const InvertCollider = ({
             />
             MAX:&nbsp;
             <span className="font-sfmono text-white">
-              {Number(baryonBalance).toFixed(2)}
+              {Number(baryonBalance)
+                .toFixed(2)
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
             </span>
           </div>
         </div>
@@ -379,7 +385,10 @@ const InvertCollider = ({
                 />
                 BAL:{" "}
                 <span className="font-sfmono text-accent-secondary">
-                  {Number(proBalance).toFixed(0)}
+                  {Number(proBalance)
+                    .toFixed(0)
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                 </span>
               </div>
             </div>
@@ -412,7 +421,10 @@ const InvertCollider = ({
                 />
                 BAL:{" "}
                 <span className="font-sfmono text-accent-primary">
-                  {Number(antiBalance).toFixed(0)}
+                  {Number(antiBalance)
+                    .toFixed(0)
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                 </span>
               </div>
             </div>

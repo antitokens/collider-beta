@@ -434,7 +434,8 @@ const Collider = ({
             <div>
               USD Value:{" "}
               <span className="text-[12px] text-white font-sfmono">
-                ${dollarBet.toFixed(2)}
+                <span className="text-gray-400">$</span>
+                {dollarBet.toFixed(2)}
               </span>
             </div>
           </div>
@@ -495,7 +496,10 @@ const Collider = ({
               />
               <span className="text-gray-300">MAX</span>:&nbsp;
               <span className="font-sfmono text-accent-secondary">
-                {Number(proBalance).toFixed(0)}
+                {Number(proBalance)
+                  .toFixed(0)
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </span>
             </div>
           </div>
@@ -529,7 +533,10 @@ const Collider = ({
               />
               <span className="text-gray-300">MAX</span>:&nbsp;
               <span className="font-sfmono text-accent-primary">
-                {Number(antiBalance).toFixed(0)}
+                {Number(antiBalance)
+                  .toFixed(0)
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </span>
             </div>
           </div>
@@ -594,7 +601,10 @@ const Collider = ({
                 <span className="text-xs">
                   <span className="text-gray-300 text-semibold">BAL</span>:{" "}
                   <span className="font-sfmono text-white">
-                    {Number(photonBalance).toFixed(2)}
+                    {Number(photonBalance)
+                      .toFixed(2)
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   </span>
                 </span>
               </div>
@@ -629,7 +639,10 @@ const Collider = ({
                 <span className="text-xs">
                   <span className="text-gray-300 text-semibold">BAL</span>:{" "}
                   <span className="font-sfmono text-white">
-                    {Number(baryonBalance).toFixed(2)}
+                    {Number(baryonBalance)
+                      .toFixed(2)
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   </span>
                 </span>
               </div>
