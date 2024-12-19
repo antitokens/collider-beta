@@ -52,9 +52,14 @@ const Dashboard = ({
             font: {
               family: "'SF Mono Round'",
             },
-            color: "#FFFFFFcc",
-            backgroundColor: "000000dd",
-            borderColor: "000000dd",
+            color: (context) => {
+              const datasetIndex = context.datasetIndex;
+              const dataIndex = context.dataIndex;
+              const colors = [["#00BB7A", "#C12F00", "#808080"]];
+              return colors[datasetIndex]?.[dataIndex] || "#ffffffcc";
+            },
+            backgroundColor: "000000",
+            borderColor: "000000",
             borderRadius: 3,
             anchor: "center",
             formatter: (value) => {
@@ -115,9 +120,14 @@ const Dashboard = ({
             font: {
               family: "'SF Mono Round'",
             },
-            color: "#FFFFFFcc",
-            backgroundColor: "000000dd",
-            borderColor: "000000dd",
+            color: (context) => {
+              const datasetIndex = context.datasetIndex;
+              const dataIndex = context.dataIndex;
+              const colors = [["#00BB7A", "#C12F00", "#808080"]];
+              return colors[datasetIndex]?.[dataIndex] || "#ffffffcc";
+            },
+            backgroundColor: "000000",
+            borderColor: "000000",
             borderRadius: 3,
             anchor: "center",
             formatter: (value, context) => {
@@ -336,8 +346,8 @@ const Dashboard = ({
           datalabels: {
             display: false,
           },
-          tooltip: { 
-            enabled: false 
+          tooltip: {
+            enabled: false,
           },
         },
         scales: {
@@ -387,8 +397,8 @@ const Dashboard = ({
           datalabels: {
             display: false,
           },
-          tooltip: { 
-            enabled: false 
+          tooltip: {
+            enabled: false,
           },
         },
         scales: {

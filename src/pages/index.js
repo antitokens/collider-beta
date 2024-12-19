@@ -144,15 +144,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const votersSeed = Math.random();
   const partSeed = Math.random();
   const votersData = {
-    total: 1e9 * votersSeed,
-    proVoters: 1e9 * partSeed * votersSeed,
-    antiVoters: 1e9 * (1 - partSeed - partSeed ** 2) * votersSeed,
+    total: 1e5 * votersSeed,
+    proVoters: 1e5 * partSeed * votersSeed,
+    antiVoters: 1e5 * (1 - partSeed - partSeed ** 2) * votersSeed,
   };
   const tokensSeed = Math.random();
   const tokensData = {
-    total: 999987675,
-    proTokens: 999987675 * Math.random() * tokensSeed,
-    antiTokens: 999987675 * Math.random() * (1 - tokensSeed),
+    total: 1e9,
+    proTokens: 1e9 * partSeed * tokensSeed,
+    antiTokens: 1e9 * (1 - partSeed - partSeed ** 2) * (1 - tokensSeed),
   };
   const votesSeed = Math.random();
   const votesOverTime = {

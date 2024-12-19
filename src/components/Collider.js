@@ -126,14 +126,17 @@ const Collider = ({
               },
               display: true,
               position: "top",
-              align: "end",
+              align: "center",
+            },
+            datalabels: {
+              display: false,
             },
           },
           layout: {
             padding: {
-              top: 20, // Add padding to avoid overlapping
-              left: 20,
-              right: 20,
+              top: 15, // Add padding to avoid overlapping
+              left: 5,
+              right: 5,
               bottom: 0,
             },
           },
@@ -145,7 +148,7 @@ const Collider = ({
                 text: "Your Normalised Vote", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
-                  size: 14,
+                  size: 12,
                   weight: "bold",
                 },
                 color: "#808080",
@@ -168,7 +171,7 @@ const Collider = ({
                 text: "Your Normalised Vote", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
-                  size: 14,
+                  size: 12,
                   weight: "bold",
                 },
                 color: "#808080",
@@ -195,12 +198,30 @@ const Collider = ({
                 text: "Emissions", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
-                  size: 14,
+                  size: 12,
                   weight: "bold",
                 },
                 color: "#808080",
               },
               grid: { color: "#D3D3D322" },
+              ticks: {
+                callback: function (value) {
+                  return ""; // Format y-axis
+                },
+              },
+            },
+            y2: {
+              position: "right",
+              title: {
+                display: true,
+                text: "Emissions", // Label for the X-axis
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 12,
+                  weight: "bold",
+                },
+                color: "#808080",
+              },
               ticks: {
                 callback: function (value) {
                   return ""; // Format y-axis
@@ -640,7 +661,9 @@ const Collider = ({
             </div>
           </div>
           {lineChartData && (
-            <Line data={lineChartData} options={lineChartData.options} />
+            <div className="w-full">
+              <Line data={lineChartData} options={lineChartData.options} />
+            </div>
           )}
         </div>
       )}
