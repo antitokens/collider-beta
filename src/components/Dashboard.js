@@ -154,7 +154,7 @@ const Dashboard = ({
             callbacks: {
               label: (context) => {
                 const value = context.raw;
-                return ` ${((value / votersData.total) * 100).toFixed(
+                return ` ${((value / tokensData.total) * 100).toFixed(
                   1
                 )}% (${value
                   .toFixed(0)
