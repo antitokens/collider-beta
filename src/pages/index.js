@@ -18,11 +18,7 @@ import {
 } from "@solana/wallet-adapter-wallets";
 import Collider from "../components/Collider";
 import InvertCollider from "../components/InvertCollider";
-import {
-  Stars,
-  ParticleCollision,
-  ParticleInversion,
-} from "../components/CollisionAnimation";
+import { Stars, ParticleCollision } from "../components/CollisionAnimation";
 import Navbar from "../components/TopNavbar";
 import Footer from "../components/BottomFooter";
 import Dashboard from "../components/Dashboard";
@@ -472,10 +468,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       {showAnimation && showFirstCollider && (
         <div className="w-screen h-screen fixed top-0 left-0 z-50">
           <ParticleCollision
-            width={2000}
-            height={1600}
+            width={1400}
+            height={1000}
             speed={1}
             maxLoops={0}
+            inverse={false}
             onComplete={() => {
               setShowAnimation(false);
             }}
@@ -484,11 +481,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       )}
       {showAnimation && !showFirstCollider && (
         <div className="w-screen h-screen fixed top-0 left-0 z-50">
-          <ParticleInversion
-            width={2000}
-            height={1600}
-            speed={2}
+          <ParticleCollision
+            width={1400}
+            height={1000}
+            speed={1}
             maxLoops={0}
+            inverse={true}
             onComplete={() => {
               setShowAnimation(false);
             }}
