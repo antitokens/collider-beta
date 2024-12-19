@@ -389,7 +389,7 @@ const Collider = ({
             <span className="relative group">
               <span className="cursor-pointer">
                 &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-1/4 lg:translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   Poll opening date & time
                 </span>
               </span>
@@ -419,7 +419,7 @@ const Collider = ({
           <div className="text-[12px] text-gray-500 text-left">
             <span className="relative group">
               <span className="cursor-pointer">&#9432;</span>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-1/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Total amount of PRO & ANTI in the prediction pool
               </span>
             </span>{" "}
