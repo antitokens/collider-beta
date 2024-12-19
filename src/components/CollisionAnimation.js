@@ -160,12 +160,12 @@ export const ParticleCollision = ({
 
     const resetAnimation = () => {
       particles = [
-        new Particle(-900, 0, 0, inverse ? "#4682B4" : "#D13800", 2.5, {
+        new Particle(-1200, 0, 0, inverse ? "#4682B4" : "#D13800", 2.5, {
           x: 6,
           y: 0,
           z: 0,
         }),
-        new Particle(900, 0, 0, inverse ? "#E8E8E8" : "#00CC8E", 2.5, {
+        new Particle(1200, 0, 0, inverse ? "#E8E8E8" : "#00CC8E", 2.5, {
           x: -6,
           y: 0,
           z: 0,

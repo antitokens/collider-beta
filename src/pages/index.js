@@ -28,6 +28,7 @@ import {
   PRO_TOKEN_MINT,
   getTokenBalance,
 } from "../utils/solana";
+import { useIsMobile } from "../utils/utils";
 import { getKVBalance } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -112,7 +113,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [clearFields, setClearFields] = useState(false);
   const [antiData, setAntiData] = useState(null);
   const [proData, setProData] = useState(null);
-  const [showAnimation, setShowAnimation] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(true);
+  const isMobile = useIsMobile();
 
   const voterDistribution = calculateDistribution(50, 30);
   const totalDistribution = calculateDistribution(60, 20);
@@ -465,28 +467,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         setIsVisible={setShowBuyTokensModal}
       />
       {/* Animation */}
-      {showAnimation && showFirstCollider && (
+      {showAnimation && (
         <div className="w-screen h-screen fixed top-0 left-0 z-50">
           <ParticleCollision
             width={1400}
             height={1000}
             speed={1}
-            maxLoops={0}
-            inverse={false}
-            onComplete={() => {
-              setShowAnimation(false);
-            }}
-          />
-        </div>
-      )}
-      {showAnimation && !showFirstCollider && (
-        <div className="w-screen h-screen fixed top-0 left-0 z-50">
-          <ParticleCollision
-            width={1400}
-            height={1000}
-            speed={1}
-            maxLoops={0}
-            inverse={true}
+            maxLoops={1}
+            inverse={!showFirstCollider}
             onComplete={() => {
               setShowAnimation(false);
             }}
