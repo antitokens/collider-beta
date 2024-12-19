@@ -113,7 +113,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [clearFields, setClearFields] = useState(false);
   const [antiData, setAntiData] = useState(null);
   const [proData, setProData] = useState(null);
-  const [showAnimation, setShowAnimation] = useState(true);
+  const [showAnimation, setShowAnimation] = useState(false);
   const isMobile = useIsMobile();
 
   const voterDistribution = calculateDistribution(50, 30);
