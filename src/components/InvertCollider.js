@@ -476,7 +476,7 @@ const InvertCollider = ({
                   antiData.priceUsd * Number(antiTokens) +
                   proData.priceUsd * Number(proTokens)
                 ).toFixed(2)
-              : "0"}
+              : "0.00"}
           </span>
         </div>
       </div>
