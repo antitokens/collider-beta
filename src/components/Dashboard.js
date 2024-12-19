@@ -52,7 +52,10 @@ const Dashboard = ({
             font: {
               family: "'SF Mono Round'",
             },
-            color: "#FFFFFFdd",
+            color: "#FFFFFFcc",
+            backgroundColor: "000000dd",
+            borderColor: "000000dd",
+            borderRadius: 3,
             anchor: "center",
             formatter: (value) => {
               return `${((value / votersData.total) * 100).toFixed(1)}%`;
@@ -112,7 +115,10 @@ const Dashboard = ({
             font: {
               family: "'SF Mono Round'",
             },
-            color: "#FFFFFFdd",
+            color: "#FFFFFFcc",
+            backgroundColor: "000000dd",
+            borderColor: "000000dd",
+            borderRadius: 3,
             anchor: "center",
             formatter: (value, context) => {
               return `${((value / tokensData.total) * 100).toFixed(1)}%`;
@@ -169,17 +175,7 @@ const Dashboard = ({
             },
           },
           datalabels: {
-            display: true,
-            font: {
-              family: "'SF Mono Round'",
-              size: 10,
-            },
-            color: "#FFFFFFdd",
-            anchor: "end",
-            align: "start",
-            formatter: (value, context) => {
-              return `${value}`;
-            },
+            display: false,
           },
           tooltip: {
             bodyFont: {
