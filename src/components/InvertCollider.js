@@ -88,6 +88,9 @@ const InvertCollider = ({
             datalabels: {
               display: false,
             },
+            tooltip: {
+              enabled: false,
+            },
           },
           layout: {
             padding: {
@@ -382,7 +385,9 @@ const InvertCollider = ({
                   type="number"
                   min="0"
                   disabled={true}
-                  value={proTokens || ""}
+                  value={
+                    Number(proTokens) > 0 ? Number(proTokens).toFixed(2) : ""
+                  }
                   placeholder="-"
                   className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
                   readOnly
@@ -410,7 +415,9 @@ const InvertCollider = ({
                   id="antiTokens"
                   type="number"
                   min="0"
-                  value={antiTokens || ""}
+                  value={
+                    Number(antiTokens) > 0 ? Number(antiTokens).toFixed(2) : ""
+                  }
                   placeholder="-"
                   disabled={true}
                   className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed text-right"

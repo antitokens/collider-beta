@@ -460,7 +460,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays the percentage of votes cast for PRO and ANTI tokens,
+                Displays the percentage of votes cast as PRO & ANTI tokens,
                 along with uncast votes.
               </span>
             </div>
@@ -496,8 +496,8 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Shows the distribution of PRO and ANTI tokens in the system,
-                along with unused tokens.
+                Shows the distribution of PRO & ANTI tokens in the pool, along
+                with unused tokens.
               </span>
             </div>
           </div>
@@ -532,8 +532,8 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Highlights the contribution range of voters based on token
-                counts.
+                Highlights the contribution range of voters based on tokens cast
+                as votes.
               </span>
             </div>
           </div>
@@ -543,7 +543,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Votes Over Time</div>
+            <div>Tokens Over Time</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -565,7 +565,8 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Tracks the number of votes for PRO and ANTI tokens over time.
+                Tracks the number of PRO and ANTI tokens cast as votes over
+                time.
               </span>
             </div>
           </div>
@@ -597,7 +598,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Represents the distribution of the final outcome.
+                Represents the distribution of the current state.
               </span>
             </div>
           </div>

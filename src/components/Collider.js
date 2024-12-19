@@ -131,6 +131,9 @@ const Collider = ({
             datalabels: {
               display: false,
             },
+            tooltip: {
+              enabled: false,
+            },
           },
           layout: {
             padding: {
@@ -597,7 +600,11 @@ const Collider = ({
                   id="photonTokens"
                   type="number"
                   min="0"
-                  value={photonTokens || "-"}
+                  value={
+                    Number(photonTokens) > 0
+                      ? Number(photonTokens).toFixed(2)
+                      : ""
+                  }
                   disabled={true}
                   placeholder="-"
                   className="text-white font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
@@ -628,7 +635,11 @@ const Collider = ({
                   id="baryonTokens"
                   type="number"
                   min="0"
-                  value={baryonTokens > 0 ? baryonTokens : "-"}
+                  value={
+                    Number(baryonTokens) > 0
+                      ? Number(baryonTokens).toFixed(2)
+                      : ""
+                  }
                   disabled={true}
                   placeholder="-"
                   className="w-full text-white font-sfmono bg-black text-white text-xs sm:text-sm disabled:cursor-not-allowed text-right"
