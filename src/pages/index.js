@@ -487,7 +487,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           <ParticleInversion
             width={2000}
             height={1600}
-            speed={1}
+            speed={2}
             maxLoops={0}
             onComplete={() => {
               setShowAnimation(false);
