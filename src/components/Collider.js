@@ -304,7 +304,7 @@ const Collider = ({
   };
 
   const handleTotalInvestChange = (e) => {
-    const total = Number(e.target.value);
+    const total = Math.abs(Number(e.target.value));
     setTotalInvest(total);
     updateSplit(total, splitPercentage);
   };
@@ -317,13 +317,13 @@ const Collider = ({
   };
 
   const handleProTokensChange = (e) => {
-    const pro = Number(e.target.value);
+    const pro = Math.abs(Number(e.target.value));
     const newTotal = pro + antiTokens;
     updateForm(newTotal, pro, antiTokens);
   };
 
   const handleAntiTokensChange = (e) => {
-    const anti = Number(e.target.value);
+    const anti = Math.abs(Number(e.target.value));
     const newTotal = proTokens + anti;
     updateForm(newTotal, proTokens, anti);
   };
@@ -444,7 +444,7 @@ const Collider = ({
             id="totalInvest"
             type="number"
             onFocus={(e) => e.target.select()}
-            value={totalInvest || ""}
+            value={Math.abs(totalInvest) || ""}
             onChange={handleTotalInvestChange}
             onWheel={(e) => e.target.blur()}
             placeholder="0"
@@ -485,7 +485,7 @@ const Collider = ({
                 type="number"
                 min="0"
                 max={proBalance}
-                value={proTokens || ""}
+                value={Math.abs(proTokens) || ""}
                 onChange={handleProTokensChange}
                 onFocus={(e) => e.target.select()}
                 onMouseDown={(e) => setProTokens(0)}
@@ -516,7 +516,7 @@ const Collider = ({
                 type="number"
                 min="0"
                 max={antiBalance}
-                value={antiTokens || ""}
+                value={Math.abs(antiTokens) || ""}
                 onChange={handleAntiTokensChange}
                 onFocus={(e) => e.target.select()}
                 onMouseDown={(e) => setAntiTokens(0)}

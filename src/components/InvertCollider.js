@@ -268,8 +268,10 @@ const InvertCollider = ({
               type="number"
               min="0"
               max={photonBalance}
-              value={photonTokens || ""}
-              onChange={(e) => setPhotonTokens(Number(e.target.value))}
+              value={Math.abs(photonTokens) || ""}
+              onChange={(e) =>
+                setPhotonTokens(Math.abs(Number(e.target.value)))
+              }
               onFocus={(e) => e.target.select()}
               placeholder="0"
               className="font-sfmono bg-black text-white text-xs sm:text-sm w-full"
@@ -298,8 +300,10 @@ const InvertCollider = ({
               type="number"
               min="0"
               max={baryonBalance}
-              value={baryonTokens || ""}
-              onChange={(e) => setBaryonTokens(Number(e.target.value))}
+              value={Math.abs(baryonTokens) || ""}
+              onChange={(e) =>
+                setBaryonTokens(Math.abs(Number(e.target.value)))
+              }
               onFocus={(e) => e.target.select()}
               placeholder="0"
               className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full text-right"
