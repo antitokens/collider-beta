@@ -33,7 +33,7 @@ const Dashboard = ({
             votersData.antiVoters,
             votersData.total - (votersData.proVoters + votersData.antiVoters),
           ],
-          backgroundColor: ["#00BB7A", "#C12F00", "#808080"],
+          backgroundColor: ["#00bb7a", "#c12f00", "#808080"],
           borderColor: ["#000000", "#000000", "#000000"],
         },
       ],
@@ -45,7 +45,11 @@ const Dashboard = ({
               font: {
                 family: "'SF Mono Round'",
               },
-              color: "#FFFFFFA2",
+              color: "#ffffffa2",
+              pointStyle: "circle",
+              usePointStyle: true,
+              boxWidth: 9,
+              boxHeight: 9,
             },
           },
           datalabels: {
@@ -56,7 +60,7 @@ const Dashboard = ({
             color: (context) => {
               const datasetIndex = context.datasetIndex;
               const dataIndex = context.dataIndex;
-              const colors = [["#00BB7A", "#C12F00", "#808080"]];
+              const colors = [["#00bb7a", "#c12f00", "#808080"]];
               return colors[datasetIndex]?.[dataIndex] || "#ffffffcc";
             },
             backgroundColor: "000000",
@@ -101,7 +105,7 @@ const Dashboard = ({
             tokensData.antiTokens,
             tokensData.total - (tokensData.proTokens + tokensData.antiTokens),
           ],
-          backgroundColor: ["#00BB7A", "#C12F00", "#808080"],
+          backgroundColor: ["#00bb7a", "#c12f00", "#808080"],
           borderColor: ["#000000", "#000000", "#000000"],
         },
       ],
@@ -113,7 +117,11 @@ const Dashboard = ({
               font: {
                 family: "'SF Mono Round'",
               },
-              color: "#FFFFFFA2",
+              color: "#ffffffa2",
+              pointStyle: "circle",
+              usePointStyle: true,
+              boxWidth: 9,
+              boxHeight: 9,
             },
           },
           datalabels: {
@@ -124,7 +132,7 @@ const Dashboard = ({
             color: (context) => {
               const datasetIndex = context.datasetIndex;
               const dataIndex = context.dataIndex;
-              const colors = [["#00BB7A", "#C12F00", "#808080"]];
+              const colors = [["#00bb7a", "#c12f00", "#808080"]];
               return colors[datasetIndex]?.[dataIndex] || "#ffffffcc";
             },
             backgroundColor: "000000",
@@ -166,12 +174,12 @@ const Dashboard = ({
         {
           label: "Pro",
           data: Object.values(votesOverTime.tokenRangesPro),
-          backgroundColor: "#00BB7A",
+          backgroundColor: "#00bb7a",
         },
         {
           label: "Anti",
           data: Object.values(votesOverTime.tokenRangesAnti),
-          backgroundColor: "#C12F00",
+          backgroundColor: "#c12f00",
         },
       ],
       options: {
@@ -182,7 +190,11 @@ const Dashboard = ({
               font: {
                 family: "'SF Mono Round'",
               },
-              color: "#FFFFFFA2",
+              color: "#ffffffa2",
+              pointStyle: "circle",
+              usePointStyle: true,
+              boxWidth: 7,
+              boxHeight: 7,
             },
           },
           datalabels: {
@@ -212,7 +224,7 @@ const Dashboard = ({
                 size: 10,
               },
             },
-            grid: { color: "#D3D3D322" },
+            grid: { color: "#d3d3d322" },
           },
           y: {
             ticks: {
@@ -221,7 +233,7 @@ const Dashboard = ({
                 size: 10,
               },
             },
-            grid: { color: "#D3D3D322" },
+            grid: { color: "#d3d3d322" },
           },
         },
       },
@@ -234,15 +246,15 @@ const Dashboard = ({
         {
           label: "Pro",
           data: votesOverTime.proVotes,
-          borderColor: "#00BB7A",
-          backgroundColor: "#00BB7A",
+          borderColor: "#00bb7a",
+          backgroundColor: "#00bb7a",
           fill: false,
         },
         {
           label: "Anti",
           data: votesOverTime.antiVotes,
-          borderColor: "#C12F00",
-          backgroundColor: "#C12F00",
+          borderColor: "#c12f00",
+          backgroundColor: "#c12f00",
           fill: false,
         },
       ],
@@ -254,7 +266,11 @@ const Dashboard = ({
               font: {
                 family: "'SF Mono Round'",
               },
-              color: "#FFFFFFA2",
+              color: "#ffffffa2",
+              pointStyle: "circle",
+              usePointStyle: true,
+              boxWidth: 7,
+              boxHeight: 7,
             },
           },
           datalabels: {
@@ -263,7 +279,7 @@ const Dashboard = ({
               family: "'SF Mono Round'",
               size: 12,
             },
-            color: "#FFFFFee",
+            color: "#ffffffee",
             anchor: "center",
             align: "end",
             formatter: (value, context) => {
@@ -297,10 +313,10 @@ const Dashboard = ({
                 size: 10,
               },
             },
-            grid: { color: "#D3D3D322" },
+            grid: { color: "#d3d3d322" },
           },
           y: {
-            grid: { color: "#D3D3D322" },
+            grid: { color: "#d3d3d322" },
             ticks: {
               font: {
                 family: "'SF Mono Round'",
@@ -320,10 +336,10 @@ const Dashboard = ({
       labels: totalDistribution.range.map((value) => value.toFixed(2)),
       datasets: [
         {
-          label: "Outcome Distribution",
+          label: "Live Distribution",
           data: totalDistribution.distribution.map((item) => item.value),
-          borderColor: "#FF9500",
-          backgroundColor: "#FF9500", // Match the legend marker color
+          borderColor: "#3d9bff",
+          backgroundColor: "#3d9bff", // Match the legend marker color
           pointStyle: "line",
         },
       ],
@@ -335,7 +351,11 @@ const Dashboard = ({
               font: {
                 family: "'SF Mono Round'",
               },
-              color: "#FFFFFFA2",
+              color: "#ffffffa2",
+              pointStyle: "circle",
+              usePointStyle: true,
+              boxWidth: 7,
+              boxHeight: 7,
             },
           },
           datalabels: {
@@ -353,10 +373,10 @@ const Dashboard = ({
                 size: 10,
               },
             },
-            grid: { color: "#D3D3D322" },
+            grid: { color: "#d3d3d322" },
           },
           y: {
-            grid: { color: "#D3D3D322" },
+            grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
                 return ""; // Format y-axis
@@ -373,8 +393,8 @@ const Dashboard = ({
         {
           label: "Your Distribution",
           data: voterDistribution.distribution.map((item) => item.value),
-          borderColor: "#FF9500",
-          backgroundColor: "#FF9500", // Match the legend marker color
+          borderColor: "#c4c4c4",
+          backgroundColor: "#c4c4c4", // Match the legend marker color
           pointStyle: "line",
         },
       ],
@@ -386,7 +406,11 @@ const Dashboard = ({
               font: {
                 family: "'SF Mono Round'",
               },
-              color: "#FFFFFFA2",
+              color: "#ffffffa2",
+              pointStyle: "circle",
+              usePointStyle: true,
+              boxWidth: 7,
+              boxHeight: 7,
             },
           },
           datalabels: {
@@ -404,10 +428,10 @@ const Dashboard = ({
                 size: 10,
               },
             },
-            grid: { color: "#D3D3D322" },
+            grid: { color: "#d3d3d322" },
           },
           y: {
-            grid: { color: "#D3D3D322" },
+            grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
                 return ""; // Format y-axis
@@ -571,7 +595,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Outcome Distribution</div>
+            <div>Global Prediction</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -606,7 +630,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Your Distribution</div>
+            <div>Your Prediction</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg

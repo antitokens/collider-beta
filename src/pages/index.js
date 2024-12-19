@@ -33,6 +33,7 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 
 const Home = ({ BASE_URL }) => {
   const [trigger, setTrigger] = useState(null); // Shared state
+
   return (
     <>
       <Head>
@@ -137,6 +138,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showFirstCollider, setShowFirstCollider] = useState(true);
   const [updatedData, setUpdatedData] = useState(false);
   const [clearFields, setClearFields] = useState(false);
+  const [antiData, setAntiData] = useState(null);
+  const [proData, setProData] = useState(null);
 
   const voterDistribution = calculateDistribution(50, 30);
   const totalDistribution = calculateDistribution(60, 20);
@@ -198,6 +201,44 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setClearFields(true);
     setTimeout(() => setClearFields(false), 100); // Reset after clearing
   };
+
+  useEffect(() => {
+    const fetchTokenData = async () => {
+      try {
+        // Fetch data for both tokens
+        const [antiResponse, proResponse] = await Promise.all([
+          fetch(
+            "https://api.dexscreener.com/latest/dex/tokens/HB8KrN7Bb3iLWUPsozp67kS4gxtbA4W5QJX4wKPvpump"
+          ),
+          fetch(
+            "https://api.dexscreener.com/latest/dex/tokens/CWFa2nxUMf5d1WwKtG9FS9kjUKGwKXWSjH8hFdWspump"
+          ),
+        ]);
+
+        const antiData = await antiResponse.json();
+        const proData = await proResponse.json();
+
+        // Update state for $ANTI and $PRO
+        if (antiData.pairs && antiData.pairs[0]) {
+          setAntiData({
+            priceUsd: parseFloat(antiData.pairs[0].priceUsd).toFixed(5),
+            marketCap: antiData.pairs[0].fdv,
+          });
+        }
+
+        if (proData.pairs && proData.pairs[0]) {
+          setProData({
+            priceUsd: parseFloat(proData.pairs[0].priceUsd).toFixed(5),
+            marketCap: proData.pairs[0].fdv,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching token data:", error);
+      }
+    };
+
+    fetchTokenData();
+  }, []);
 
   useEffect(() => {
     const checkBalance = async () => {
@@ -342,6 +383,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   BASE_URL={BASE_URL}
                   onVoteSubmitted={handleVoteSubmitted}
                   clearFields={clearFields}
+                  antiData={antiData}
+                  proData={proData}
                 />
               </div>
             ) : (
@@ -398,6 +441,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     BASE_URL={BASE_URL}
                     onClaimSubmitted={handleClaimSubmitted}
                     clearFields={clearFields}
+                    antiData={antiData}
+                    proData={proData}
                   />
                   <p
                     className={`mt-0 text-sm ${

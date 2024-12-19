@@ -19,6 +19,8 @@ const Collider = ({
   BASE_URL,
   onVoteSubmitted,
   clearFields,
+  antiData,
+  proData,
 }) => {
   const [loading, setLoading] = useState(false);
   const [betPool, setBetPool] = useState({
@@ -35,8 +37,6 @@ const Collider = ({
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
   const [dollarBet, setDollarbet] = useState(0);
-  const [antiData, setAntiData] = useState(null);
-  const [proData, setProData] = useState(null);
   const [splitPercentage, setSplitPercentage] = useState(50);
   const sliderRef = useRef(null);
   // Clear input fields when `clearFields` changes
@@ -49,44 +49,6 @@ const Collider = ({
     }
   }, [clearFields]);
 
-  useEffect(() => {
-    const fetchTokenData = async () => {
-      try {
-        // Fetch data for both tokens
-        const [antiResponse, proResponse] = await Promise.all([
-          fetch(
-            "https://api.dexscreener.com/latest/dex/tokens/HB8KrN7Bb3iLWUPsozp67kS4gxtbA4W5QJX4wKPvpump"
-          ),
-          fetch(
-            "https://api.dexscreener.com/latest/dex/tokens/CWFa2nxUMf5d1WwKtG9FS9kjUKGwKXWSjH8hFdWspump"
-          ),
-        ]);
-
-        const antiData = await antiResponse.json();
-        const proData = await proResponse.json();
-
-        // Update state for $ANTI and $PRO
-        if (antiData.pairs && antiData.pairs[0]) {
-          setAntiData({
-            priceUsd: parseFloat(antiData.pairs[0].priceUsd).toFixed(5),
-            marketCap: antiData.pairs[0].fdv,
-          });
-        }
-
-        if (proData.pairs && proData.pairs[0]) {
-          setProData({
-            priceUsd: parseFloat(proData.pairs[0].priceUsd).toFixed(5),
-            marketCap: proData.pairs[0].fdv,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching token data:", error);
-      }
-    };
-
-    fetchTokenData();
-  }, []);
-
   // Prepare line chart data
   useEffect(() => {
     if (userDistribution) {
@@ -98,18 +60,15 @@ const Collider = ({
       setPhotonTokens(G * (1 / userDistribution.s));
       setLineChartData({
         type: "line",
-        labels:
-          antiTokens !== proTokens || antiTokens > 0 || proTokens > 0
-            ? userDistribution.range.map((value) =>
-                value ? value.toFixed(2) : ""
-              )
-            : "",
+        labels: userDistribution.range.map((value) =>
+          value ? value.toFixed(2) : ""
+        ),
         datasets: [
           {
             label: "Collider",
             data: userDistribution.distribution.map((item) => item.value),
-            borderColor: "#FFFFFF",
-            backgroundColor: "#FFFFFF", // Match the legend marker color
+            borderColor: "#ffffff",
+            backgroundColor: "#ffffff", // Match the legend marker color
             pointStyle: "line",
           },
           {
@@ -128,7 +87,11 @@ const Collider = ({
                 font: {
                   family: "'SF Mono Round'",
                 },
-                color: "#FFFFFFA2",
+                color: "#ffffffa2",
+                pointStyle: "circle",
+                usePointStyle: true,
+                boxWidth: 7,
+                boxHeight: 7,
               },
               display: true,
               position: "top",
@@ -167,10 +130,10 @@ const Collider = ({
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color: "#FFFFFF",
+                color: antiTokens !== proTokens ? "#ffffffa2" : "#d3d3d300",
               },
               grid: {
-                color: antiTokens !== proTokens ? "#D3D3D322" : "D3D3D300",
+                color: antiTokens !== proTokens ? "#ffffffa2" : "#d3d3d300",
               },
             },
             x2: {
@@ -189,7 +152,9 @@ const Collider = ({
                 callback: function (value, index) {
                   // Map index to a new labels array for the second axis
                   const range2 = userDistribution.short;
-                  return range2[index].toFixed(2);
+                  return antiTokens !== proTokens
+                    ? range2[index].toFixed(2)
+                    : "";
                 },
                 font: {
                   family: "'SF Mono Round'",
@@ -198,7 +163,7 @@ const Collider = ({
                 color: "#ff5f3b",
               },
               grid: {
-                color: antiTokens !== proTokens ? "#D3D3D322" : "D3D3D300",
+                color: antiTokens !== proTokens ? "#d3d3d322" : "#d3d3d300",
               },
             },
             y: {
@@ -212,7 +177,7 @@ const Collider = ({
                 },
                 color: "#808080",
               },
-              grid: { color: "#D3D3D322" },
+              grid: { color: "#d3d3d322" },
               ticks: {
                 callback: function (value) {
                   return ""; // Format y-axis
@@ -231,6 +196,7 @@ const Collider = ({
                 },
                 color: "#808080",
               },
+              grid: { color: "#d3d3d300" },
               ticks: {
                 callback: function (value) {
                   return ""; // Format y-axis
@@ -437,7 +403,7 @@ const Collider = ({
               {formatCount(betPool.proLive)}
             </span>
             {"/"}
-            <span className="font-sfmono text-accent-primary text-[12px] text-opacity-80">
+            <span className="font-sfmono text-accent-primary text-[12px] text-opacity-90">
               {formatCount(betPool.antiLive)}
             </span>
           </div>
@@ -570,7 +536,7 @@ const Collider = ({
                 className="w-3 h-3 mr-1 mt-[-2.5px] inline-block opacity-75"
               />
               <span className="text-gray-500">MAX:</span>&nbsp;
-              <span className="font-sfmono text-accent-primary text-opacity-75">
+              <span className="font-sfmono text-accent-primary text-opacity-90">
                 {Number(antiBalance)
                   .toFixed(0)
                   .toString()

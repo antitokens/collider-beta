@@ -19,6 +19,8 @@ const InvertCollider = ({
   BASE_URL,
   onClaimSubmitted,
   clearFields,
+  antiData,
+  proData,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -49,18 +51,15 @@ const InvertCollider = ({
       setProTokens((G * (1 / userDistribution.s)).toFixed(2));
       setLineChartData({
         type: "line",
-        labels:
-          baryonTokens !== photonTokens || baryonTokens > 0 || photonTokens > 0
-            ? userDistribution.range.map((value) =>
-                value ? value.toFixed(2) : ""
-              )
-            : "",
+        labels: userDistribution.range.map((value) =>
+          value ? value.toFixed(2) : ""
+        ),
         datasets: [
           {
             label: "Inverter",
             data: userDistribution.distribution.map((item) => item.value),
-            borderColor: "#FFFFFF",
-            backgroundColor: "#FFFFFF", // Match the legend marker color
+            borderColor: "#ffffff",
+            backgroundColor: "#ffffff", // Match the legend marker color
             pointStyle: "line",
           },
           {
@@ -79,7 +78,11 @@ const InvertCollider = ({
                 font: {
                   family: "'SF Mono Round'",
                 },
-                color: "#FFFFFFA2",
+                color: "#ffffffa2",
+                pointStyle: "circle",
+                usePointStyle: true,
+                boxWidth: 7,
+                boxHeight: 7,
               },
               display: true,
               position: "top",
@@ -118,10 +121,12 @@ const InvertCollider = ({
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color: "#FFFFFF",
+                color:
+                  baryonTokens !== photonTokens ? "#ffffffa2" : "#ffffff00",
               },
               grid: {
-                color: baryonTokens !== photonTokens ? "#D3D3D322" : "D3D3D300",
+                color:
+                  baryonTokens !== photonTokens ? "#d3d3d322" : "#d3d3d300",
               },
             },
             x2: {
@@ -140,16 +145,19 @@ const InvertCollider = ({
                 callback: function (value, index) {
                   // Map index to a new labels array for the second axis
                   const range2 = userDistribution.short;
-                  return range2[index].toFixed(2);
+                  return baryonTokens !== photonTokens
+                    ? range2[index].toFixed(2)
+                    : "";
                 },
                 font: {
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color: "#ff5f3b",
+                color: baryonTokens !== photonTokens ? "#ff5f3b" : "#ff5f3b00",
               },
               grid: {
-                color: baryonTokens !== photonTokens ? "#D3D3D322" : "D3D3D300",
+                color:
+                  baryonTokens !== photonTokens ? "#d3d3d322" : "#d3d3d300",
               },
             },
             y: {
@@ -163,7 +171,7 @@ const InvertCollider = ({
                 },
                 color: "#808080",
               },
-              grid: { color: "#D3D3D322" },
+              grid: { color: "#d3d3d322" },
               ticks: {
                 callback: function (value) {
                   return ""; // Format y-axis
@@ -438,7 +446,7 @@ const InvertCollider = ({
                   className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
                 />
                 BAL:{" "}
-                <span className="font-sfmono text-accent-primary text-opacity-75">
+                <span className="font-sfmono text-accent-primary text-opacity-90">
                   {Number(antiBalance)
                     .toFixed(0)
                     .toString()
@@ -452,6 +460,24 @@ const InvertCollider = ({
           )}
         </div>
       )}
+      <div className="flex flex-row justify-between text-sm text-gray-500 w-full mt-4">
+        <div>
+          Total Tokens in Reclaim:{" "}
+          <span className="text-[12px] text-white font-sfmono">
+            {Number(antiTokens) + Number(proTokens)}
+          </span>
+        </div>
+        <div>
+          USD Value:{" "}
+          <span className="text-[12px] text-white font-sfmono">
+            <span className="text-gray-400">$</span>
+            {(
+              antiData.priceUsd * Number(antiTokens) +
+              proData.priceUsd * Number(proTokens)
+            ).toFixed(2)}
+          </span>
+        </div>
+      </div>
       {/* Submit Button */}
       <button
         onClick={handleReclaim}
