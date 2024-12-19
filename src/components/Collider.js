@@ -293,7 +293,7 @@ const Collider = ({
   }, [antiTokens, proTokens]);
 
   const updateSplit = (total, percentage) => {
-    const pro = Math.floor((percentage / 100) * total);
+    const pro = (percentage / 100) * total;
     const anti = total - pro;
     if (!proData || !antiData) {
       return;
@@ -335,7 +335,7 @@ const Collider = ({
 
     let percentage = 50;
     if (total != 0) {
-      percentage = Math.floor((pro / total) * 100);
+      percentage = (pro / total) * 100;
     }
     setSplitPercentage(percentage);
     handleSliderInput(percentage);
@@ -350,7 +350,7 @@ const Collider = ({
       let percentage = 50;
 
       if (totalInvest > 0) {
-        percentage = Math.floor((proTokens / totalInvest) * 100);
+        percentage = (proTokens / totalInvest) * 100;
       }
 
       handleSliderInput(percentage);
@@ -444,8 +444,9 @@ const Collider = ({
             id="totalInvest"
             type="number"
             onFocus={(e) => e.target.select()}
-            value={totalInvest}
+            value={totalInvest || ""}
             onChange={handleTotalInvestChange}
+            placeholder="0"
             className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
           />
           <input
@@ -460,10 +461,10 @@ const Collider = ({
           />
           <div className="flex flex-row items-center justify-between text-[14px]">
             <span className="text-accent-secondary font-sfmono">
-              {splitPercentage}%
+              {Number(splitPercentage).toFixed(0)}%
             </span>
             <span className="text-accent-primary font-sfmono">
-              {100 - splitPercentage}%
+              {Number(100 - splitPercentage).toFixed(0)}%
             </span>
           </div>
         </div>
@@ -482,9 +483,10 @@ const Collider = ({
                 type="number"
                 min="0"
                 max={proBalance}
-                value={proTokens}
+                value={proTokens || ""}
                 onChange={handleProTokensChange}
                 onFocus={(e) => e.target.select()}
+                onMouseDown={(e) => setProTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-sm"
               />
@@ -498,7 +500,7 @@ const Collider = ({
               <span className="text-gray-500">MAX:</span>&nbsp;
               <span className="font-sfmono text-accent-secondary text-opacity-75">
                 {Number(proBalance)
-                  .toFixed(0)
+                  .toFixed(2)
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </span>
@@ -519,9 +521,10 @@ const Collider = ({
                 type="number"
                 min="0"
                 max={antiBalance}
-                value={antiTokens}
+                value={antiTokens || ""}
                 onChange={handleAntiTokensChange}
                 onFocus={(e) => e.target.select()}
+                onMouseDown={(e) => setAntiTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-xs sm:text-sm"
               />
@@ -535,7 +538,7 @@ const Collider = ({
               <span className="text-gray-500">MAX:</span>&nbsp;
               <span className="font-sfmono text-accent-primary text-opacity-75">
                 {Number(antiBalance)
-                  .toFixed(0)
+                  .toFixed(2)
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </span>
