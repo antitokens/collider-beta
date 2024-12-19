@@ -464,17 +464,19 @@ const InvertCollider = ({
         <div>
           Total Tokens in Reclaim:{" "}
           <span className="text-[12px] text-white font-sfmono">
-            {Number(antiTokens) + Number(proTokens)}
+            {Number(antiTokens) + Number(proTokens) || "0"}
           </span>
         </div>
         <div>
           USD Value:{" "}
           <span className="text-[12px] text-white font-sfmono">
             <span className="text-gray-400">$</span>
-            {(
-              antiData.priceUsd * Number(antiTokens) +
-              proData.priceUsd * Number(proTokens)
-            ).toFixed(2)}
+            {Number(antiTokens) + Number(proTokens)
+              ? (
+                  antiData.priceUsd * Number(antiTokens) +
+                  proData.priceUsd * Number(proTokens)
+                ).toFixed(2)
+              : "0"}
           </span>
         </div>
       </div>
