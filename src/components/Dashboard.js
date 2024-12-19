@@ -4,6 +4,7 @@ import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { color, sign } from "chart.js/helpers";
+import { formatCount } from "../utils/colliderAlpha";
 
 Chart.register(ChartDataLabels, ...registerables);
 
@@ -266,13 +267,7 @@ const Dashboard = ({
             anchor: "center",
             align: "end",
             formatter: (value, context) => {
-              return ` ${
-                value >= 1e6
-                  ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
-                  : value >= 1e3
-                  ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
-                  : value.toString()
-              }`;
+              return ` ${formatCount(value)}`;
             },
           },
           tooltip: {
@@ -312,7 +307,7 @@ const Dashboard = ({
                 size: 10,
               },
               callback: function (value) {
-                return (value * 1e-6).toFixed(0) + "M"; // Format y-axis
+                return (value * 1e-6).toFixed(0) + "m"; // Format y-axis
               },
             },
           },

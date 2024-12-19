@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { recordVote, hasVoted } from "../utils/api";
-import { calculateDistribution } from "../utils/colliderAlpha";
+import { calculateDistribution, formatCount } from "../utils/colliderAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer, toast } from "react-toastify";
 import { Chart, registerables } from "chart.js";
@@ -24,6 +24,8 @@ const Collider = ({
   const [betPool, setBetPool] = useState({
     open: "10.12.2024 16:00",
     close: "12.12.2024 21:00",
+    antiLive: 21098367,
+    proLive: 20384782,
   });
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
@@ -432,16 +434,18 @@ const Collider = ({
             </span>{" "}
             &nbsp;Total Pool:{" "}
             <span className="font-sfmono text-accent-secondary text-[12px] text-opacity-80">
-              21.0m
+              {formatCount(betPool.proLive)}
             </span>
             {"/"}
             <span className="font-sfmono text-accent-primary text-[12px] text-opacity-80">
-              20.3m
+              {formatCount(betPool.antiLive)}
             </span>
           </div>
           <div className="text-[12px] text-gray-500 text-right">
             Pool Ratio:{" "}
-            <span className="font-sfmono text-gray-400 text-[11px]">0.987</span>{" "}
+            <span className="font-sfmono text-gray-400 text-[11px]">
+              {(betPool.proLive / betPool.antiLive).toFixed(3)}
+            </span>{" "}
             &nbsp;
             <span className="relative group">
               <span className="cursor-pointer">
