@@ -18,6 +18,11 @@ import {
 } from "@solana/wallet-adapter-wallets";
 import Collider from "../components/Collider";
 import InvertCollider from "../components/InvertCollider";
+import {
+  Stars,
+  ParticleCollision,
+  ParticleInversion,
+} from "../components/CollisionAnimation";
 import Navbar from "../components/TopNavbar";
 import Footer from "../components/BottomFooter";
 import Dashboard from "../components/Dashboard";
@@ -90,41 +95,12 @@ const Home = ({ BASE_URL }) => {
         />
       </Head>
       <div className="bg-dark text-gray-100 min-h-screen relative overflow-x-hidden font-grotesk">
-        <Stars />
+        <Stars length={16} />
         <Navbar trigger={trigger} />
         <LandingPage BASE_URL={BASE_URL} setTrigger={setTrigger} />
         <Footer />
       </div>
     </>
-  );
-};
-
-function seededRandom(seed) {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
-
-const Stars = () => {
-  const seed = 42; // Fixed seed value
-  return (
-    <div className="fixed inset-0 pointer-events-none">
-      {Array.from({ length: 16 }).map((_, idx) => {
-        const randomTop = seededRandom(seed + idx) * 100;
-        const randomLeft = seededRandom(seed * idx) * 100;
-        const floatDuration = 8 + (idx % 6); // 8s to 14s
-        return (
-          <div
-            key={idx}
-            className={`star ${idx % 2 === 0 ? "star-red" : "star-green"}`}
-            style={{
-              top: `${randomTop}%`,
-              left: `${randomLeft}%`,
-              animation: `float ${floatDuration}s ease-in-out infinite`,
-            }}
-          ></div>
-        );
-      })}
-    </div>
   );
 };
 
@@ -140,6 +116,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [clearFields, setClearFields] = useState(false);
   const [antiData, setAntiData] = useState(null);
   const [proData, setProData] = useState(null);
+  const [showAnimation, setShowAnimation] = useState(false);
 
   const voterDistribution = calculateDistribution(50, 30);
   const totalDistribution = calculateDistribution(60, 20);
@@ -191,7 +168,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTrigger(state);
     // Trigger field clearing
     setClearFields(true);
-    setTimeout(() => setClearFields(false), 100); // Reset after clearing
+    setTimeout(() => setClearFields(false), 100);
+    setTimeout(() => setShowAnimation(true), 100);
   };
 
   const handleClaimSubmitted = (state) => {
@@ -199,7 +177,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTrigger(state);
     // Trigger field clearing
     setClearFields(true);
-    setTimeout(() => setClearFields(false), 100); // Reset after clearing
+    setTimeout(() => setClearFields(false), 100);
+    setTimeout(() => setShowAnimation(true), 100);
   };
 
   useEffect(() => {
@@ -470,7 +449,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             />
           </div>
         </div>
-
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">
             Ready to dive in?
@@ -490,6 +468,33 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         isVisible={showBuyTokensModal}
         setIsVisible={setShowBuyTokensModal}
       />
+      {/* Animation */}
+      {showAnimation && showFirstCollider && (
+        <div className="w-screen h-screen fixed top-0 left-0 z-50">
+          <ParticleCollision
+            width={2000}
+            height={1600}
+            speed={1}
+            maxLoops={0}
+            onComplete={() => {
+              setShowAnimation(false);
+            }}
+          />
+        </div>
+      )}
+      {showAnimation && !showFirstCollider && (
+        <div className="w-screen h-screen fixed top-0 left-0 z-50">
+          <ParticleInversion
+            width={2000}
+            height={1600}
+            speed={1}
+            maxLoops={0}
+            onComplete={() => {
+              setShowAnimation(false);
+            }}
+          />
+        </div>
+      )}
     </>
   );
 };

@@ -646,9 +646,7 @@ const Collider = ({
             </div>
           </div>
           {lineChartData && (
-            <div className="w-full">
-              <Line data={lineChartData} options={lineChartData.options} />
-            </div>
+            <Line data={lineChartData} options={lineChartData.options} />
           )}
         </div>
       )}
