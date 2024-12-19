@@ -236,11 +236,11 @@ const Collider = ({
 
       // Prompt for Solana signature
       const message = `Requesting signature to vote with:
-        ${antiTokens} $ANTI,
-        ${proTokens} $PRO,
+        ${antiTokens.toFixed(2)} $ANTI,
+        ${proTokens.toFixed(2)} $PRO,
         for
-        ${baryonTokens} $BARYON,
-        ${photonTokens} $PHOTON
+        ${baryonTokens.toFixed(2)} $BARYON,
+        ${photonTokens.toFixed(2)} $PHOTON
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)

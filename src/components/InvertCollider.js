@@ -229,11 +229,11 @@ const InvertCollider = ({
 
       // Prompt for Solana signature
       const message = `Requesting signature to claim with:
-        ${baryonTokens} $BARYON,
-        ${photonTokens} $PHOTON,
+        ${baryonTokens.toFixed(2)} $BARYON,
+        ${photonTokens.toFixed(2)} $PHOTON,
         for
-        ${baryonTokens} $ANTI,
-        ${photonTokens} $PRO
+        ${baryonTokens.toFixed(2)} $ANTI,
+        ${photonTokens.toFixed(2)} $PRO
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
