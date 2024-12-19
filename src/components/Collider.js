@@ -420,7 +420,7 @@ const Collider = ({
             <span className="relative group">
               <span className="cursor-pointer">&#9432;</span>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-1/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Total amount of ANTI & PRO in the prediction pool
+                Total amount of PRO & ANTI in the prediction pool
               </span>
             </span>{" "}
             &nbsp;Total Pool:{" "}
@@ -440,7 +440,7 @@ const Collider = ({
               <span className="cursor-pointer">
                 &#9432;
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Ratio ANTI:PRO in the prediction pool
+                  Ratio PRO:ANTI in the prediction pool
                 </span>
               </span>
             </span>
@@ -491,9 +491,9 @@ const Collider = ({
             </span>
           </div>
         </div>
-        <div className="w-full flex gap-2 sm:gap-4 mt-4 justify-between">
+        <div className="w-full flex gap-1/2 sm:gap-4 mt-4 justify-between">
           <div className="flex flex-col items-start gap-0 w-full">
-            <div className="flex items-center bg-black px-3 py-2 rounded gap-3 w-full">
+            <div className="flex items-center bg-black px-3 py-2 rounded gap-2 w-full">
               <label
                 htmlFor="proTokens"
                 className="text-accent-secondary font-medium text-sm"
@@ -530,8 +530,8 @@ const Collider = ({
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-0 w-full">
-            <div className="flex items-center bg-black px-3 py-2 rounded gap-3 w-full">
+          <div className="flex flex-col items-end gap-1/2 w-full">
+            <div className="flex items-center bg-black px-3 py-2 rounded gap-2 w-full">
               <input
                 id="antiTokens"
                 type="number"
@@ -572,7 +572,7 @@ const Collider = ({
 
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
         <BinaryOrbit
-          size={25}
+          size={28}
           orbitRadius={10}
           particleRadius={3}
           padding={0}
@@ -584,7 +584,7 @@ const Collider = ({
       {userDistribution && (
         <div className="bg-dark-card p-4 rounded w-full">
           <div className="mb-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
-            <div className="flex flex-col items-start gap-0 w-full">
+            <div className="flex flex-col items-start gap-1/2 w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <label
                   htmlFor="photonTokens"
@@ -622,7 +622,7 @@ const Collider = ({
               </div>
             </div>
 
-            <div className="flex flex-col items-end w-full">
+            <div className="flex flex-col gap-1/2 items-end w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <input
                   id="baryonTokens"

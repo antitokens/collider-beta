@@ -356,7 +356,7 @@ const InvertCollider = ({
 
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
         <BinaryOrbit
-          size={25}
+          size={28}
           orbitRadius={10}
           particleRadius={3}
           padding={0}
