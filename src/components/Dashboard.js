@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
-import { color } from "chart.js/helpers";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+import { color, sign } from "chart.js/helpers";
 
-Chart.register(...registerables);
+Chart.register(ChartDataLabels, ...registerables);
 
 const Dashboard = ({
   votersData,
@@ -31,7 +32,7 @@ const Dashboard = ({
             votersData.antiVoters,
             votersData.total - (votersData.proVoters + votersData.antiVoters),
           ],
-          backgroundColor: ["#00BB7A", "#C12F00", "#808080"], // Reduced hue by 5%
+          backgroundColor: ["#00BB7A", "#C12F00", "#808080"],
           borderColor: ["#000000", "#000000", "#000000"],
         },
       ],
@@ -44,6 +45,37 @@ const Dashboard = ({
                 family: "'SF Mono Round'",
               },
               color: "#FFFFFFA2",
+            },
+          },
+          datalabels: {
+            display: true,
+            font: {
+              family: "'SF Mono Round'",
+            },
+            color: "#FFFFFFdd",
+            anchor: "center",
+            formatter: (value) => {
+              return `${((value / votersData.total) * 100).toFixed(1)}%`;
+            },
+          },
+          tooltip: {
+            bodyFont: {
+              family: "'SF Mono Round'",
+            },
+            titleFont: {
+              family: "'Space Grotesk'",
+              size: 14,
+            },
+            callbacks: {
+              label: (context) => {
+                const value = context.raw;
+                return ` ${((value / votersData.total) * 100).toFixed(
+                  1
+                )}% (${value
+                  .toFixed(0)
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})`;
+              },
             },
           },
         },
@@ -60,7 +92,7 @@ const Dashboard = ({
             tokensData.antiTokens,
             tokensData.total - (tokensData.proTokens + tokensData.antiTokens),
           ],
-          backgroundColor: ["#00BB7A", "#C12F00", "#808080"], // Reduced hue by 5%
+          backgroundColor: ["#00BB7A", "#C12F00", "#808080"],
           borderColor: ["#000000", "#000000", "#000000"],
         },
       ],
@@ -73,6 +105,37 @@ const Dashboard = ({
                 family: "'SF Mono Round'",
               },
               color: "#FFFFFFA2",
+            },
+          },
+          datalabels: {
+            display: true,
+            font: {
+              family: "'SF Mono Round'",
+            },
+            color: "#FFFFFFdd",
+            anchor: "center",
+            formatter: (value, context) => {
+              return `${((value / tokensData.total) * 100).toFixed(1)}%`;
+            },
+          },
+          tooltip: {
+            bodyFont: {
+              family: "'SF Mono Round'",
+            },
+            titleFont: {
+              family: "'Space Grotesk'",
+              size: 14,
+            },
+            callbacks: {
+              label: (context) => {
+                const value = context.raw;
+                return ` ${((value / votersData.total) * 100).toFixed(
+                  1
+                )}% (${value
+                  .toFixed(0)
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})`;
+              },
             },
           },
         },
@@ -103,6 +166,34 @@ const Dashboard = ({
                 family: "'SF Mono Round'",
               },
               color: "#FFFFFFA2",
+            },
+          },
+          datalabels: {
+            display: true,
+            font: {
+              family: "'SF Mono Round'",
+              size: 10,
+            },
+            color: "#FFFFFFdd",
+            anchor: "end",
+            align: "start",
+            formatter: (value, context) => {
+              return `${value}`;
+            },
+          },
+          tooltip: {
+            bodyFont: {
+              family: "'SF Mono Round'",
+            },
+            titleFont: {
+              family: "'Space Grotesk'",
+              size: 14,
+            },
+            callbacks: {
+              label: (context) => {
+                const value = context.raw;
+                return ` ${value}`;
+              },
             },
           },
         },
@@ -159,6 +250,43 @@ const Dashboard = ({
               color: "#FFFFFFA2",
             },
           },
+          datalabels: {
+            display: false,
+            font: {
+              family: "'SF Mono Round'",
+              size: 12,
+            },
+            color: "#FFFFFee",
+            anchor: "center",
+            align: "end",
+            formatter: (value, context) => {
+              return ` ${
+                value >= 1e6
+                  ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
+                  : value >= 1e3
+                  ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
+                  : value.toString()
+              }`;
+            },
+          },
+          tooltip: {
+            bodyFont: {
+              family: "'SF Mono Round'",
+            },
+            titleFont: {
+              family: "'Space Grotesk'",
+              size: 14,
+            },
+            callbacks: {
+              label: (context) => {
+                const value = context.raw;
+                return ` ${value
+                  .toFixed(0)
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+              },
+            },
+          },
         },
         scales: {
           x: {
@@ -209,6 +337,12 @@ const Dashboard = ({
               color: "#FFFFFFA2",
             },
           },
+          datalabels: {
+            display: false,
+          },
+          tooltip: { 
+            enabled: false 
+          },
         },
         scales: {
           x: {
@@ -253,6 +387,12 @@ const Dashboard = ({
               },
               color: "#FFFFFFA2",
             },
+          },
+          datalabels: {
+            display: false,
+          },
+          tooltip: { 
+            enabled: false 
           },
         },
         scales: {

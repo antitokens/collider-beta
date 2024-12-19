@@ -142,10 +142,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const totalDistribution = calculateDistribution(60, 20);
 
   const votersSeed = Math.random();
+  const partSeed = Math.random();
   const votersData = {
-    total: 10000 * votersSeed,
-    proVoters: 10000 * Math.random() * votersSeed,
-    antiVoters: 10000 * Math.random() * (1 - votersSeed),
+    total: 1e9 * votersSeed,
+    proVoters: 1e9 * partSeed * votersSeed,
+    antiVoters: 1e9 * (1 - partSeed - partSeed ** 2) * votersSeed,
   };
   const tokensSeed = Math.random();
   const tokensData = {
@@ -171,14 +172,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       25271918 * Math.random() * (1 - votesSeed),
     ],
     tokenRangesPro: {
-      "0-100k": 76 * Math.random(),
-      "100k-1m": 67 * Math.random(),
-      "1-10m": 57 * Math.random(),
+      "0-100k": Math.floor(76 * Math.random()),
+      "100k-1m": Math.floor(67 * Math.random()),
+      "1-10m": Math.floor(57 * Math.random()),
     },
     tokenRangesAnti: {
-      "0-100k": 49 * Math.random(),
-      "100k-1m": 59 * Math.random(),
-      "1-10m": 62 * Math.random(),
+      "0-100k": Math.floor(49 * Math.random()),
+      "100k-1m": Math.floor(59 * Math.random()),
+      "1-10m": Math.floor(62 * Math.random()),
     },
   };
 
