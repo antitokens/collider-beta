@@ -88,8 +88,8 @@ const Collider = ({
       const F = (antiTokens + proTokens) / 2;
       const G = (antiTokens + proTokens) / 2;
 
-      setBaryonTokens((F * (1 * userDistribution.u)).toFixed(2));
-      setPhotonTokens((G * (1 / userDistribution.s)).toFixed(2));
+      setBaryonTokens(F * (1 * userDistribution.u));
+      setPhotonTokens(G * (1 / userDistribution.s));
       setLineChartData({
         type: "line",
         labels:
@@ -446,6 +446,7 @@ const Collider = ({
             onFocus={(e) => e.target.select()}
             value={totalInvest || ""}
             onChange={handleTotalInvestChange}
+            onWheel={(e) => e.target.blur()}
             placeholder="0"
             className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
           />
@@ -453,6 +454,7 @@ const Collider = ({
             className="w-full"
             ref={sliderRef}
             onInput={handleSliderInput}
+            onWheel={(e) => e.target.blur()}
             type="range"
             min="0"
             max="100"
@@ -500,7 +502,7 @@ const Collider = ({
               <span className="text-gray-500">MAX:</span>&nbsp;
               <span className="font-sfmono text-accent-secondary text-opacity-75">
                 {Number(proBalance)
-                  .toFixed(2)
+                  .toFixed(0)
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </span>
@@ -509,13 +511,6 @@ const Collider = ({
 
           <div className="flex flex-col items-end gap-0 w-full">
             <div className="flex items-center bg-black px-3 py-2 rounded gap-3 w-full">
-              <label
-                htmlFor="antiTokens"
-                className="text-accent-orange font-medium text-sm"
-              >
-                $tANTI
-              </label>
-              <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <input
                 id="antiTokens"
                 type="number"
@@ -526,8 +521,15 @@ const Collider = ({
                 onFocus={(e) => e.target.select()}
                 onMouseDown={(e) => setAntiTokens(0)}
                 placeholder="0"
-                className="w-full font-sfmono bg-black text-white text-xs sm:text-sm"
+                className="w-full font-sfmono bg-black text-white text-xs sm:text-sm text-right"
               />
+              <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+              <label
+                htmlFor="antiTokens"
+                className="text-accent-orange font-medium text-sm"
+              >
+                $tANTI
+              </label>
             </div>
             <div className="text-xs">
               <img
@@ -538,7 +540,7 @@ const Collider = ({
               <span className="text-gray-500">MAX:</span>&nbsp;
               <span className="font-sfmono text-accent-primary text-opacity-75">
                 {Number(antiBalance)
-                  .toFixed(2)
+                  .toFixed(0)
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </span>
@@ -548,29 +550,6 @@ const Collider = ({
       </div>
 
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
-        {/*
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 2L6 14L2 10"
-            stroke="rgb(107, 114, 128)"
-            strokeWidth="2"
-            strokeLinecap="square"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M10 14L10 2L14 6"
-            stroke="rgb(107, 114, 128)"
-            strokeWidth="2"
-            strokeLinecap="square"
-            strokeLinejoin="round"
-          />
-          */}
         <BinaryOrbit
           size={25}
           orbitRadius={10}
@@ -584,7 +563,7 @@ const Collider = ({
       {userDistribution && (
         <div className="bg-dark-card p-4 rounded w-full">
           <div className="mb-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
-            <div className="flex flex-col items-start justify-between w-full">
+            <div className="flex flex-col items-start gap-0 w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <label
                   htmlFor="photonTokens"
@@ -614,7 +593,7 @@ const Collider = ({
                   <span className="text-gray-500 text-semibold">BAL:</span>{" "}
                   <span className="font-sfmono text-gray-400">
                     {Number(photonBalance)
-                      .toFixed(2)
+                      .toFixed(0)
                       .toString()
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   </span>
@@ -624,13 +603,6 @@ const Collider = ({
 
             <div className="flex flex-col items-end w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
-                <label
-                  htmlFor="baryonTokens"
-                  className="text-gray-300 font-medium text-xs sm:text-sm"
-                >
-                  $tBARYON
-                </label>
-                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
                   id="baryonTokens"
                   type="number"
@@ -638,9 +610,16 @@ const Collider = ({
                   value={baryonTokens > 0 ? baryonTokens : "-"}
                   disabled={true}
                   placeholder="-"
-                  className="w-full text-white font-sfmono bg-black text-white text-xs sm:text-sm disabled:cursor-not-allowed"
+                  className="w-full text-white font-sfmono bg-black text-white text-xs sm:text-sm disabled:cursor-not-allowed text-right"
                   readOnly
                 />
+                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+                <label
+                  htmlFor="baryonTokens"
+                  className="text-gray-300 font-medium text-xs sm:text-sm"
+                >
+                  $tBARYON
+                </label>
               </div>
               <div className="text-sm flex flex-row items-center">
                 <img
@@ -652,7 +631,7 @@ const Collider = ({
                   <span className="text-gray-500 text-semibold">BAL:</span>{" "}
                   <span className="font-sfmono text-gray-400">
                     {Number(baryonBalance)
-                      .toFixed(2)
+                      .toFixed(0)
                       .toString()
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   </span>

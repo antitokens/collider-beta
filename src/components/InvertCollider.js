@@ -284,7 +284,7 @@ const InvertCollider = ({
             MAX:&nbsp;
             <span className="font-sfmono text-gray-400">
               {Number(photonBalance)
-                .toFixed(2)
+                .toFixed(0)
                 .toString()
                 .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
             </span>
@@ -293,13 +293,6 @@ const InvertCollider = ({
 
         <div className="flex flex-col items-end w-full">
           <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
-            <label
-              htmlFor="baryonTokens"
-              className="text-gray-300 font-medium text-xs sm:text-sm"
-            >
-              $tBARYON
-            </label>
-            <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
             <input
               id="baryonTokens"
               type="number"
@@ -309,8 +302,15 @@ const InvertCollider = ({
               onChange={(e) => setBaryonTokens(Number(e.target.value))}
               onFocus={(e) => e.target.select()}
               placeholder="0"
-              className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+              className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full text-right"
             />
+            <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+            <label
+              htmlFor="baryonTokens"
+              className="text-gray-300 font-medium text-xs sm:text-sm"
+            >
+              $tBARYON
+            </label>
           </div>
           <div className="text-xs text-gray-500">
             <img
@@ -321,7 +321,7 @@ const InvertCollider = ({
             MAX:&nbsp;
             <span className="font-sfmono text-gray-400">
               {Number(baryonBalance)
-                .toFixed(2)
+                .toFixed(0)
                 .toString()
                 .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
             </span>
@@ -330,28 +330,6 @@ const InvertCollider = ({
       </div>
 
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
-        {/*<svg
-          width="13"
-          height="13"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 2L6 14L2 10"
-            stroke="rgb(107, 114, 128)"
-            strokeWidth="2"
-            strokeLinecap="square"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M10 14L10 2L14 6"
-            stroke="rgb(107, 114, 128)"
-            strokeWidth="2"
-            strokeLinecap="square"
-            strokeLinejoin="round"
-          />
-        </svg>*/}
         <BinaryOrbit
           size={25}
           orbitRadius={10}
@@ -403,13 +381,6 @@ const InvertCollider = ({
 
             <div className="flex flex-col items-end justify-between w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
-                <label
-                  htmlFor="antiTokens"
-                  className="text-accent-orange font-medium text-xs sm:text-sm"
-                >
-                  $tANTI
-                </label>
-                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
                   id="antiTokens"
                   type="number"
@@ -417,9 +388,16 @@ const InvertCollider = ({
                   value={antiTokens || ""}
                   placeholder="-"
                   disabled={true}
-                  className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
+                  className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed text-right"
                   readOnly
                 />
+                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+                <label
+                  htmlFor="antiTokens"
+                  className="text-accent-orange font-medium text-xs sm:text-sm"
+                >
+                  $tANTI
+                </label>
               </div>
               <div className="text-xs text-gray-500">
                 <img
