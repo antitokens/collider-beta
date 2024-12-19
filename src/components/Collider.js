@@ -21,6 +21,10 @@ const Collider = ({
   clearFields,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [betPool, setBetPool] = useState({
+    open: "10.12.2024 16:00",
+    close: "12.12.2024 21:00",
+  });
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
@@ -399,13 +403,13 @@ const Collider = ({
             </span>{" "}
             &nbsp;Open:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
-              10.12.2024 16:00 UTC
+              {betPool.open}
             </span>{" "}
           </div>
           <div className="text-[12px] text-gray-500 text-right">
             Close:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
-              12.12.2024 21:00 UTC
+              {betPool.close}
             </span>{" "}
             &nbsp;
             <span className="relative group">
