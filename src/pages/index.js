@@ -150,9 +150,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   };
   const tokensSeed = Math.random();
   const tokensData = {
-    total: 1e9,
+    total: 1e9 * tokensSeed,
     proTokens: 1e9 * partSeed * tokensSeed,
-    antiTokens: 1e9 * (1 - partSeed - partSeed ** 2) * (1 - tokensSeed),
+    antiTokens: 1e9 * (1 - partSeed - partSeed ** 2) * tokensSeed,
   };
   const votesSeed = Math.random();
   const votesOverTime = {
