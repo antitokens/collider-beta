@@ -472,8 +472,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           <ParticleCollision
             width={1400}
             height={1000}
-            speed={1}
-            maxLoops={1}
+            incomingSpeed={2}
+            outgoingSpeed={1}
+            maxLoops={3}
             inverse={!showFirstCollider}
             onComplete={() => {
               setShowAnimation(false);
