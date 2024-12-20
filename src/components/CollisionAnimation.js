@@ -373,8 +373,7 @@ export const ParticleCollision = ({
     const animate = () => {
       if (!isRunning) return;
 
-      ctx.fillStyle = "rgba(0, 0, 0, 1)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update and filter out-of-bounds particles
       particles = particles.filter((particle) => !particle.isOutOfBounds());
@@ -438,6 +437,7 @@ export const ParticleCollision = ({
   return (
     <div className="relative w-full h-full flex items-center justify-center bg-black">
       {/* Metadata display */}
+      <Stars length={50} />
       <div className="absolute bottom-4 right-4 z-10 text-right">
         {formatMetadata(metadata).map((line, index) => {
           const [key, ...valueParts] = line.split(":");
@@ -448,8 +448,10 @@ export const ParticleCollision = ({
               key={index}
               className="font-sfmono text-sm bg-black bg-opacity-50 px-2 py-0.5 rounded mb-1 flex justify-end items-center"
             >
-              <span className="text-gray-200">{value}</span>
-              <span className="text-gray-500">
+              <span className="text-gray-200 bg-dark-card p-1 rounded-md">
+                {value}
+              </span>
+              <span className="text-gray-500 bg-dark-card p-1 rounded-md">
                 :{" "}
                 {key.includes("baryon")
                   ? "BARYON___"
