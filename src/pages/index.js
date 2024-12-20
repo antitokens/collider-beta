@@ -491,6 +491,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             outgoingSpeed={1}
             maxLoops={1}
             inverse={!showFirstCollider}
+            isMobile={isMobile}
             metadata={
               showFirstCollider
                 ? JSON.stringify(currentVoteData)

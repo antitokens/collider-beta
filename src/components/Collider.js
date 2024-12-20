@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { recordVote, hasVoted } from "../utils/api";
-import { toastStyle } from "../utils/utils";
 import { calculateDistribution, formatCount } from "../utils/colliderAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";

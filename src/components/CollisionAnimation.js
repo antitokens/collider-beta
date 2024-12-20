@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { truncateMiddle } from "../utils/utils";
 
 export const ParticleCollision = ({
   width = 800,
@@ -7,6 +8,7 @@ export const ParticleCollision = ({
   explosionSpeed = 1,
   maxLoops = 1,
   inverse = false,
+  isMobile = false,
   metadata = "{}",
   onComplete = () => {},
 }) => {
@@ -27,6 +29,8 @@ export const ParticleCollision = ({
             ? value.toFixed(2)
             : typeof value === "object"
             ? JSON.stringify(value)
+            : isMobile
+            ? truncateMiddle(value)
             : String(value);
         return `${key}: ${formattedValue}`;
       });
@@ -439,40 +443,46 @@ export const ParticleCollision = ({
       {/* Metadata display */}
       <Stars length={50} />
       <div className="absolute bottom-4 right-4 z-10 text-right">
-        {formatMetadata(metadata).map((line, index) => {
-          const [key, ...valueParts] = line.split(":");
-          const value = valueParts.join(":").trim(); // Rejoin in case value contains colons
+        <div className="flex flex-col items-end">
+          <button className="border border-accent-primary rounded-3xl text-accent-primary font-mono bg-transparent w-24 p-1 hover:bg-accent-secondary hover:text-black hover:border-accent-secondary transition mb-4">
+            MINT
+          </button>
+          {formatMetadata(metadata).map((line, index) => {
+            const [key, ...valueParts] = line.split(":");
+            const value = valueParts.join(":").trim(); // Rejoin in case value contains colons
 
-          return (
-            <div
-              key={index}
-              className="font-sfmono text-sm bg-black bg-opacity-50 px-2 py-0.5 rounded mb-1 flex justify-end items-center"
-            >
-              <span className="text-gray-200 bg-dark-card p-1 rounded-md">
-                {value}
-              </span>
-              <span className="text-gray-500 bg-dark-card p-1 rounded-md">
-                :{" "}
-                {key.includes("baryon")
-                  ? "BARYON___"
-                  : key.includes("photon")
-                  ? "PHOTON___"
-                  : key.includes("anti")
-                  ? "ANTITOKEN"
-                  : key.includes("pro")
-                  ? "PROTOKEN_"
-                  : key.includes("signature")
-                  ? "SIGNATURE"
-                  : key.includes("time")
-                  ? "TIMESTAMP"
-                  : key.includes("wallet")
-                  ? "WALLET___"
-                  : ""}
-              </span>
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={index}
+                className="font-sfmono text-sm bg-black bg-opacity-50 px-2 py-0.5 rounded mb-1 flex justify-end items-center"
+              >
+                <span className={`text-${inverse ? "accent-primary" : "accent-secondary"} bg-dark-card p-1 rounded-md`}>
+                  {value}
+                </span>
+                <span className="text-gray-200 bg-dark-card p-1 rounded-md">
+                  :{" "}
+                  {key.includes("baryon")
+                    ? "BARYON___"
+                    : key.includes("photon")
+                    ? "PHOTON___"
+                    : key.includes("anti")
+                    ? "ANTITOKEN"
+                    : key.includes("pro")
+                    ? "PROTOKEN_"
+                    : key.includes("signature")
+                    ? "SIGNATURE"
+                    : key.includes("time")
+                    ? "TIMESTAMP"
+                    : key.includes("wallet")
+                    ? "WALLET___"
+                    : ""}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
+
       <canvas
         ref={canvasRef}
         width={width}

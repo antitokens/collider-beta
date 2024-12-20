@@ -64,3 +64,11 @@ export const toast = {
     });
   },
 };
+
+export function truncateMiddle(str) {
+  if (str.length <= 32) return str;
+
+  const start = str.slice(0, 12);
+  const end = str.slice(-12);
+  return `${start}...${end}`;
+}

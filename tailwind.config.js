@@ -9,12 +9,17 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        "custom-gradient":
+          "linear-gradient(94deg, rgba(255,0,0,1) 0%, rgba(1,200,196,1) 33%, rgba(198,124,37,1) 66%, rgba(1,196,146,1) 100%)",
+      },
       colors: {
         dark: "#080808",
         "dark-card": "rgba(20, 20, 20, 1)",
         "accent-primary": "#D13800",
         "accent-secondary": "#00CC8E",
         "accent-orange": "#FF4D00",
+        "accent-steel": "rgb(82, 151, 255)",
       },
       fontFamily: {
         grotesk: ["Space Grotesk", "sans-serif"],
