@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { recordVote, hasVoted } from "../utils/api";
+import { toastStyle } from "../utils/utils";
 import { calculateDistribution, formatCount } from "../utils/colliderAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
+import { toastContainerConfig, toast } from "../utils/utils";
 import { color } from "chart.js/helpers";
 Chart.register(...registerables);
 
@@ -49,6 +51,7 @@ const Collider = ({
       setTotalInvest(0);
       setDollarbet(0);
       setSplitPercentage(50);
+      handleSliderInput(50);
     }
   }, [clearFields]);
 
@@ -258,12 +261,22 @@ const Collider = ({
         photonTokens,
         signature,
       });
-      // Emit the updated data
-      onVoteSubmitted(true);
+      // Create vote data object
+      const voteData = {
+        antiTokens,
+        proTokens,
+        baryonTokens,
+        photonTokens,
+        signature,
+        timestamp: new Date().toISOString(),
+        wallet: wallet.publicKey.toString(),
+      };
+      onVoteSubmitted(true, voteData);
       toast.success("Your vote has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
-      toast.error("An error occurred while recording your vote.");
+      toast.error("An error occurred while recording your vote");
+      onVoteSubmitted(false, { error: error.message });
     } finally {
       setLoading(false);
     }
@@ -666,7 +679,7 @@ const Collider = ({
       >
         {loading ? "Submitting..." : "Submit"}
       </button>
-      <ToastContainer />
+      <ToastContainer {...toastContainerConfig} />
       <p
         className={`mt-0 text-sm ${
           wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"

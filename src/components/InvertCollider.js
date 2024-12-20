@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { recordClaim, hasVoted } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
+import { toastContainerConfig, toast } from "../utils/utils";
 import { color } from "chart.js/helpers";
 Chart.register(...registerables);
 
@@ -248,12 +249,22 @@ const InvertCollider = ({
         photonTokens,
         signature,
       });
+      // Create claim data object
+      const claimData = {
+        antiTokens,
+        proTokens,
+        baryonTokens,
+        photonTokens,
+        signature,
+        timestamp: new Date().toISOString(),
+        wallet: wallet.publicKey.toString(),
+      };
       // Emit the updated data
-      onClaimSubmitted(true);
+      onClaimSubmitted(true, claimData);
       toast.success("Your claim has been recorded!");
     } catch (error) {
       console.error("CLAIM_SUBMISSION_FAILED:", error);
-      toast.error("An error occurred while recording your claim.");
+      toast.error("An error occurred while recording your claim");
     } finally {
       setLoading(false);
     }
@@ -494,7 +505,7 @@ const InvertCollider = ({
       >
         {loading ? "Reclaiming..." : "Reclaim"}
       </button>
-      <ToastContainer />
+      <ToastContainer {...toastContainerConfig} />
     </div>
   );
 };

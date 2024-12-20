@@ -109,11 +109,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
   const [showFirstCollider, setShowFirstCollider] = useState(true);
-  const [updatedData, setUpdatedData] = useState(false);
+  const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
   const [antiData, setAntiData] = useState(null);
   const [proData, setProData] = useState(null);
   const [showAnimation, setShowAnimation] = useState(false);
+  const [currentVoteData, setCurrentVoteData] = useState(null);
+  const [currentClaimData, setCurrentClaimData] = useState(null);
   const isMobile = useIsMobile();
 
   const voterDistribution = calculateDistribution(50, 30);
@@ -161,8 +163,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     },
   };
 
-  const handleVoteSubmitted = (state) => {
-    setUpdatedData(state);
+  const handleVoteSubmitted = (state, voteData) => {
+    if (state) {
+      // Store the submitted vote data
+      setCurrentVoteData(voteData);
+    } else {
+      // Handle error case
+      console.error("Vote submission failed:", voteData.error);
+    }
+    setDataUpdated(state);
     setTrigger(state);
     // Trigger field clearing
     setClearFields(true);
@@ -170,8 +179,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTimeout(() => setShowAnimation(true), 100);
   };
 
-  const handleClaimSubmitted = (state) => {
-    setUpdatedData(state);
+  const handleClaimSubmitted = (state, claimData) => {
+    if (state) {
+      setCurrentClaimData(claimData);
+    } else {
+      // Handle error case
+      console.error("Vote submission failed:", claimData.error);
+    }
+    setDataUpdated(state);
     setTrigger(state);
     // Trigger field clearing
     setClearFields(true);
@@ -229,12 +244,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       setProBalance(proBalanceResult - balance.pro);
       setBaryonBalance(balance.baryon);
       setPhotonBalance(balance.photon);
-      setUpdatedData(false);
+      setDataUpdated(false);
     };
 
     if (wallet.publicKey) checkBalance();
-    if (updatedData) checkBalance();
-  }, [wallet, updatedData]);
+    if (dataUpdated) checkBalance();
+  }, [wallet, dataUpdated]);
 
   return (
     <>
@@ -474,8 +489,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             height={1000}
             incomingSpeed={2}
             outgoingSpeed={1}
-            maxLoops={2}
+            maxLoops={1}
             inverse={!showFirstCollider}
+            metadata={
+              showFirstCollider
+                ? JSON.stringify(currentVoteData)
+                : JSON.stringify(currentClaimData)
+            }
             onComplete={() => {
               setShowAnimation(false);
             }}

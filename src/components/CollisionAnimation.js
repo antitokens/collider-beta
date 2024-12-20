@@ -7,12 +7,34 @@ export const ParticleCollision = ({
   explosionSpeed = 1,
   maxLoops = 1,
   inverse = false,
+  metadata = "{}",
   onComplete = () => {},
 }) => {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const loopCount = useRef(0);
   const [isRunning, setIsRunning] = useState(true);
+
+  // Format metadata function
+  const formatMetadata = (metadataString) => {
+    try {
+      // Parse the JSON string
+      const data = JSON.parse(metadataString);
+      return Object.entries(data).map(([key, value]) => {
+        // Handle different types of values
+        const formattedValue =
+          typeof value === "number"
+            ? value.toFixed(2)
+            : typeof value === "object"
+            ? JSON.stringify(value)
+            : String(value);
+        return `${key}: ${formattedValue}`;
+      });
+    } catch (error) {
+      console.error("Error parsing metadata:", error);
+      return []; // Return empty array if parsing fails
+    }
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -415,6 +437,17 @@ export const ParticleCollision = ({
 
   return (
     <div className="relative w-full h-full flex items-center justify-center bg-black">
+      {/* Metadata display */}
+      <div className="absolute top-4 right-4 z-10 text-right">
+        {formatMetadata(metadata).map((line, index) => (
+          <div
+            key={index}
+            className="font-sfmono text-sm text-gray-400 bg-black bg-opacity-50 px-2 py-0.5 rounded mb-1"
+          >
+            {line}
+          </div>
+        ))}
+      </div>
       <canvas
         ref={canvasRef}
         width={width}
