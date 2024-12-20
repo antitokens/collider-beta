@@ -438,15 +438,38 @@ export const ParticleCollision = ({
   return (
     <div className="relative w-full h-full flex items-center justify-center bg-black">
       {/* Metadata display */}
-      <div className="absolute top-4 right-4 z-10 text-right">
-        {formatMetadata(metadata).map((line, index) => (
-          <div
-            key={index}
-            className="font-sfmono text-sm text-gray-400 bg-black bg-opacity-50 px-2 py-0.5 rounded mb-1"
-          >
-            {line}
-          </div>
-        ))}
+      <div className="absolute bottom-4 right-4 z-10 text-right">
+        {formatMetadata(metadata).map((line, index) => {
+          const [key, ...valueParts] = line.split(":");
+          const value = valueParts.join(":").trim(); // Rejoin in case value contains colons
+
+          return (
+            <div
+              key={index}
+              className="font-sfmono text-sm bg-black bg-opacity-50 px-2 py-0.5 rounded mb-1 flex justify-end items-center"
+            >
+              <span className="text-gray-200">{value}</span>
+              <span className="text-gray-500">
+                :{" "}
+                {key.includes("baryon")
+                  ? "BARYON___"
+                  : key.includes("photon")
+                  ? "PHOTON___"
+                  : key.includes("anti")
+                  ? "ANTITOKEN"
+                  : key.includes("pro")
+                  ? "PROTOKEN_"
+                  : key.includes("signature")
+                  ? "SIGNATURE"
+                  : key.includes("time")
+                  ? "TIMESTAMP"
+                  : key.includes("wallet")
+                  ? "WALLET___"
+                  : ""}
+              </span>
+            </div>
+          );
+        })}
       </div>
       <canvas
         ref={canvasRef}

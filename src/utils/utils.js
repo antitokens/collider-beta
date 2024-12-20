@@ -27,7 +27,6 @@ export const useIsMobile = () => {
 
 // Base configuration for ToastContainer
 export const toastContainerConfig = {
-  position: "top-left",
   autoClose: 3000,
   hideProgressBar: false,
   closeOnClick: true,
@@ -40,6 +39,7 @@ export const toastContainerConfig = {
 export const toast = {
   success: (message) => {
     toastify(message, {
+      position: "top-right",
       style: {
         background: "black",
         color: "#00CC8E",
@@ -56,6 +56,7 @@ export const toast = {
 
   error: (message) => {
     toastify(message, {
+      position: "top-right",
       style: {
         background: "black",
         color: "#D13800",
