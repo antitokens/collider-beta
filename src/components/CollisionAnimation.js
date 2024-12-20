@@ -444,7 +444,7 @@ export const ParticleCollision = ({
       <Stars length={50} />
       <div className="absolute bottom-4 right-4 z-10 text-right">
         <div className="flex flex-col items-end">
-          <button className="border border-accent-primary rounded-3xl text-accent-primary font-mono bg-transparent w-24 p-1 hover:bg-accent-secondary hover:text-black hover:border-accent-secondary transition mb-4">
+          <button className="border border-accent-primary rounded-3xl text-accent-primary font-mono bg-transparent w-24 p-1 hover:bg-accent-secondary hover:text-black hover:border-accent-secondary transition mb-4 hidden disabled">
             MINT
           </button>
           {formatMetadata(metadata).map((line, index) => {
