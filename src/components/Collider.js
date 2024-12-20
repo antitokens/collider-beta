@@ -46,6 +46,9 @@ const Collider = ({
       setProTokens(0);
       setBaryonTokens(0);
       setPhotonTokens(0);
+      setTotalInvest(0);
+      setDollarbet(0);
+      setSplitPercentage(50);
     }
   }, [clearFields]);
 
