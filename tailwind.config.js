@@ -19,7 +19,8 @@ export default {
         "accent-primary": "#D13800",
         "accent-secondary": "#00CC8E",
         "accent-orange": "#FF4D00",
-        "accent-steel": "rgb(82, 151, 255)",
+        "accent-steel": "rgb(123, 191, 255)",
+        "accent-cement": "rgb(58, 182, 193)",
       },
       fontFamily: {
         grotesk: ["Space Grotesk", "sans-serif"],

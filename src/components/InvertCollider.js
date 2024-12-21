@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { recordClaim } from "../utils/api";
-import { calculateDistribution } from "../utils/colliderAlpha";
+import { calculateInversion } from "../utils/inverterAlpha";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "../components/BinaryOrbit";
@@ -264,7 +264,7 @@ const InvertCollider = ({
 
   useEffect(() => {
     if (baryonTokens || photonTokens) {
-      const distribution = calculateDistribution(baryonTokens, photonTokens);
+      const distribution = calculateInversion(baryonTokens, photonTokens);
       setUserDistribution(distribution);
     } else {
       setUserDistribution({
@@ -287,83 +287,85 @@ const InvertCollider = ({
   return (
     <div className="flex flex-col items-center justify-center w-full">
       {/* Emission Input */}
+      <div className="flex flex-col items-center justify-between bg-dark-card w-full p-4 rounded gap-2">
+        <div className="text-lg text-gray-300 mb-4">Reclaim</div>
+        <div className="flex flex-row items-center w-full">
+          <div className="flex flex-col items-start w-full mr-2">
+            <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
+              <label
+                htmlFor="photonTokens"
+                className="text-gray-300 font-medium text-xs sm:text-sm"
+              >
+                $tPHOTON
+              </label>
+              <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+              <input
+                id="photonTokens"
+                type="number"
+                min="0"
+                max={photonBalance}
+                value={Math.abs(photonTokens) || ""}
+                onChange={(e) =>
+                  setPhotonTokens(Math.abs(Number(e.target.value)))
+                }
+                onFocus={(e) => e.target.select()}
+                placeholder="0"
+                className="font-sfmono bg-black text-white text-xs sm:text-sm w-full"
+              />
+            </div>
+            <div className="text-xs text-gray-500">
+              <img
+                src={`${BASE_URL}/assets/photon.png`}
+                alt="photon-logo"
+                className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
+              />
+              MAX:&nbsp;
+              <span className="font-sfmono text-gray-400">
+                {Number(photonBalance)
+                  .toFixed(0)
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              </span>
+            </div>
+          </div>
 
-      <div className="flex flex-row items-center justify-between bg-dark-card w-full p-4 rounded gap-2">
-        <div className="flex flex-col items-start w-full">
-          <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
-            <label
-              htmlFor="photonTokens"
-              className="text-gray-300 font-medium text-xs sm:text-sm"
-            >
-              $tPHOTON
-            </label>
-            <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
-            <input
-              id="photonTokens"
-              type="number"
-              min="0"
-              max={photonBalance}
-              value={Math.abs(photonTokens) || ""}
-              onChange={(e) =>
-                setPhotonTokens(Math.abs(Number(e.target.value)))
-              }
-              onFocus={(e) => e.target.select()}
-              placeholder="0"
-              className="font-sfmono bg-black text-white text-xs sm:text-sm w-full"
-            />
-          </div>
-          <div className="text-xs text-gray-500">
-            <img
-              src={`${BASE_URL}/assets/photon.png`}
-              alt="photon-logo"
-              className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
-            />
-            MAX:&nbsp;
-            <span className="font-sfmono text-gray-400">
-              {Number(photonBalance)
-                .toFixed(0)
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end w-full">
-          <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
-            <input
-              id="baryonTokens"
-              type="number"
-              min="0"
-              max={baryonBalance}
-              value={Math.abs(baryonTokens) || ""}
-              onChange={(e) =>
-                setBaryonTokens(Math.abs(Number(e.target.value)))
-              }
-              onFocus={(e) => e.target.select()}
-              placeholder="0"
-              className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full text-right"
-            />
-            <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
-            <label
-              htmlFor="baryonTokens"
-              className="text-gray-300 font-medium text-xs sm:text-sm"
-            >
-              $tBARYON
-            </label>
-          </div>
-          <div className="text-xs text-gray-500">
-            <img
-              src={`${BASE_URL}/assets/baryon.png`}
-              alt="baryon-logo"
-              className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
-            />
-            MAX:&nbsp;
-            <span className="font-sfmono text-gray-400">
-              {Number(baryonBalance)
-                .toFixed(0)
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-            </span>
+          <div className="flex flex-col items-end w-full ml-2">
+            <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
+              <input
+                id="baryonTokens"
+                type="number"
+                min="0"
+                max={baryonBalance}
+                value={Math.abs(baryonTokens) || ""}
+                onChange={(e) =>
+                  setBaryonTokens(Math.abs(Number(e.target.value)))
+                }
+                onFocus={(e) => e.target.select()}
+                placeholder="0"
+                className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full text-right"
+              />
+              <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+              <label
+                htmlFor="baryonTokens"
+                className="text-gray-300 font-medium text-xs sm:text-sm"
+              >
+                $tBARYON
+              </label>
+            </div>
+            <div className="text-xs text-gray-500">
+              <img
+                src={`${BASE_URL}/assets/baryon.png`}
+                alt="baryon-logo"
+                className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
+              />
+              MAX:&nbsp;
+              <span className="font-sfmono text-gray-400">
+                {Number(baryonBalance)
+                  .toFixed(0)
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -2,33 +2,28 @@ import { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BadgeCheck, CircleAlert } from "lucide-react";
-import { calculateDistribution } from "./colliderAlpha";
+import { calculateCollision } from "./colliderAlpha";
 
-// Needed for testing
+// // Metadata init [test]
 const partSeed = Math.random();
 const votersSeed = Math.random();
 const tokensSeed = Math.random();
 const votesSeed = Math.random();
 
-// Metadata init
 export const metadataInit = {
-  voterDistribution: calculateDistribution(
-    50 * Math.random(),
-    30 * Math.random()
-  ),
-  totalDistribution: calculateDistribution(
-    60 * Math.random(),
-    20 * Math.random()
-  ),
+  startTime: "-",
+  endTime: "-",
+  voterDistribution: calculateCollision(50 * Math.random(), 30 * Math.random()),
+  totalDistribution: calculateCollision(60 * Math.random(), 20 * Math.random()),
   emissionsData: {
     total: 1e5 * votersSeed,
     photonTokens: 1e5 * partSeed * votersSeed,
     baryonTokens: 1e5 * (1 - partSeed) ** 2 * votersSeed,
   },
   tokensData: {
-    total: 1e9 * tokensSeed,
-    proTokens: 1e9 * (1 - partSeed) ** 2 * tokensSeed,
-    antiTokens: 1e9 * partSeed * tokensSeed,
+    total: 1e9,
+    proTokens: 0,
+    antiTokens: 0,
   },
   votesOverTime: {
     timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
@@ -61,6 +56,8 @@ export const metadataInit = {
 
 // Metadata placeholder [test]
 export const metaPlaceholder = {
+  startTime: "-",
+  endTime: "-",
   voterDistribution: {
     value1: 50 * Math.random(),
     value2: 30 * Math.random(),
@@ -238,8 +235,8 @@ export function convertToLocaleTime(timeString, locale = "en-US") {
   }
   const date = new Date(timeString);
   return new Intl.DateTimeFormat(locale, {
-    dateStyle: "full",
-    timeStyle: "long",
+    dateStyle: "short",
+    timeStyle: "short",
   }).format(date);
 }
 
@@ -267,4 +264,24 @@ export const emptyGaussian = {
   distribution: [],
   short: [],
   curve: [],
+};
+
+export const formatCount = (_value) => {
+  const value = Number(_value);
+  if (value > 1e9) {
+    return 0;
+  } else {
+    return value >= 1e6
+      ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
+      : value >= 1e3
+      ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
+      : value.toFixed(0).toString();
+  }
+};
+
+export const emptyConfig = {
+  startTime: "-",
+  endTime: "-",
+  antiLive: 0,
+  proLive: 0,
 };

@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { recordVote } from "../utils/api";
-import { calculateDistribution, formatCount } from "../utils/colliderAlpha";
+import { calculateCollision } from "../utils/colliderAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
-import { toastContainerConfig, toast } from "../utils/utils";
+import {
+  toastContainerConfig,
+  toast,
+  emptyConfig,
+  formatCount,
+  convertToLocaleTime,
+} from "../utils/utils";
 Chart.register(...registerables);
 
 const Collider = ({
@@ -21,14 +27,9 @@ const Collider = ({
   clearFields,
   antiData,
   proData,
+  config = emptyConfig,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [betPool, setBetPool] = useState({
-    open: "10.12.2024 16:00",
-    close: "12.12.2024 21:00",
-    antiLive: 21098367,
-    proLive: 20384782,
-  });
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
@@ -275,7 +276,7 @@ const Collider = ({
 
   useEffect(() => {
     if (antiTokens || proTokens) {
-      const distribution = calculateDistribution(antiTokens, proTokens);
+      const distribution = calculateCollision(antiTokens, proTokens);
       setUserDistribution(distribution);
     } else {
       setUserDistribution({
@@ -363,7 +364,7 @@ const Collider = ({
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
       <div className="bg-dark-card p-4 rounded w-full mb-4">
-        <h2 className="text-2xl text-gray-200 text-center font-medium mb-2">
+        <h2 className="text-2xl text-white text-center font-medium mb-2">
           Will BTC hit $1m in 2025?
         </h2>
         <div className="flex flex-row justify-between">
@@ -372,26 +373,30 @@ const Collider = ({
               <span className="cursor-pointer">
                 &#9432;
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Poll opening date & time
+                  Prediction market opening date & time
                 </span>
               </span>
             </span>{" "}
             &nbsp;Open:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
-              {betPool.open}
+              {config.startTime !== "-"
+                ? convertToLocaleTime(config.startTime)
+                : "-"}
             </span>{" "}
           </div>
           <div className="text-[12px] text-gray-500 text-right">
             Close:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
-              {betPool.close}
+              {config.endTime !== "-"
+                ? convertToLocaleTime(config.endTime)
+                : "-"}
             </span>{" "}
             &nbsp;
             <span className="relative group">
               <span className="cursor-pointer">
                 &#9432;
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/4 lg:translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Poll closing date & time
+                  Prediction market closing date & time
                 </span>
               </span>
             </span>
@@ -407,17 +412,19 @@ const Collider = ({
             </span>{" "}
             &nbsp;Total Pool:{" "}
             <span className="font-sfmono text-accent-secondary text-[12px] text-opacity-80">
-              {formatCount(betPool.proLive)}
+              {formatCount(config.proLive)}
             </span>
             {"/"}
             <span className="font-sfmono text-accent-primary text-[12px] text-opacity-90">
-              {formatCount(betPool.antiLive)}
+              {formatCount(config.antiLive)}
             </span>
           </div>
           <div className="text-[12px] text-gray-500 text-right">
             Pool Ratio:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
-              {(betPool.proLive / betPool.antiLive).toFixed(3)}
+              {config.antiLive > 0
+                ? (config.proLive / config.antiLive).toFixed(3)
+                : "-"}
             </span>{" "}
             &nbsp;
             <span className="relative group">

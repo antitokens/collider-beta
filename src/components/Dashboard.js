@@ -207,7 +207,7 @@ const Dashboard = ({
             callbacks: {
               label: (context) => {
                 const value = context.raw;
-                return ` ${value.toFixed(2)}`;
+                return ` ${value.toFixed(0)}`;
               },
             },
           },
@@ -227,6 +227,9 @@ const Dashboard = ({
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
+              },
+              callback: function (value) {
+                return Number.isInteger(value) ? value.toFixed(0) : ""; // Format y-axis
               },
             },
             grid: { color: "#d3d3d322" },
@@ -323,7 +326,7 @@ const Dashboard = ({
                 size: 10,
               },
               callback: function (value) {
-                return (value * 1e-6).toFixed(0) + "m"; // Format y-axis
+                return value > 1e6 ? (value * 1e-6).toFixed(0) + "m" : value; // Format y-axis
               },
             },
           },

@@ -1,4 +1,4 @@
-export const calculateCollision = (anti, pro) => {
+export const calculateInversion = (anti, pro) => {
   if (anti === 0 && pro === 0) {
     throw new Error("BOTH_ANTI_AND_PRO_CANNOT_BE_ZERO");
   }
@@ -40,3 +40,11 @@ export const calculateCollision = (anti, pro) => {
 
   return { u, s, range, distribution, short, curve };
 };
+
+export function formatCount(value) {
+  return value >= 1e6
+    ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
+    : value >= 1e3
+    ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
+    : value.toString();
+}
