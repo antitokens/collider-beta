@@ -1,3 +1,5 @@
+import { metaPlaceholder } from "../utils/utils";
+
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
 
 export const recordVote = async (walletAddress, voteData) => {
