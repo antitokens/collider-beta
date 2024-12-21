@@ -70,3 +70,13 @@ export const getKVBalance = async (walletAddress) => {
   }
   return response.json();
 };
+
+// Get global data from API
+export const getMetadata = async () => {
+  const response = await fetch(`${API_URL}/metadata`);
+  if (!response.ok) {
+    return metaPlaceholder;
+    //throw new Error(`HTTP_ERROR: ${response.status}`);
+  }
+  return response.json();
+};

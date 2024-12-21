@@ -12,15 +12,15 @@ const Dashboard = ({
   votersData,
   tokensData,
   votesOverTime,
-  voterDistribution,
-  totalDistribution,
+  voterDistributionData,
+  totalDistributionData,
 }) => {
   const [pieChartDataVoters, setPieChartDataVoters] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
   const [barChartData, setBarChartData] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
-  const [finalDistribution, setFinalDistribution] = useState(null);
-  const [userDistribution, setUserDistribution] = useState(null);
+  const [totalDistribution, setTotalDistribution] = useState(null);
+  const [voterDistribution, setVoterDistribution] = useState(null);
 
   useEffect(() => {
     // Prepare pie chart data for voters
@@ -331,13 +331,17 @@ const Dashboard = ({
       },
     });
 
-    setFinalDistribution({
+    setTotalDistribution({
       type: "line",
-      labels: totalDistribution.range.map((value) => value.toFixed(2)),
+      labels: totalDistributionData
+        ? totalDistributionData.range.map((value) => value.toFixed(2))
+        : [],
       datasets: [
         {
           label: "Live Distribution",
-          data: totalDistribution.distribution.map((item) => item.value),
+          data: totalDistributionData
+            ? totalDistributionData.distribution.map((item) => item.value)
+            : [],
           borderColor: "#3d9bff",
           backgroundColor: "#3d9bff", // Match the legend marker color
           pointStyle: "line",
@@ -387,12 +391,16 @@ const Dashboard = ({
       },
     });
 
-    setUserDistribution({
-      labels: voterDistribution.range.map((value) => value.toFixed(2)),
+    setVoterDistribution({
+      labels: voterDistributionData
+        ? voterDistributionData.range.map((value) => value.toFixed(2))
+        : [],
       datasets: [
         {
           label: "Your Distribution",
-          data: voterDistribution.distribution.map((item) => item.value),
+          data: voterDistributionData
+            ? voterDistributionData.distribution.map((item) => item.value)
+            : [],
           borderColor: "#c4c4c4",
           backgroundColor: "#c4c4c4", // Match the legend marker color
           pointStyle: "line",
@@ -445,8 +453,8 @@ const Dashboard = ({
     votersData,
     tokensData,
     votesOverTime,
-    voterDistribution,
-    totalDistribution,
+    voterDistributionData,
+    totalDistributionData,
   ]);
 
   return (
@@ -621,10 +629,10 @@ const Dashboard = ({
               </span>
             </div>
           </div>
-          {finalDistribution && (
+          {totalDistribution && (
             <Line
-              data={finalDistribution}
-              options={finalDistribution.options}
+              data={totalDistribution}
+              options={totalDistribution.options}
             />
           )}
         </div>
@@ -656,8 +664,11 @@ const Dashboard = ({
               </span>
             </div>
           </div>
-          {userDistribution && (
-            <Line data={userDistribution} options={userDistribution.options} />
+          {voterDistribution && (
+            <Line
+              data={voterDistribution}
+              options={voterDistribution.options}
+            />
           )}
         </div>
       </div>

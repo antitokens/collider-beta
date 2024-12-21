@@ -28,7 +28,12 @@ import {
   PRO_TOKEN_MINT,
   getTokenBalance,
 } from "../utils/solana";
-import { useIsMobile, _metadata } from "../utils/utils";
+import {
+  useIsMobile,
+  _metadata,
+  getMetadata,
+  metadataInit,
+} from "../utils/utils";
 import { getKVBalance } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -116,52 +121,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showAnimation, setShowAnimation] = useState(false);
   const [currentVoteData, setCurrentVoteData] = useState(_metadata);
   const [currentClaimData, setCurrentClaimData] = useState(_metadata);
+  const [metadata, setMetadata] = useState(metadataInit);
+  const [isMetaLoading, setIsMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState(null);
   const isMobile = useIsMobile();
-
-  const voterDistribution = calculateDistribution(50, 30);
-  const totalDistribution = calculateDistribution(60, 20);
-
-  const partSeed = Math.random();
-  const votersSeed = Math.random();
-  const votersData = {
-    total: 1e5 * votersSeed,
-    proVoters: 1e5 * partSeed * votersSeed,
-    antiVoters: 1e5 * (1 - partSeed) ** 2 * votersSeed,
-  };
-  const tokensSeed = Math.random();
-  const tokensData = {
-    total: 1e9 * tokensSeed,
-    proTokens: 1e9 * (1 - partSeed) ** 2 * tokensSeed,
-    antiTokens: 1e9 * partSeed * tokensSeed,
-  };
-  const votesSeed = Math.random();
-  const votesOverTime = {
-    timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
-    proVotes: [
-      51210286 * Math.random() * votesSeed,
-      10303372 * Math.random() * votesSeed,
-      40281190 * Math.random() * votesSeed,
-      74538504 * Math.random() * votesSeed,
-      12174106 * Math.random() * votesSeed,
-    ],
-    antiVotes: [
-      16543217 * Math.random() * (1 - votesSeed),
-      66582982 * Math.random() * (1 - votesSeed),
-      14596107 * Math.random() * (1 - votesSeed),
-      27472813 * Math.random() * (1 - votesSeed),
-      25271918 * Math.random() * (1 - votesSeed),
-    ],
-    tokenRangesPro: {
-      "0-100k": Math.floor(76 * Math.random()),
-      "100k-1m": Math.floor(67 * Math.random()),
-      "1-10m": Math.floor(57 * Math.random()),
-    },
-    tokenRangesAnti: {
-      "0-100k": Math.floor(49 * Math.random()),
-      "100k-1m": Math.floor(59 * Math.random()),
-      "1-10m": Math.floor(62 * Math.random()),
-    },
-  };
 
   const handleVoteSubmitted = (state, voteData) => {
     if (state) {
@@ -193,6 +156,39 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTimeout(() => setClearFields(false), 100);
     setTimeout(() => setShowAnimation(true), 100);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsMetaLoading(true);
+        const data = await getMetadata();
+
+        // Calculate distributions using API data
+        const voterDistribution = calculateDistribution(
+          data.voterDistribution.value1,
+          data.voterDistribution.value2
+        );
+        const totalDistribution = calculateDistribution(
+          data.totalDistribution.value1,
+          data.totalDistribution.value2
+        );
+
+        setMetadata({
+          voterDistribution,
+          totalDistribution,
+          votersData: data.votersData,
+          tokensData: data.tokensData,
+          votesOverTime: data.votesOverTime,
+        });
+      } catch (err) {
+        setMetaError(err);
+      } finally {
+        setIsMetaLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -454,11 +450,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
           <div className="xl:col-span-3 mx-2 md:mx-0">
             <Dashboard
-              votersData={votersData}
-              tokensData={tokensData}
-              votesOverTime={votesOverTime}
-              voterDistribution={voterDistribution}
-              totalDistribution={totalDistribution}
+              votersData={metadata.votersData}
+              tokensData={metadata.tokensData}
+              votesOverTime={metadata.votesOverTime}
+              voterDistributionData={metadata.voterDistribution}
+              totalDistributionData={metadata.totalDistribution}
             />
           </div>
         </div>

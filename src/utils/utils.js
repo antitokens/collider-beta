@@ -2,6 +2,111 @@ import { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BadgeCheck, CircleAlert, Info, TriangleAlert } from "lucide-react";
+import { calculateDistribution } from "./colliderAlpha";
+
+// Needed for testing
+const partSeed = Math.random();
+const votersSeed = Math.random();
+const tokensSeed = Math.random();
+const votesSeed = Math.random();
+
+// Metadata init
+export const metadataInit = {
+  voterDistribution: calculateDistribution(
+    50 * Math.random(),
+    30 * Math.random()
+  ),
+  totalDistribution: calculateDistribution(
+    60 * Math.random(),
+    20 * Math.random()
+  ),
+  votersData: {
+    total: 1e5 * votersSeed,
+    proVoters: 1e5 * partSeed * votersSeed,
+    antiVoters: 1e5 * (1 - partSeed) ** 2 * votersSeed,
+  },
+  tokensData: {
+    total: 1e9 * tokensSeed,
+    proTokens: 1e9 * (1 - partSeed) ** 2 * tokensSeed,
+    antiTokens: 1e9 * partSeed * tokensSeed,
+  },
+  votesOverTime: {
+    timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
+    proVotes: [
+      51210286 * votesSeed,
+      10303372 * votesSeed,
+      40281190 * votesSeed,
+      74538504 * votesSeed,
+      12174106 * votesSeed,
+    ],
+    antiVotes: [
+      16543217 * (1 - votesSeed),
+      66582982 * (1 - votesSeed),
+      14596107 * (1 - votesSeed),
+      27472813 * (1 - votesSeed),
+      25271918 * (1 - votesSeed),
+    ],
+    tokenRangesPro: {
+      "0-100k": Math.floor(45 * Math.random()),
+      "100k-1m": Math.floor(35 * Math.random()),
+      "1-10m": Math.floor(20 * Math.random()),
+    },
+    tokenRangesAnti: {
+      "0-100k": Math.floor(30 * Math.random()),
+      "100k-1m": Math.floor(40 * Math.random()),
+      "1-10m": Math.floor(30 * Math.random()),
+    },
+  },
+};
+
+// Metadata placeholder
+export const metaPlaceholder = {
+  voterDistribution: {
+    value1: 50 * Math.random(),
+    value2: 30 * Math.random(),
+  },
+  totalDistribution: {
+    value1: 60 * Math.random(),
+    value2: 20 * Math.random(),
+  },
+  votersData: {
+    total: 1e5 * votersSeed,
+    proVoters: 1e5 * partSeed * votersSeed,
+    antiVoters: 1e5 * (1 - partSeed) ** 2 * votersSeed,
+  },
+  tokensData: {
+    total: 1e9 * tokensSeed,
+    proTokens: 1e9 * (1 - partSeed) ** 2 * tokensSeed,
+    antiTokens: 1e9 * partSeed * tokensSeed,
+  },
+  votesOverTime: {
+    timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
+    proVotes: [
+      51210286 * votesSeed,
+      10303372 * votesSeed,
+      40281190 * votesSeed,
+      74538504 * votesSeed,
+      12174106 * votesSeed,
+    ],
+    antiVotes: [
+      16543217 * (1 - votesSeed),
+      66582982 * (1 - votesSeed),
+      14596107 * (1 - votesSeed),
+      27472813 * (1 - votesSeed),
+      25271918 * (1 - votesSeed),
+    ],
+    tokenRangesPro: {
+      "0-100k": Math.floor(45 * Math.random()),
+      "100k-1m": Math.floor(35 * Math.random()),
+      "1-10m": Math.floor(20 * Math.random()),
+    },
+    tokenRangesAnti: {
+      "0-100k": Math.floor(30 * Math.random()),
+      "100k-1m": Math.floor(40 * Math.random()),
+      "1-10m": Math.floor(30 * Math.random()),
+    },
+  },
+};
 
 export const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
