@@ -11,6 +11,7 @@ export const recordVote = async (walletAddress, voteData) => {
       baryonTokens: voteData.baryonTokens,
       photonTokens: voteData.photonTokens,
       signature: voteData.signature,
+      timestamp: voteData.timestamp,
     }),
   });
 
@@ -37,6 +38,7 @@ export const recordClaim = async (walletAddress, claimData) => {
       baryonTokens: claimData.baryonTokens,
       photonTokens: claimData.photonTokens,
       signature: claimData.signature,
+      timestamp: claimData.timestamp,
     }),
   });
 

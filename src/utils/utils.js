@@ -20,10 +20,10 @@ export const metadataInit = {
     60 * Math.random(),
     20 * Math.random()
   ),
-  votersData: {
+  emissionsData: {
     total: 1e5 * votersSeed,
-    proVoters: 1e5 * partSeed * votersSeed,
-    antiVoters: 1e5 * (1 - partSeed) ** 2 * votersSeed,
+    photonTokens: 1e5 * partSeed * votersSeed,
+    baryonTokens: 1e5 * (1 - partSeed) ** 2 * votersSeed,
   },
   tokensData: {
     total: 1e9 * tokensSeed,
@@ -69,10 +69,10 @@ export const metaPlaceholder = {
     value1: 60 * Math.random(),
     value2: 20 * Math.random(),
   },
-  votersData: {
+  emissionsData: {
     total: 1e5 * votersSeed,
-    proVoters: 1e5 * partSeed * votersSeed,
-    antiVoters: 1e5 * (1 - partSeed) ** 2 * votersSeed,
+    photonTokens: 1e5 * partSeed * votersSeed,
+    baryonTokens: 1e5 * (1 - partSeed) ** 2 * votersSeed,
   },
   tokensData: {
     total: 1e9 * tokensSeed,

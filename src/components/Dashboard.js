@@ -7,13 +7,14 @@ import { formatCount } from "../utils/colliderAlpha";
 Chart.register(ChartDataLabels, ...registerables);
 
 const Dashboard = ({
-  votersData,
+  emissionsData,
   tokensData,
   votesOverTime,
   voterDistributionData,
   totalDistributionData,
+  onRefresh,
 }) => {
-  const [pieChartDataVoters, setPieChartDataVoters] = useState(null);
+  const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
   const [barChartData, setBarChartData] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
@@ -22,17 +23,13 @@ const Dashboard = ({
 
   useEffect(() => {
     // Prepare pie chart data for voters
-    setPieChartDataVoters({
-      labels: ["Pro", "Anti", "Uncast"],
+    setPieChartDataEmissions({
+      labels: ["Baryon", "Photon"],
       datasets: [
         {
-          data: [
-            votersData.proVoters,
-            votersData.antiVoters,
-            votersData.total - (votersData.proVoters + votersData.antiVoters),
-          ],
-          backgroundColor: ["#00bb7a", "#c12f00", "#808080"],
-          borderColor: ["#000000", "#000000", "#000000"],
+          data: [emissionsData.baryonTokens, emissionsData.photonTokens],
+          backgroundColor: ["#999999", "#60A5FA"],
+          borderColor: ["#000000", "#000000"],
         },
       ],
       options: {
@@ -58,7 +55,7 @@ const Dashboard = ({
             color: (context) => {
               const datasetIndex = context.datasetIndex;
               const dataIndex = context.dataIndex;
-              const colors = [["#00bb7a", "#c12f00", "#808080"]];
+              const colors = [["#999999", "#60A5FA"]];
               return colors[datasetIndex]?.[dataIndex] || "#ffffffcc";
             },
             backgroundColor: "000000",
@@ -66,7 +63,7 @@ const Dashboard = ({
             borderRadius: 3,
             anchor: "center",
             formatter: (value) => {
-              return `${((value / votersData.total) * 100).toFixed(1)}%`;
+              return `${((value / emissionsData.total) * 100).toFixed(1)}%`;
             },
           },
           tooltip: {
@@ -80,7 +77,7 @@ const Dashboard = ({
             callbacks: {
               label: (context) => {
                 const value = context.raw;
-                return ` ${((value / votersData.total) * 100).toFixed(
+                return ` ${((value / emissionsData.total) * 100).toFixed(
                   1
                 )}% (${value
                   .toFixed(0)
@@ -452,7 +449,7 @@ const Dashboard = ({
       },
     });
   }, [
-    votersData,
+    emissionsData,
     tokensData,
     votesOverTime,
     voterDistributionData,
@@ -461,13 +458,37 @@ const Dashboard = ({
 
   return (
     <section className="mt-20 text-gray-100">
-      <h2 className="px-4 py-2 text-xl text-gray-300 text-left font-medium border border-gray-800 rounded-t-lg bg-dark-card">
-        Statistics
-      </h2>
+      <div className="flex flex-row justify-between px-4 py-2 text-xl text-gray-300 text-left font-medium border border-gray-800 rounded-t-lg bg-dark-card">
+        <h2 className="">Statistics</h2>
+        <button
+          className="text-sm text-accent-primary hover:text-gray-300"
+          onClick={() => onRefresh(true)}
+        >
+          <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
+            <div className="mr-1">Refresh</div>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="hover:rotate-90 transition-transform duration-200 ease-in-out"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"
+              />
+            </svg>
+          </div>
+        </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-black border-x border-b border-gray-800 rounded-b-lg">
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Voter Participation</div>
+            <div>Token Emissions</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -489,15 +510,14 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays the percentage of votes cast as PRO & ANTI tokens,
-                along with uncast votes.
+                Displays the percentage of emitted BARYON & PHOTON tokens
               </span>
             </div>
           </div>
-          {pieChartDataVoters && (
+          {pieChartDataEmissions && (
             <Pie
-              data={pieChartDataVoters}
-              options={pieChartDataVoters.options}
+              data={pieChartDataEmissions}
+              options={pieChartDataEmissions.options}
             />
           )}
         </div>
@@ -526,7 +546,7 @@ const Dashboard = ({
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Shows the distribution of PRO & ANTI tokens in the pool, along
-                with unused tokens.
+                with unused tokens
               </span>
             </div>
           </div>
@@ -539,7 +559,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Voter Participation</div>
+            <div>Predicter Participation</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -561,8 +581,8 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Highlights the contribution range of voters based on tokens cast
-                as votes.
+                Highlights the contribution range of predicters based on tokens cast
+                as predictions
               </span>
             </div>
           </div>
@@ -594,8 +614,8 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Tracks the number of PRO and ANTI tokens cast as votes over
-                time.
+                Tracks the number of PRO and ANTI tokens cast as predictions over
+                time
               </span>
             </div>
           </div>
@@ -627,7 +647,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Represents the distribution of the current state.
+                Represents the distribution of the current state
               </span>
             </div>
           </div>
@@ -662,7 +682,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Represents the distribution of your vote.
+                Represents the distribution of your prediction
               </span>
             </div>
           </div>

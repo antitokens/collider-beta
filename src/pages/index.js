@@ -125,12 +125,18 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [metadata, setMetadata] = useState(metadataInit);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
+  const [refresh, setRefresh] = useState(true);
   const isMobile = useIsMobile();
+
+  const onRefresh = (state) => {
+    setRefresh(state);
+  };
 
   const handleVoteSubmitted = (state, voteData) => {
     if (state) {
       // Store the submitted vote data
       setCurrentVoteData(voteData);
+      setRefresh(true);
     } else {
       // Handle error case
       console.error("Vote submission failed:", voteData.error);
@@ -146,6 +152,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const handleClaimSubmitted = (state, claimData) => {
     if (state) {
       setCurrentClaimData(claimData);
+      setRefresh(true);
     } else {
       // Handle error case
       console.error("Vote submission failed:", claimData.error);
@@ -159,45 +166,50 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsMetaLoading(true);
-        const blob = await getMetadata();
-        const data = JSON.parse(blob.message);
+    if (refresh) {
+      const fetchData = async () => {
+        try {
+          setIsMetaLoading(true);
+          const blob = await getMetadata();
+          const data = JSON.parse(blob.message);
+          console.log(data);
+          // Calculate distributions using API data
+          const voterDistribution =
+            data.voterDistribution.value1 > 0 &&
+            data.voterDistribution.value2 > 0
+              ? calculateDistribution(
+                  data.voterDistribution.value1,
+                  data.voterDistribution.value2
+                )
+              : emptyGaussian;
+          const totalDistribution =
+            data.totalDistribution.value1 > 0 &&
+            data.totalDistribution.value2 > 0
+              ? calculateDistribution(
+                  data.totalDistribution.value1,
+                  data.totalDistribution.value2
+                )
+              : emptyGaussian;
 
-        // Calculate distributions using API data
-        const voterDistribution =
-          data.voterDistribution.value1 > 0 && data.voterDistribution.value2 > 0
-            ? calculateDistribution(
-                data.voterDistribution.value1,
-                data.voterDistribution.value2
-              )
-            : emptyGaussian;
-        const totalDistribution =
-          data.totalDistribution.value1 > 0 && data.totalDistribution.value2 > 0
-            ? calculateDistribution(
-                data.totalDistribution.value1,
-                data.totalDistribution.value2
-              )
-            : emptyGaussian;
+          setMetadata({
+            voterDistribution,
+            totalDistribution,
+            emissionsData: data.emissionsData,
+            tokensData: data.tokensData,
+            votesOverTime: data.votesOverTime,
+          });
+        } catch (err) {
+          console.error("Error fetching metadata:", err);
+          setMetaError(err);
+        } finally {
+          setIsMetaLoading(false);
+        }
+      };
 
-        setMetadata({
-          voterDistribution,
-          totalDistribution,
-          votersData: data.votersData,
-          tokensData: data.tokensData,
-          votesOverTime: data.votesOverTime,
-        });
-      } catch (err) {
-        console.error("Error fetching metadata:", err);
-        setMetaError(err);
-      } finally {
-        setIsMetaLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+      fetchData();
+      setRefresh(false);
+    }
+  }, [refresh]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -457,20 +469,27 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             )}
           </div>
 
-          <div className="xl:col-span-3 mx-2 md:mx-0 flex justify-center items-center min-h-[600px]">
+          <div
+            className={`xl:col-span-3 mx-2 md:mx-0 ${
+              isMetaLoading || isMobile
+                ? "flex justify-center items-center min-h-[600px]"
+                : ""
+            }`}
+          >
             {!isMetaLoading ? (
               <Dashboard
-                votersData={metadata.votersData}
+                emissionsData={metadata.emissionsData}
                 tokensData={metadata.tokensData}
                 votesOverTime={metadata.votesOverTime}
                 voterDistributionData={metadata.voterDistribution}
                 totalDistributionData={metadata.totalDistribution}
+                onRefresh={onRefresh}
               />
             ) : (
               <div className="flex justify-center items-center w-full">
                 <BinaryOrbit
-                  size={isMobile ? 300 : 800}
-                  orbitRadius={isMobile ? 80 : 200}
+                  size={isMobile ? 300 : 500}
+                  orbitRadius={isMobile ? 80 : 175}
                   particleRadius={isMobile ? 20 : 50}
                   padding={10}
                   invert={false}
