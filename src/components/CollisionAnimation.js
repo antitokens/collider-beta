@@ -468,28 +468,26 @@ export const ParticleCollision = ({
                   id={`randomise-effect-${index}`}
                   className={`text-${
                     inverse ? "accent-primary" : "accent-secondary"
-                  } break-all bg-dark-card p-1 rounded-md`}
+                  } break-all bg-dark-card p-1 rounded-md whitespace-pre`}
                 >
-                  {randomiseTextEffect(
-                    "randomise-effect-" + index,
-                    value,
-                    10000,
-                    key.includes("baryon")
-                      ? "number"
-                      : key.includes("photon")
-                      ? "number"
-                      : key.includes("anti")
-                      ? "number"
-                      : key.includes("pro")
-                      ? "number"
-                      : key.includes("signature")
-                      ? "text"
-                      : key.includes("time")
-                      ? "text"
-                      : key.includes("wallet")
-                      ? "text"
-                      : ""
-                  )}
+                  {(() => {
+                    randomiseTextEffect(
+                      "randomise-effect-" + index,
+                      value,
+                      10000,
+                      key.includes("baryon") ||
+                        key.includes("photon") ||
+                        key.includes("anti") ||
+                        key.includes("pro")
+                        ? "number"
+                        : key.includes("signature") ||
+                          key.includes("time") ||
+                          key.includes("wallet")
+                        ? "text"
+                        : ""
+                    );
+                    return "          "; // Initial placeholder value
+                  })()}
                 </span>
                 <span className="text-gray-200 bg-dark-card p-1 rounded-md break-normal whitespace-pre font-sfmono">
                   :{" "}
