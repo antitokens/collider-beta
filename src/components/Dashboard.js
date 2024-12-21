@@ -13,7 +13,7 @@ const Dashboard = ({
   voterDistributionData,
   totalDistributionData,
   onRefresh,
-  state = true,
+  state = false,
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -29,7 +29,7 @@ const Dashboard = ({
       datasets: [
         {
           data: [emissionsData.baryonTokens, emissionsData.photonTokens],
-          backgroundColor: ["#999999", "#60A5FA"],
+          backgroundColor: ["rgb(123, 191, 255)", "rgb(58, 183, 192)"],
           borderColor: ["#000000", "#000000"],
         },
       ],
@@ -470,6 +470,7 @@ const Dashboard = ({
       },
     });
   }, [
+    state,
     emissionsData,
     tokensData,
     votesOverTime,
