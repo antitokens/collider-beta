@@ -30,11 +30,11 @@ import {
 } from "../utils/solana";
 import {
   useIsMobile,
-  _metadata,
-  getMetadata,
+  emptyMetadata,
   metadataInit,
+  emptyGaussian,
 } from "../utils/utils";
-import { getKVBalance } from "../utils/api";
+import { getKVBalance, getMetadata } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
@@ -119,8 +119,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [antiData, setAntiData] = useState(null);
   const [proData, setProData] = useState(null);
   const [showAnimation, setShowAnimation] = useState(false);
-  const [currentVoteData, setCurrentVoteData] = useState(_metadata);
-  const [currentClaimData, setCurrentClaimData] = useState(_metadata);
+  const [currentVoteData, setCurrentVoteData] = useState(emptyMetadata);
+  const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
   const [metadata, setMetadata] = useState(metadataInit);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
@@ -161,17 +161,24 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     const fetchData = async () => {
       try {
         setIsMetaLoading(true);
-        const data = await getMetadata();
+        const blob = await getMetadata();
+        const data = JSON.parse(blob.message);
 
         // Calculate distributions using API data
-        const voterDistribution = calculateDistribution(
-          data.voterDistribution.value1,
-          data.voterDistribution.value2
-        );
-        const totalDistribution = calculateDistribution(
-          data.totalDistribution.value1,
-          data.totalDistribution.value2
-        );
+        const voterDistribution =
+          data.voterDistribution.value1 > 0 && data.voterDistribution.value2 > 0
+            ? calculateDistribution(
+                data.voterDistribution.value1,
+                data.voterDistribution.value2
+              )
+            : emptyGaussian;
+        const totalDistribution =
+          data.totalDistribution.value1 > 0 && data.totalDistribution.value2 > 0
+            ? calculateDistribution(
+                data.totalDistribution.value1,
+                data.totalDistribution.value2
+              )
+            : emptyGaussian;
 
         setMetadata({
           voterDistribution,
@@ -181,6 +188,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           votesOverTime: data.votesOverTime,
         });
       } catch (err) {
+        console.error("Error fetching metadata:", err);
         setMetaError(err);
       } finally {
         setIsMetaLoading(false);

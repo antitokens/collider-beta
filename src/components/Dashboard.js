@@ -243,14 +243,18 @@ const Dashboard = ({
       datasets: [
         {
           label: "Pro",
-          data: votesOverTime.proVotes,
+          data: votesOverTime.proVotes.every((value) => value === 0)
+            ? []
+            : votesOverTime.proVotes,
           borderColor: "#00bb7a",
           backgroundColor: "#00bb7a",
           fill: false,
         },
         {
           label: "Anti",
-          data: votesOverTime.antiVotes,
+          data: votesOverTime.antiVotes.every((value) => value === 0)
+            ? []
+            : votesOverTime.antiVotes,
           borderColor: "#c12f00",
           backgroundColor: "#c12f00",
           fill: false,

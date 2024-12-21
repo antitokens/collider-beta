@@ -242,7 +242,7 @@ const Collider = ({
         new TextEncoder().encode(message)
       );
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
-
+      const timestamp = new Date().toISOString();
       // Record the prediction
       await recordVote(wallet.publicKey.toString(), {
         antiTokens,
@@ -250,6 +250,7 @@ const Collider = ({
         baryonTokens,
         photonTokens,
         signature,
+        timestamp,
       });
       // Create prediction data object
       const predictionData = {
@@ -258,7 +259,7 @@ const Collider = ({
         baryonTokens,
         photonTokens,
         signature,
-        timestamp: new Date().toISOString(),
+        timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
       };
       onVoteSubmitted(true, predictionData);

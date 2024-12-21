@@ -59,7 +59,7 @@ export const metadataInit = {
   },
 };
 
-// Metadata placeholder
+// Metadata placeholder [test]
 export const metaPlaceholder = {
   voterDistribution: {
     value1: 50 * Math.random(),
@@ -250,7 +250,7 @@ export function isValidTime(timeString) {
   return timeRegex.test(timeString);
 }
 
-export const _metadata = {
+export const emptyMetadata = {
   antiToken: 0.0,
   proToken: 0.0,
   baryonToken: 0.0,
@@ -258,4 +258,13 @@ export const _metadata = {
   signature: "-",
   timestamp: "-",
   wallet: "-",
+};
+
+export const emptyGaussian = {
+  u: 0,
+  s: 0,
+  range: [],
+  distribution: [],
+  short: [],
+  curve: [],
 };

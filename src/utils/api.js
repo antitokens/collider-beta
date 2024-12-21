@@ -1,5 +1,3 @@
-import { metaPlaceholder } from "../utils/utils";
-
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
 
 export const recordVote = async (walletAddress, voteData) => {
@@ -67,8 +65,7 @@ export const getKVBalance = async (walletAddress) => {
 export const getMetadata = async () => {
   const response = await fetch(`${API_URL}/metadata`);
   if (!response.ok) {
-    return metaPlaceholder;
-    //throw new Error(`HTTP_ERROR: ${response.status}`);
+    throw new Error(`HTTP_ERROR: ${response.status}`);
   }
   return response.json();
 };

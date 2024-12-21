@@ -231,7 +231,7 @@ const InvertCollider = ({
         new TextEncoder().encode(message)
       );
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
-
+      const timestamp = new Date().toISOString();
       // Record the claim
       await recordClaim(wallet.publicKey.toString(), {
         antiTokens,
@@ -239,6 +239,7 @@ const InvertCollider = ({
         baryonTokens,
         photonTokens,
         signature,
+        timestamp,
       });
       // Create claim data object
       const claimData = {
@@ -247,7 +248,7 @@ const InvertCollider = ({
         baryonTokens,
         photonTokens,
         signature,
-        timestamp: new Date().toISOString(),
+        timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
       };
       // Emit the updated data
