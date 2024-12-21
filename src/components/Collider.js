@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { recordVote, hasVoted } from "../utils/api";
+import { recordVote } from "../utils/api";
 import { calculateDistribution, formatCount } from "../utils/colliderAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
-import { Pie, Bar, Line } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
 import { toastContainerConfig, toast } from "../utils/utils";
-import { color } from "chart.js/helpers";
 Chart.register(...registerables);
 
 const Collider = ({
@@ -230,14 +229,6 @@ const Collider = ({
         toast.error("You cannot predict with more tokens than you have!");
         return;
       }
-
-      // Check if the user has already predictiond
-      /*
-      if (await hasVoted(wallet.publicKey.toString())) {
-        toast.error("You have already predicted!");
-        return;
-      }
-      */
 
       // Prompt for Solana signature
       const message = `Requesting signature to predict with:

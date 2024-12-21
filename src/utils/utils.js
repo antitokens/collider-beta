@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { BadgeCheck, CircleAlert, Info, TriangleAlert } from "lucide-react";
+import { BadgeCheck, CircleAlert } from "lucide-react";
 import { calculateDistribution } from "./colliderAlpha";
 
 // Needed for testing

@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { recordClaim, hasVoted } from "../utils/api";
+import { recordClaim } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "../components/BinaryOrbit";
-import { Pie, Bar, Line } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
 import { toastContainerConfig, toast } from "../utils/utils";
-import { color } from "chart.js/helpers";
 Chart.register(...registerables);
 
 const InvertCollider = ({
@@ -219,14 +218,6 @@ const InvertCollider = ({
         toast.error("You cannot claim with more tokens than you have!");
         return;
       }
-
-      // Check if the user has already claimed
-      /*
-      if (await hasVoted(wallet.publicKey.toString())) {
-        toast.error("You have already claimed!");
-        return;
-      }
-      */
 
       // Prompt for Solana signature
       const message = `Requesting signature to claim with:

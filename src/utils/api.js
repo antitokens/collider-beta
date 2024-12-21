@@ -54,16 +54,6 @@ export const recordClaim = async (walletAddress, claimData) => {
   }
 };
 
-/*
-export const hasVoted = async (walletAddress) => {
-  const response = await fetch(`${API_URL}/check/${walletAddress}`);
-  if (!response.ok) {
-    throw new Error("FAILED_TO_CHECK_VOTE");
-  }
-  return (await response.json()).hasVoted;
-};
-*/
-
 // Get token balances from KV
 export const getKVBalance = async (walletAddress) => {
   const response = await fetch(`${API_URL}/balances/${walletAddress}`);

@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { color, sign } from "chart.js/helpers";
 import { formatCount } from "../utils/colliderAlpha";
 
 Chart.register(ChartDataLabels, ...registerables);
