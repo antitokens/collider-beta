@@ -457,8 +457,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             )}
           </div>
 
-          <div className="xl:col-span-3 mx-2 md:mx-0">
-            {!isMetaLoading && (
+          <div className="xl:col-span-3 mx-2 md:mx-0 flex justify-center items-center min-h-[600px]">
+            {!isMetaLoading ? (
               <Dashboard
                 votersData={metadata.votersData}
                 tokensData={metadata.tokensData}
@@ -466,15 +466,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 voterDistributionData={metadata.voterDistribution}
                 totalDistributionData={metadata.totalDistribution}
               />
-            )}
-            {isMetaLoading && (
-              <BinaryOrbit
-                size={800}
-                orbitRadius={200}
-                particleRadius={60}
-                padding={10}
-                invert={false}
-              />
+            ) : (
+              <div className="flex justify-center items-center w-full">
+                <BinaryOrbit
+                  size={isMobile ? 300 : 800}
+                  orbitRadius={isMobile ? 80 : 200}
+                  particleRadius={isMobile ? 20 : 50}
+                  padding={10}
+                  invert={false}
+                />
+              </div>
             )}
           </div>
         </div>
