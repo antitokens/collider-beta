@@ -487,9 +487,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           <ParticleCollision
             width={1400}
             height={1000}
-            incomingSpeed={0.5}
-            outgoingSpeed={0.5}
-            maxLoops={10}
+            incomingSpeed={2}
+            outgoingSpeed={1}
+            maxLoops={2}
             inverse={!showFirstCollider}
             isMobile={isMobile}
             metadata={

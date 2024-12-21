@@ -222,25 +222,25 @@ const Collider = ({
 
       // Validate input
       if (antiTokens <= 0 && proTokens <= 0) {
-        toast.error("You must vote with at least some tokens!");
+        toast.error("You must predict with at least some tokens!");
         return;
       }
 
       if (antiTokens > antiBalance || proTokens > proBalance) {
-        toast.error("You cannot vote with more tokens than you have!");
+        toast.error("You cannot predict with more tokens than you have!");
         return;
       }
 
-      // Check if the user has already voted
+      // Check if the user has already predictiond
       /*
       if (await hasVoted(wallet.publicKey.toString())) {
-        toast.error("You have already voted!");
+        toast.error("You have already predicted!");
         return;
       }
       */
 
       // Prompt for Solana signature
-      const message = `Requesting signature to vote with:
+      const message = `Requesting signature to predict with:
         ${antiTokens.toFixed(2)} $ANTI,
         ${proTokens.toFixed(2)} $PRO,
         for
@@ -252,7 +252,7 @@ const Collider = ({
       );
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
 
-      // Record the vote
+      // Record the prediction
       await recordVote(wallet.publicKey.toString(), {
         antiTokens,
         proTokens,
@@ -260,8 +260,8 @@ const Collider = ({
         photonTokens,
         signature,
       });
-      // Create vote data object
-      const voteData = {
+      // Create prediction data object
+      const predictionData = {
         antiTokens,
         proTokens,
         baryonTokens,
@@ -270,11 +270,11 @@ const Collider = ({
         timestamp: new Date().toISOString(),
         wallet: wallet.publicKey.toString(),
       };
-      onVoteSubmitted(true, voteData);
-      toast.success("Your vote has been recorded!");
+      onVoteSubmitted(true, predictionData);
+      toast.success("Your prediction has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
-      toast.error("An error occurred while recording your vote");
+      toast.error("An error occurred while recording your prediction");
       onVoteSubmitted(false, { error: error.message });
     } finally {
       setLoading(false);

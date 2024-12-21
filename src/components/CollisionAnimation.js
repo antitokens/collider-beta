@@ -467,14 +467,14 @@ export const ParticleCollision = ({
                 <span
                   id={`randomise-effect-${index}`}
                   className={`text-${
-                    inverse ? "accent-primary" : "accent-secondary"
+                    inverse ? "text-gray-300" : "text-gray-300"
                   } break-all bg-dark-card p-1 rounded-md whitespace-pre`}
                 >
                   {(() => {
                     randomiseTextEffect(
                       "randomise-effect-" + index,
                       value,
-                      10000,
+                      3000,
                       key.includes("baryon") ||
                         key.includes("photon") ||
                         key.includes("anti") ||
@@ -489,7 +489,7 @@ export const ParticleCollision = ({
                     return "          "; // Initial placeholder value
                   })()}
                 </span>
-                <span className="text-gray-200 bg-dark-card p-1 rounded-md break-normal whitespace-pre font-sfmono">
+                <span className="text-gray-400 bg-dark-card p-1 rounded-md break-normal whitespace-pre font-sfmono">
                   :{" "}
                   {key.includes("baryon")
                     ? "BARYON   "

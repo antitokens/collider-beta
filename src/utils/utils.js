@@ -20,7 +20,7 @@ export const useIsMobile = () => {
 
 // Base configuration for ToastContainer
 export const toastContainerConfig = {
-  autoClose: 3000,
+  autoClose: 6000,
   hideProgressBar: false,
   closeOnClick: true,
   pauseOnHover: true,
@@ -35,15 +35,16 @@ export const toast = {
       position: "top-right",
       style: {
         background: "black",
-        color: "#00CC8E",
+        color: "#48ff00",
         fontFamily: "SF Mono Round",
         fontSize: "18px",
-        border: "2px solid #00CC8E",
+        border: "2px solid #48ff00",
+        borderRadius: "8px",
       },
       progressStyle: {
-        background: "#00CC8E",
+        background: "#48ff00",
       },
-      icon: <BadgeCheck className="stroke-accent-secondary" />,
+      icon: <BadgeCheck className="stroke-[#48ff00]" />,
     });
   },
 
@@ -52,15 +53,16 @@ export const toast = {
       position: "top-right",
       style: {
         background: "black",
-        color: "#D13800",
+        color: "#ff1500",
         fontFamily: "SF Mono Round",
         fontSize: "18px",
-        border: "2px solid #D13800",
+        border: "2px solid #ff1500",
+        borderRadius: "8px",
       },
       progressStyle: {
-        background: "#D13800",
+        background: "#ff1500",
       },
-      icon: <CircleAlert className="stroke-accent-primary" />,
+      icon: <CircleAlert className="stroke-[#ff1500]" />,
     });
   },
 };

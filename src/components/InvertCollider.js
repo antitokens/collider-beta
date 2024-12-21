@@ -211,19 +211,19 @@ const InvertCollider = ({
 
       // Validate input
       if (baryonTokens <= 0 && photonTokens <= 0) {
-        toast.error("You must vote with at least some tokens!");
+        toast.error("You must claim with at least some tokens!");
         return;
       }
 
       if (baryonTokens > baryonBalance || photonTokens > photonBalance) {
-        toast.error("You cannot vote with more tokens than you have!");
+        toast.error("You cannot claim with more tokens than you have!");
         return;
       }
 
-      // Check if the user has already voted
+      // Check if the user has already claimed
       /*
       if (await hasVoted(wallet.publicKey.toString())) {
-        toast.error("You have already voted!");
+        toast.error("You have already claimed!");
         return;
       }
       */
@@ -241,7 +241,7 @@ const InvertCollider = ({
       );
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
 
-      // Record the vote
+      // Record the claim
       await recordClaim(wallet.publicKey.toString(), {
         antiTokens,
         proTokens,
