@@ -48,7 +48,8 @@ const Dashboard = ({
             },
           },
           datalabels: {
-            display: true,
+            display:
+              emissionsData.baryonTokens + emissionsData.photonTokens > 0,
             font: {
               family: "'SF Mono Round'",
             },
@@ -206,7 +207,7 @@ const Dashboard = ({
             callbacks: {
               label: (context) => {
                 const value = context.raw;
-                return ` ${value}`;
+                return ` ${value.toFixed(2)}`;
               },
             },
           },
@@ -581,8 +582,8 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Highlights the contribution range of predicters based on tokens cast
-                as predictions
+                Highlights the contribution range of predicters based on tokens
+                cast as predictions
               </span>
             </div>
           </div>
@@ -614,8 +615,8 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Tracks the number of PRO and ANTI tokens cast as predictions over
-                time
+                Tracks the number of PRO and ANTI tokens cast as predictions
+                over time
               </span>
             </div>
           </div>
