@@ -41,6 +41,20 @@ export const metadataInit = {
       27472813 * (1 - votesSeed),
       25271918 * (1 - votesSeed),
     ],
+    photonVotes: [
+      1643217 * (1 - votesSeed),
+      6658982 * (1 - votesSeed),
+      1459617 * (1 - votesSeed),
+      2772813 * (1 - votesSeed),
+      2571918 * (1 - votesSeed),
+    ],
+    baryonVotes: [
+      1654217 * (1 - votesSeed),
+      6682982 * (1 - votesSeed),
+      1459607 * (1 - votesSeed),
+      2472813 * (1 - votesSeed),
+      2527118 * (1 - votesSeed),
+    ],
     tokenRangesPro: {
       "0-100k": Math.floor(45 * Math.random()),
       "100k-1m": Math.floor(35 * Math.random()),
@@ -50,6 +64,16 @@ export const metadataInit = {
       "0-100k": Math.floor(30 * Math.random()),
       "100k-1m": Math.floor(40 * Math.random()),
       "1-10m": Math.floor(30 * Math.random()),
+    },
+    tokenRangesPhoton: {
+      "0-100k": Math.floor(25 * Math.random()),
+      "100k-1m": Math.floor(55 * Math.random()),
+      "1-10m": Math.floor(35 * Math.random()),
+    },
+    tokenRangesBaryon: {
+      "0-100k": Math.floor(35 * Math.random()),
+      "100k-1m": Math.floor(40 * Math.random()),
+      "1-10m": Math.floor(65 * Math.random()),
     },
   },
 };
@@ -92,6 +116,20 @@ export const metaPlaceholder = {
       27472813 * (1 - votesSeed),
       25271918 * (1 - votesSeed),
     ],
+    photonVotes: [
+      1643217 * (1 - votesSeed),
+      6658982 * (1 - votesSeed),
+      1459617 * (1 - votesSeed),
+      2772813 * (1 - votesSeed),
+      2571918 * (1 - votesSeed),
+    ],
+    baryonVotes: [
+      1654217 * (1 - votesSeed),
+      6682982 * (1 - votesSeed),
+      1459607 * (1 - votesSeed),
+      2472813 * (1 - votesSeed),
+      2527118 * (1 - votesSeed),
+    ],
     tokenRangesPro: {
       "0-100k": Math.floor(45 * Math.random()),
       "100k-1m": Math.floor(35 * Math.random()),
@@ -101,6 +139,16 @@ export const metaPlaceholder = {
       "0-100k": Math.floor(30 * Math.random()),
       "100k-1m": Math.floor(40 * Math.random()),
       "1-10m": Math.floor(30 * Math.random()),
+    },
+    tokenRangesPhoton: {
+      "0-100k": Math.floor(25 * Math.random()),
+      "100k-1m": Math.floor(55 * Math.random()),
+      "1-10m": Math.floor(35 * Math.random()),
+    },
+    tokenRangesBaryon: {
+      "0-100k": Math.floor(35 * Math.random()),
+      "100k-1m": Math.floor(40 * Math.random()),
+      "1-10m": Math.floor(65 * Math.random()),
     },
   },
 };
@@ -284,4 +332,11 @@ export const emptyConfig = {
   endTime: "-",
   antiLive: 0,
   proLive: 0,
+};
+
+export const emptyConfig2 = {
+  startTime: "-",
+  endTime: "-",
+  baryonLive: 0,
+  photonLive: 0,
 };

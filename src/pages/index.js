@@ -148,7 +148,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     // Trigger field clearing
     setClearFields(true);
     setTimeout(() => setClearFields(false), 100);
-    setTimeout(() => setShowAnimation(true), 100);
+    setTimeout(() => setShowAnimation(state), 100);
   };
 
   const handleClaimSubmitted = (state, claimData) => {
@@ -164,7 +164,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     // Trigger field clearing
     setClearFields(true);
     setTimeout(() => setClearFields(false), 100);
-    setTimeout(() => setShowAnimation(true), 100);
+    setTimeout(() => setShowAnimation(state), 100);
   };
 
   useEffect(() => {
@@ -486,7 +486,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         <span className="relative group">
                           <span className="cursor-pointer">&#9432;</span>
                           <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                            Total amount of PHOTON & BARYON in the prediction pool
+                            Total amount of PHOTON & BARYON in the prediction
+                            pool
                           </span>
                         </span>{" "}
                         &nbsp;Total Pool:{" "}
@@ -503,8 +504,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         <span className="font-sfmono text-gray-400 text-[11px]">
                           {metadata.emissionsData.baryonTokens > 0
                             ? (
-                              metadata.emissionsData.photonTokens /
-                              metadata.emissionsData.baryonTokens
+                                metadata.emissionsData.photonTokens /
+                                metadata.emissionsData.baryonTokens
                               ).toFixed(3)
                             : "-"}
                         </span>{" "}
@@ -532,6 +533,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     clearFields={clearFields}
                     antiData={antiData}
                     proData={proData}
+                    config={{
+                      startTime: metadata.endTime || "-",
+                      endTime: "31/12/49 00:00 AM",
+                      baryonLive: metadata.emissionsData.baryonTokens || 0,
+                      photonLive: metadata.emissionsData.photonTokens || 0,
+                    }}
                   />
                   <p
                     className={`mt-0 text-sm ${
@@ -564,6 +571,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 voterDistributionData={metadata.voterDistribution}
                 totalDistributionData={metadata.totalDistribution}
                 onRefresh={onRefresh}
+                state={showFirstCollider}
               />
             ) : (
               <div className="flex justify-center items-center w-full">

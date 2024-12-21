@@ -13,6 +13,7 @@ const Dashboard = ({
   voterDistributionData,
   totalDistributionData,
   onRefresh,
+  state = true,
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -165,17 +166,25 @@ const Dashboard = ({
 
     // Prepare bar chart data
     setBarChartData({
-      labels: Object.keys(votesOverTime.tokenRangesPro),
+      labels: Object.keys(votesOverTime.tokenRangesPro), // x-axis labels are common
       datasets: [
         {
-          label: "Pro",
-          data: Object.values(votesOverTime.tokenRangesPro),
-          backgroundColor: "#00bb7a",
+          label: state ? "Pro" : "Photon",
+          data: Object.values(
+            state
+              ? votesOverTime.tokenRangesPro
+              : votesOverTime.tokenRangesPhoton
+          ),
+          backgroundColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
         },
         {
-          label: "Anti",
-          data: Object.values(votesOverTime.tokenRangesAnti),
-          backgroundColor: "#c12f00",
+          label: state ? "Anti" : "Baryon",
+          data: Object.values(
+            state
+              ? votesOverTime.tokenRangesAnti
+              : votesOverTime.tokenRangesBaryon
+          ),
+          backgroundColor: state ? "#c12f00" : "rgb(58, 182, 193)",
         },
       ],
       options: {
@@ -243,21 +252,29 @@ const Dashboard = ({
       labels: votesOverTime.timestamps,
       datasets: [
         {
-          label: "Pro",
-          data: votesOverTime.proVotes.every((value) => value === 0)
+          label: state ? "Pro" : "Photon",
+          data: state
+            ? votesOverTime.proVotes.every((value) => value === 0)
+              ? []
+              : votesOverTime.proVotes
+            : votesOverTime.photonVotes.every((value) => value === 0)
             ? []
-            : votesOverTime.proVotes,
-          borderColor: "#00bb7a",
-          backgroundColor: "#00bb7a",
+            : votesOverTime.photonVotes,
+          borderColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
+          backgroundColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
           fill: false,
         },
         {
-          label: "Anti",
-          data: votesOverTime.antiVotes.every((value) => value === 0)
+          label: state ? "Anti" : "Baryon",
+          data: state
+            ? votesOverTime.antiVotes.every((value) => value === 0)
+              ? []
+              : votesOverTime.antiVotes
+            : votesOverTime.baryonVotes.every((value) => value === 0)
             ? []
-            : votesOverTime.antiVotes,
-          borderColor: "#c12f00",
-          backgroundColor: "#c12f00",
+            : votesOverTime.baryonVotes,
+          borderColor: state ? "#c12f00" : "rgb(58, 182, 193)",
+          backgroundColor: state ? "#c12f00" : "rgb(58, 182, 193)",
           fill: false,
         },
       ],
@@ -563,7 +580,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Predicter Participation</div>
+            <div>{`${state ? "Predicter" : "Claimer"} Participation`}</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -585,8 +602,10 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Highlights the contribution range of predicters based on tokens
-                cast as predictions
+                {`Highlights the contribution range of ${
+                  state ? "predicters" : "claimers"
+                } based on tokens
+                cast as ${state ? "predictions" : "claims"}`}
               </span>
             </div>
           </div>
@@ -618,8 +637,10 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Tracks the number of PRO and ANTI tokens cast as predictions
-                over time
+                {`Tracks the number of ${
+                  state ? "PRO & ANTI" : "PHOTONS & BARYONS"
+                } tokens cast as ${state ? "predictions" : "claims"}
+                over time`}
               </span>
             </div>
           </div>

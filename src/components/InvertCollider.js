@@ -6,7 +6,7 @@ import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
-import { toastContainerConfig, toast } from "../utils/utils";
+import { toastContainerConfig, toast, emptyConfig2 } from "../utils/utils";
 Chart.register(...registerables);
 
 const InvertCollider = ({
@@ -21,6 +21,7 @@ const InvertCollider = ({
   clearFields,
   antiData,
   proData,
+  config = emptyConfig2,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
