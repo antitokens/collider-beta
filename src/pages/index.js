@@ -28,7 +28,7 @@ import {
   PRO_TOKEN_MINT,
   getTokenBalance,
 } from "../utils/solana";
-import { useIsMobile } from "../utils/utils";
+import { useIsMobile, _metadata } from "../utils/utils";
 import { getKVBalance } from "../utils/api";
 import { calculateDistribution } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -114,8 +114,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [antiData, setAntiData] = useState(null);
   const [proData, setProData] = useState(null);
   const [showAnimation, setShowAnimation] = useState(false);
-  const [currentVoteData, setCurrentVoteData] = useState(null);
-  const [currentClaimData, setCurrentClaimData] = useState(null);
+  const [currentVoteData, setCurrentVoteData] = useState(_metadata);
+  const [currentClaimData, setCurrentClaimData] = useState(_metadata);
   const isMobile = useIsMobile();
 
   const voterDistribution = calculateDistribution(50, 30);
@@ -487,9 +487,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           <ParticleCollision
             width={1400}
             height={1000}
-            incomingSpeed={2}
-            outgoingSpeed={1}
-            maxLoops={1}
+            incomingSpeed={0.5}
+            outgoingSpeed={0.5}
+            maxLoops={10}
             inverse={!showFirstCollider}
             isMobile={isMobile}
             metadata={

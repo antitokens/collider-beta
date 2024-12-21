@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { truncateMiddle } from "../utils/utils";
+import {
+  truncateMiddle,
+  randomiseTextEffect,
+  convertToLocaleTime,
+  isValidTime,
+  _metadata,
+} from "../utils/utils";
 
 export const ParticleCollision = ({
   width = 800,
@@ -9,7 +15,7 @@ export const ParticleCollision = ({
   maxLoops = 1,
   inverse = false,
   isMobile = false,
-  metadata = "{}",
+  metadata = { _metadata },
   onComplete = () => {},
 }) => {
   const canvasRef = useRef(null);
@@ -29,8 +35,10 @@ export const ParticleCollision = ({
             ? value.toFixed(2)
             : typeof value === "object"
             ? JSON.stringify(value)
+            : typeof value === "string" && isValidTime(value)
+            ? convertToLocaleTime(value)
             : isMobile
-            ? truncateMiddle(value)
+            ? truncateMiddle(value, 100, 10)
             : String(value);
         return `${key}: ${formattedValue}`;
       });
@@ -456,25 +464,49 @@ export const ParticleCollision = ({
                 key={index}
                 className="font-sfmono text-sm bg-black bg-opacity-50 px-2 py-0.5 rounded mb-1 flex justify-end items-center"
               >
-                <span className={`text-${inverse ? "accent-primary" : "accent-secondary"} bg-dark-card p-1 rounded-md`}>
-                  {value}
+                <span
+                  id={`randomise-effect-${index}`}
+                  className={`text-${
+                    inverse ? "accent-primary" : "accent-secondary"
+                  } break-all bg-dark-card p-1 rounded-md`}
+                >
+                  {randomiseTextEffect(
+                    "randomise-effect-" + index,
+                    value,
+                    10000,
+                    key.includes("baryon")
+                      ? "number"
+                      : key.includes("photon")
+                      ? "number"
+                      : key.includes("anti")
+                      ? "number"
+                      : key.includes("pro")
+                      ? "number"
+                      : key.includes("signature")
+                      ? "text"
+                      : key.includes("time")
+                      ? "text"
+                      : key.includes("wallet")
+                      ? "text"
+                      : ""
+                  )}
                 </span>
-                <span className="text-gray-200 bg-dark-card p-1 rounded-md">
+                <span className="text-gray-200 bg-dark-card p-1 rounded-md break-normal whitespace-pre font-sfmono">
                   :{" "}
                   {key.includes("baryon")
-                    ? "BARYON___"
+                    ? "BARYON   "
                     : key.includes("photon")
-                    ? "PHOTON___"
+                    ? "PHOTON   "
                     : key.includes("anti")
                     ? "ANTITOKEN"
                     : key.includes("pro")
-                    ? "PROTOKEN_"
+                    ? "PROTOKEN "
                     : key.includes("signature")
                     ? "SIGNATURE"
                     : key.includes("time")
                     ? "TIMESTAMP"
                     : key.includes("wallet")
-                    ? "WALLET___"
+                    ? "WALLET   "
                     : ""}
                 </span>
               </div>
