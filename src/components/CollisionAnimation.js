@@ -12,6 +12,7 @@ export const ParticleCollision = ({
   height = 600,
   incomingSpeed = 1,
   explosionSpeed = 1,
+  curve = 1,
   maxLoops = 1,
   inverse = false,
   isMobile = false,
@@ -76,7 +77,7 @@ export const ParticleCollision = ({
         this.alpha = 1;
         this.trail = [];
         this.isIncoming = isIncoming;
-        this.maxTrailLength = isIncoming ? 10 : 60;
+        this.maxTrailLength = isIncoming ? 10 : 120;
       }
 
       project() {
@@ -254,8 +255,13 @@ export const ParticleCollision = ({
         }
 
         const speed = this.isIncoming ? incomingSpeed : explosionSpeed;
-        this.x += this.velocity.x * (speed * 2);
-        this.y += this.velocity.y * (speed * 2);
+        const drift = this.isIncoming ? 0 : curve * 0.025;
+        this.x +=
+          this.velocity.x * (speed * 2) +
+          drift * (this.z + drift * (this.x + this.y));
+        this.y +=
+          this.velocity.y * (speed * 2) +
+          drift * (this.z + drift * (this.x + this.y));
         this.z += this.velocity.z * (speed * 2);
         this.alpha *= 0.99;
       }

@@ -489,6 +489,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             height={1000}
             incomingSpeed={2}
             outgoingSpeed={1}
+            curve={1}
             maxLoops={2}
             inverse={!showFirstCollider}
             isMobile={isMobile}
