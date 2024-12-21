@@ -20,6 +20,7 @@ import Collider from "../components/Collider";
 import InvertCollider from "../components/InvertCollider";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
 import Navbar from "../components/TopNavbar";
+import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
 import Dashboard from "../components/Dashboard";
 import BuyTokenModal from "../components/BuyTokenModal";
@@ -457,13 +458,24 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           </div>
 
           <div className="xl:col-span-3 mx-2 md:mx-0">
-            <Dashboard
-              votersData={metadata.votersData}
-              tokensData={metadata.tokensData}
-              votesOverTime={metadata.votesOverTime}
-              voterDistributionData={metadata.voterDistribution}
-              totalDistributionData={metadata.totalDistribution}
-            />
+            {!isMetaLoading && (
+              <Dashboard
+                votersData={metadata.votersData}
+                tokensData={metadata.tokensData}
+                votesOverTime={metadata.votesOverTime}
+                voterDistributionData={metadata.voterDistribution}
+                totalDistributionData={metadata.totalDistribution}
+              />
+            )}
+            {isMetaLoading && (
+              <BinaryOrbit
+                size={800}
+                orbitRadius={200}
+                particleRadius={60}
+                padding={10}
+                invert={false}
+              />
+            )}
           </div>
         </div>
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
