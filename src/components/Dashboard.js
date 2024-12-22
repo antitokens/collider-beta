@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { formatCount, formatPrecise } from "../utils/utils";
+import { formatCount, formatShort } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
 
@@ -373,12 +373,12 @@ const Dashboard = ({
       labels: !connected
         ? totalDistribution
           ? totalDistribution.short.map((value) =>
-              value > 0 ? formatPrecise(value.toFixed(6)) : ""
+              value > 0 ? formatShort(value.toFixed(6)) : ""
             )
           : []
         : colliderDistribution
         ? colliderDistribution.short.map((value) =>
-            value > 0 ? formatPrecise(value.toFixed(6)) : ""
+            value > 0 ? formatShort(value.toFixed(6)) : ""
           )
         : [],
       datasets: [

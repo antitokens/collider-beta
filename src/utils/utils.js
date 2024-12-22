@@ -326,6 +326,15 @@ export const formatCount = (_value) => {
   return value >= 1e6
     ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
     : value >= 1e3
+    ? (value / 1e3).toFixed(1).replace(/\.0$/, "") + "k"
+    : value.toFixed(1).toString();
+};
+
+export const formatShort = (_value) => {
+  const value = Number(_value);
+  return value >= 1e6
+    ? (value / 1e6).toFixed(0).replace(/\.0$/, "") + "m"
+    : value >= 1e3
     ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
     : value.toFixed(0).toString();
 };
