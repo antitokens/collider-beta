@@ -125,6 +125,7 @@ const Collider = ({
                 color: "#999999",
               },
               ticks: {
+                display: totalInvest > 0,
                 font: {
                   family: "'SF Mono Round'",
                   size: 10,
