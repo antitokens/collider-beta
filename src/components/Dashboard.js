@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { formatCount } from "../utils/colliderAlpha";
+import { formatCount, formatPrecise } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
 
@@ -356,13 +356,15 @@ const Dashboard = ({
     setNetDistribution({
       type: "line",
       labels: totalDistribution
-        ? totalDistribution.range.map((value) => value.toFixed(2))
+        ? totalDistribution.short.map((value) =>
+            value > 0 ? formatPrecise(value.toFixed(6)) : ""
+          )
         : [],
       datasets: [
         {
           label: "Live Distribution",
           data: totalDistribution
-            ? totalDistribution.distribution.map((item) => item.value)
+            ? totalDistribution.curve.map((item) => item.value)
             : [],
           borderColor: "#3d9bff",
           backgroundColor: "#3d9bff", // Match the legend marker color
@@ -415,13 +417,15 @@ const Dashboard = ({
 
     setUserDistribution({
       labels: colliderDistribution
-        ? colliderDistribution.range.map((value) => value.toFixed(2))
+        ? colliderDistribution.short.map((value) =>
+            value > 0 ? formatPrecise(value.toFixed(6)) : ""
+          )
         : [],
       datasets: [
         {
           label: "Your Distribution",
           data: colliderDistribution
-            ? colliderDistribution.distribution.map((item) => item.value)
+            ? colliderDistribution.curve.map((item) => item.value)
             : [],
           borderColor: "#c4c4c4",
           backgroundColor: "#c4c4c4", // Match the legend marker color
