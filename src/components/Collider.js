@@ -28,6 +28,7 @@ const Collider = ({
   antiData,
   proData,
   config = emptyConfig,
+  isMobile = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -373,14 +374,29 @@ const Collider = ({
               <span className="cursor-pointer">
                 &#9432;
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Prediction market opening date & time
+                  {isMobile
+                    ? `Prediction market opening date & time: ${
+                        config.startTime !== "-"
+                          ? !isMobile
+                            ? convertToLocaleTime(
+                                config.startTime,
+                                isMobile
+                              ).split(",")[0]
+                            : convertToLocaleTime(config.startTime, isMobile)
+                          : "-"
+                      }`
+                    : "Prediction market opening date & time"}
                 </span>
               </span>
             </span>{" "}
             &nbsp;Open:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {config.startTime !== "-"
-                ? convertToLocaleTime(config.startTime)
+                ? isMobile
+                  ? convertToLocaleTime(config.startTime, isMobile).split(
+                      ","
+                    )[0]
+                  : convertToLocaleTime(config.startTime, isMobile)
                 : "-"}
             </span>{" "}
           </div>
@@ -388,15 +404,28 @@ const Collider = ({
             Close:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {config.endTime !== "-"
-                ? convertToLocaleTime(config.endTime)
+                ? isMobile
+                  ? convertToLocaleTime(config.endTime, isMobile).split(",")[0]
+                  : convertToLocaleTime(config.endTime, isMobile)
                 : "-"}
             </span>{" "}
             &nbsp;
             <span className="relative group">
               <span className="cursor-pointer">
                 &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/4 lg:translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Prediction market closing date & time
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  {isMobile
+                    ? `Prediction market closing date & time: ${
+                        config.endTime !== "-"
+                          ? !isMobile
+                            ? convertToLocaleTime(
+                                config.endTime,
+                                isMobile
+                              ).split(",")[0]
+                            : convertToLocaleTime(config.endTime, isMobile)
+                          : "-"
+                      }`
+                    : "Prediction market closing date & time"}
                 </span>
               </span>
             </span>
@@ -411,26 +440,26 @@ const Collider = ({
               </span>
             </span>{" "}
             &nbsp;Total Pool:{" "}
-            <span className="font-sfmono text-accent-secondary text-[12px] text-opacity-80">
+            <span className="font-sfmono text-accent-secondary text-[11px] text-opacity-80">
               {formatCount(config.proLive)}
             </span>
             {"/"}
-            <span className="font-sfmono text-accent-primary text-[12px] text-opacity-90">
+            <span className="font-sfmono text-accent-primary text-[11px] text-opacity-90">
               {formatCount(config.antiLive)}
             </span>
           </div>
           <div className="text-[12px] text-gray-500 text-right">
             Pool Ratio:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
-              {config.antiLive > 0
+              {config.antiLive > 0 && config.proLive > 0
                 ? (config.proLive / config.antiLive).toFixed(3)
-                : "-"}
+                : "0.000"}
             </span>{" "}
             &nbsp;
             <span className="relative group">
               <span className="cursor-pointer">
                 &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[134px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   Ratio PRO:ANTI in the prediction pool
                 </span>
               </span>

@@ -277,7 +277,11 @@ export function randomiseTextEffect(
   requestAnimationFrame(animate);
 }
 
-export function convertToLocaleTime(timeString, locale = "en-US") {
+export function convertToLocaleTime(
+  timeString,
+  isMobile = false,
+  locale = "en-US"
+) {
   if (!isValidTime(timeString)) {
     throw new Error("Invalid time string format");
   }

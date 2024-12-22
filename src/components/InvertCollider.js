@@ -22,6 +22,7 @@ const InvertCollider = ({
   antiData,
   proData,
   config = emptyConfig2,
+  isMobile = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);

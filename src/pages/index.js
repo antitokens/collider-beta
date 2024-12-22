@@ -403,6 +403,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     antiLive: metadata.tokensData.antiTokens || 0,
                     proLive: metadata.tokensData.proTokens || 0,
                   }}
+                  isMobile={isMobile}
                 />
               </div>
             ) : (
@@ -454,28 +455,59 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           <span className="cursor-pointer">
                             &#9432;
                             <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              Reclaim opening date & time
+                              {isMobile
+                                ? `Reclaim opening date & time: ${
+                                    metadata.endTime !== "-"
+                                      ? isMobile
+                                        ? convertToLocaleTime(
+                                            metadata.startTime,
+                                            isMobile
+                                          ).split(",")[0]
+                                        : convertToLocaleTime(
+                                            metadata.startTime,
+                                            isMobile
+                                          )
+                                      : "-"
+                                  }`
+                                : "Reclaim opening date & time"}
                             </span>
                           </span>
                         </span>{" "}
                         &nbsp;Open:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.startTime !== "-"
-                            ? convertToLocaleTime(metadata.endTime)
+                          {metadata.endTime !== "-"
+                            ? isMobile
+                              ? convertToLocaleTime(
+                                  metadata.endTime,
+                                  isMobile
+                                ).split(",")[0]
+                              : convertToLocaleTime(metadata.endTime, isMobile)
                             : "-"}
                         </span>{" "}
                       </div>
                       <div className="text-[12px] text-gray-500 text-right">
                         Close:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.endTime !== "-" ? "31/12/49 00:00 AM" : "-"}
+                          {metadata.endTime !== "-"
+                            ? isMobile
+                              ? "Never"
+                              : "Never"
+                            : "-"}
                         </span>{" "}
                         &nbsp;
                         <span className="relative group">
                           <span className="cursor-pointer">
                             &#9432;
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/4 lg:translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              Reclaim closing date & time
+                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                              {isMobile
+                                ? `Reclaim closing date & time: ${
+                                    metadata.endTime !== "-"
+                                      ? !isMobile
+                                        ? "Never"
+                                        : "Never"
+                                      : "-"
+                                  }`
+                                : "Reclaim closing date & time"}
                             </span>
                           </span>
                         </span>
@@ -539,6 +571,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       baryonLive: metadata.emissionsData.baryonTokens || 0,
                       photonLive: metadata.emissionsData.photonTokens || 0,
                     }}
+                    isMobile={isMobile}
                   />
                   <p
                     className={`mt-0 text-sm ${
