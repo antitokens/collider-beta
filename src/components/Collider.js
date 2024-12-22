@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { recordVote } from "../utils/api";
+import { recordPrediction } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
@@ -23,7 +23,7 @@ const Collider = ({
   photonBalance,
   disabled,
   BASE_URL,
-  onVoteSubmitted,
+  onPredictionSubmitted,
   clearFields,
   antiData,
   proData,
@@ -59,11 +59,10 @@ const Collider = ({
   useEffect(() => {
     if (userDistribution) {
       // Trial
-      const F = (antiTokens + proTokens) / 2;
-      const G = (antiTokens + proTokens) / 2;
-
-      setBaryonTokens(F * (1 * userDistribution.u));
-      setPhotonTokens(G * (1 / userDistribution.s));
+      const F = 1;
+      const G = 1;
+      setBaryonTokens(F * userDistribution.u);
+      setPhotonTokens(G * userDistribution.s);
       setLineChartData({
         type: "line",
         labels: userDistribution.range.map((value) =>
@@ -123,7 +122,7 @@ const Collider = ({
               position: "bottom",
               title: {
                 display: true,
-                text: "Your Normalised Vote", // Label for the X-axis
+                text: "Your Normalised Prediction", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
                   size: 12,
@@ -146,7 +145,7 @@ const Collider = ({
               position: "top",
               title: {
                 display: false,
-                text: "Your Normalised Vote", // Label for the X-axis
+                text: "Your Normalised Prediction", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
                   size: 12,
@@ -215,7 +214,7 @@ const Collider = ({
     }
   }, [userDistribution, antiTokens, proTokens]);
 
-  const handleVote = async () => {
+  const handlePrediction = async () => {
     if (disabled || loading) return;
 
     try {
@@ -224,6 +223,19 @@ const Collider = ({
       // Validate input
       if (antiTokens <= 0 && proTokens <= 0) {
         toast.error("You must predict with at least some tokens!");
+        return;
+      }
+
+      if (
+        Math.abs(antiTokens - proTokens) < 1 &&
+        Math.abs(antiTokens - proTokens) !== 0
+      ) {
+        toast.error("Token difference must be larger than 1, or exactly 0!");
+        return;
+      }
+
+      if (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0) {
+        toast.error("Token sum must be larger than 1, or exactly 0!");
         return;
       }
 
@@ -246,7 +258,7 @@ const Collider = ({
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
       const timestamp = new Date().toISOString();
       // Record the prediction
-      await recordVote(wallet.publicKey.toString(), {
+      await recordPrediction(wallet.publicKey.toString(), {
         antiTokens,
         proTokens,
         baryonTokens,
@@ -264,12 +276,12 @@ const Collider = ({
         timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
       };
-      onVoteSubmitted(true, predictionData);
+      onPredictionSubmitted(true, predictionData);
       toast.success("Your prediction has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
       toast.error("An error occurred while recording your prediction");
-      onVoteSubmitted(false, { error: error.message });
+      onPredictionSubmitted(false, { error: error.message });
     } finally {
       setLoading(false);
     }
@@ -696,15 +708,26 @@ const Collider = ({
 
       {/* Submit Button */}
       <button
-        onClick={handleVote}
+        onClick={handlePrediction}
         disabled={disabled || loading}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
-          disabled || loading
+          disabled ||
+          loading ||
+          (antiTokens === 0 && proTokens === 0) ||
+          (Math.abs(antiTokens - proTokens) < 1 &&
+            Math.abs(antiTokens - proTokens) !== 0) ||
+          (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {loading ? "Submitting..." : "Submit"}
+        {(Math.abs(antiTokens - proTokens) < 1 &&
+          Math.abs(antiTokens - proTokens) !== 0) ||
+        (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
+          ? "Submit"
+          : loading
+          ? "Submitting..."
+          : "Submit"}
       </button>
       <ToastContainer {...toastContainerConfig} />
       <p
@@ -712,7 +735,7 @@ const Collider = ({
           wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"
         }`}
       >
-        {wallet.connected ? "" : "Connect your wallet to enable voting"}
+        {wallet.connected ? "" : "Connect your wallet to enable predictions"}
       </p>
     </div>
   );

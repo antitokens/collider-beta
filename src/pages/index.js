@@ -17,7 +17,7 @@ import {
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import Collider from "../components/Collider";
-import InvertCollider from "../components/InvertCollider";
+import InvertCollider from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
 import Navbar from "../components/TopNavbar";
 import BinaryOrbit from "../components/BinaryOrbit";
@@ -116,13 +116,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [proBalance, setProBalance] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
-  const [showFirstCollider, setShowFirstCollider] = useState(true);
+  const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
   const [antiData, setAntiData] = useState(null);
   const [proData, setProData] = useState(null);
   const [showAnimation, setShowAnimation] = useState(false);
-  const [currentVoteData, setCurrentVoteData] = useState(emptyMetadata);
+  const [currentPredictionData, setCurrentPredictionData] = useState(emptyMetadata);
   const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
   const [metadata, setMetadata] = useState(metadataInit);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
@@ -134,14 +134,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setRefresh(state);
   };
 
-  const handleVoteSubmitted = (state, voteData) => {
+  const handlePredictionSubmitted = (state, eventData) => {
     if (state) {
-      // Store the submitted vote data
-      setCurrentVoteData(voteData);
+      // Store the submitted event data
+      setCurrentPredictionData(eventData);
       setRefresh(true);
     } else {
       // Handle error case
-      console.error("Vote submission failed:", voteData.error);
+      console.error("Prediction submission failed:", eventData.error);
     }
     setDataUpdated(state);
     setTrigger(state);
@@ -157,7 +157,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       setRefresh(true);
     } else {
       // Handle error case
-      console.error("Vote submission failed:", claimData.error);
+      console.error("Prediction submission failed:", claimData.error);
     }
     setDataUpdated(state);
     setTrigger(state);
@@ -175,12 +175,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const blob = await getMetadata();
           const data = JSON.parse(blob.message);
           // Calculate distributions using API data
-          const voterDistribution =
-            data.voterDistribution.value1 > 0 &&
-            data.voterDistribution.value2 > 0
+          const colliderDistribution =
+            data.colliderDistribution.value1 > 0 &&
+            data.colliderDistribution.value2 > 0
               ? calculateDistribution(
-                  data.voterDistribution.value1,
-                  data.voterDistribution.value2
+                  data.colliderDistribution.value1,
+                  data.colliderDistribution.value2
                 )
               : emptyGaussian;
           const totalDistribution =
@@ -195,11 +195,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setMetadata({
             startTime: data.startTime,
             endTime: data.endTime,
-            voterDistribution: voterDistribution,
+            colliderDistribution: colliderDistribution,
             totalDistribution: totalDistribution,
             emissionsData: data.emissionsData,
-            tokensData: data.tokensData,
-            votesOverTime: data.votesOverTime,
+            collisionsData: data.collisionsData,
+            eventsOverTime: data.eventsOverTime,
           });
         } catch (err) {
           console.error("Error fetching metadata:", err);
@@ -347,7 +347,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         {/* Collider Sections Toggle */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto">
           <div className="lg:col-span-1 xl:col-span-2 mx-2 md:mx-0">
-            {showFirstCollider ? (
+            {showCollider ? (
               <div className="text-center mt-20">
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
@@ -355,7 +355,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
-                    onClick={() => setShowFirstCollider(false)}
+                    onClick={() => setShowCollider(false)}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
                       <div className="mr-1">Switch to Inverter</div>
@@ -393,15 +393,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   photonBalance={photonBalance}
                   disabled={!wallet.connected}
                   BASE_URL={BASE_URL}
-                  onVoteSubmitted={handleVoteSubmitted}
+                  onPredictionSubmitted={handlePredictionSubmitted}
                   clearFields={clearFields}
                   antiData={antiData}
                   proData={proData}
                   config={{
                     startTime: metadata.startTime || "-",
                     endTime: metadata.endTime || "-",
-                    antiLive: metadata.tokensData.antiTokens || 0,
-                    proLive: metadata.tokensData.proTokens || 0,
+                    antiLive: metadata.collisionsData.antiTokens || 0,
+                    proLive: metadata.collisionsData.proTokens || 0,
                   }}
                   isMobile={isMobile}
                 />
@@ -414,7 +414,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
-                    onClick={() => setShowFirstCollider(true)}
+                    onClick={() => setShowCollider(true)}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
                       <div className="mr-1">Switch to Collider</div>
@@ -539,7 +539,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                                 metadata.emissionsData.photonTokens /
                                 metadata.emissionsData.baryonTokens
                               ).toFixed(3)
-                            : "-"}
+                            : "0.000"}
                         </span>{" "}
                         &nbsp;
                         <span className="relative group">
@@ -567,7 +567,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     proData={proData}
                     config={{
                       startTime: metadata.endTime || "-",
-                      endTime: "31/12/49 00:00 AM",
+                      endTime: "-",
                       baryonLive: metadata.emissionsData.baryonTokens || 0,
                       photonLive: metadata.emissionsData.photonTokens || 0,
                     }}
@@ -599,12 +599,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             {!isMetaLoading ? (
               <Dashboard
                 emissionsData={metadata.emissionsData}
-                tokensData={metadata.tokensData}
-                votesOverTime={metadata.votesOverTime}
-                voterDistributionData={metadata.voterDistribution}
-                totalDistributionData={metadata.totalDistribution}
+                collisionsData={metadata.collisionsData}
+                eventsOverTime={metadata.eventsOverTime}
+                colliderDistribution={metadata.colliderDistribution}
+                totalDistribution={metadata.totalDistribution}
                 onRefresh={onRefresh}
-                state={showFirstCollider}
+                state={showCollider}
               />
             ) : (
               <div className="flex justify-center items-center w-full">
@@ -648,11 +648,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             outgoingSpeed={1}
             curve={1}
             maxLoops={2}
-            inverse={!showFirstCollider}
+            inverse={!showCollider}
             isMobile={isMobile}
             metadata={
-              showFirstCollider
-                ? JSON.stringify(currentVoteData)
+              showCollider
+                ? JSON.stringify(currentPredictionData)
                 : JSON.stringify(currentClaimData)
             }
             onComplete={() => {

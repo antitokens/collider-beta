@@ -5,55 +5,58 @@ import { BadgeCheck, CircleAlert } from "lucide-react";
 import { calculateCollision } from "./colliderAlpha";
 
 // // Metadata init [test]
-const partSeed = Math.random();
-const votersSeed = Math.random();
-const tokensSeed = Math.random();
-const votesSeed = Math.random();
+const _Seed = Math.random();
+const emissionsSeed = Math.random();
+const collisionsSeed = Math.random();
+const eventsSeed = Math.random();
 
 export const metadataInit = {
   startTime: "-",
   endTime: "-",
-  voterDistribution: calculateCollision(50 * Math.random(), 30 * Math.random()),
+  colliderDistribution: calculateCollision(
+    50 * Math.random(),
+    30 * Math.random()
+  ),
   totalDistribution: calculateCollision(60 * Math.random(), 20 * Math.random()),
   emissionsData: {
-    total: 1e5 * votersSeed,
-    photonTokens: 1e5 * partSeed * votersSeed,
-    baryonTokens: 1e5 * (1 - partSeed) ** 2 * votersSeed,
+    total: 1e5 * emissionsSeed,
+    photonTokens: 1e5 * _Seed * emissionsSeed,
+    baryonTokens: 1e5 * (1 - _Seed) ** 2 * emissionsSeed,
   },
-  tokensData: {
+  collisionsData: {
     total: 1e9,
     proTokens: 0,
     antiTokens: 0,
   },
-  votesOverTime: {
+  eventsOverTime: {
     timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
-    proVotes: [
-      51210286 * votesSeed,
-      10303372 * votesSeed,
-      40281190 * votesSeed,
-      74538504 * votesSeed,
-      12174106 * votesSeed,
+    proEvents: [
+      51210286 * eventsSeed,
+      10303372 * eventsSeed,
+      40281190 * eventsSeed,
+      74538504 * eventsSeed,
+      12174106 * eventsSeed,
     ],
-    antiVotes: [
-      16543217 * (1 - votesSeed),
-      66582982 * (1 - votesSeed),
-      14596107 * (1 - votesSeed),
-      27472813 * (1 - votesSeed),
-      25271918 * (1 - votesSeed),
+    antiEvents: [
+      16543217 * (1 - eventsSeed),
+      66582982 * (1 - eventsSeed),
+      14596107 * (1 - eventsSeed),
+      27472813 * (1 - eventsSeed),
+      25271918 * (1 - eventsSeed),
     ],
-    photonVotes: [
-      1643217 * (1 - votesSeed),
-      6658982 * (1 - votesSeed),
-      1459617 * (1 - votesSeed),
-      2772813 * (1 - votesSeed),
-      2571918 * (1 - votesSeed),
+    photonEvents: [
+      1643217 * (1 - eventsSeed),
+      6658982 * (1 - eventsSeed),
+      1459617 * (1 - eventsSeed),
+      2772813 * (1 - eventsSeed),
+      2571918 * (1 - eventsSeed),
     ],
-    baryonVotes: [
-      1654217 * (1 - votesSeed),
-      6682982 * (1 - votesSeed),
-      1459607 * (1 - votesSeed),
-      2472813 * (1 - votesSeed),
-      2527118 * (1 - votesSeed),
+    baryonEvents: [
+      1654217 * (1 - eventsSeed),
+      6682982 * (1 - eventsSeed),
+      1459607 * (1 - eventsSeed),
+      2472813 * (1 - eventsSeed),
+      2527118 * (1 - eventsSeed),
     ],
     tokenRangesPro: {
       "0-100k": Math.floor(45 * Math.random()),
@@ -82,7 +85,7 @@ export const metadataInit = {
 export const metaPlaceholder = {
   startTime: "-",
   endTime: "-",
-  voterDistribution: {
+  colliderDistribution: {
     value1: 50 * Math.random(),
     value2: 30 * Math.random(),
   },
@@ -91,44 +94,44 @@ export const metaPlaceholder = {
     value2: 20 * Math.random(),
   },
   emissionsData: {
-    total: 1e5 * votersSeed,
-    photonTokens: 1e5 * partSeed * votersSeed,
-    baryonTokens: 1e5 * (1 - partSeed) ** 2 * votersSeed,
+    total: 1e5 * emissionsSeed,
+    photonTokens: 1e5 * _Seed * emissionsSeed,
+    baryonTokens: 1e5 * (1 - _Seed) ** 2 * emissionsSeed,
   },
-  tokensData: {
-    total: 1e9 * tokensSeed,
-    proTokens: 1e9 * (1 - partSeed) ** 2 * tokensSeed,
-    antiTokens: 1e9 * partSeed * tokensSeed,
+  collisionsData: {
+    total: 1e9 * collisionsSeed,
+    proTokens: 1e9 * (1 - _Seed) ** 2 * collisionsSeed,
+    antiTokens: 1e9 * _Seed * collisionsSeed,
   },
-  votesOverTime: {
+  eventsOverTime: {
     timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
-    proVotes: [
-      51210286 * votesSeed,
-      10303372 * votesSeed,
-      40281190 * votesSeed,
-      74538504 * votesSeed,
-      12174106 * votesSeed,
+    proEvents: [
+      51210286 * eventsSeed,
+      10303372 * eventsSeed,
+      40281190 * eventsSeed,
+      74538504 * eventsSeed,
+      12174106 * eventsSeed,
     ],
-    antiVotes: [
-      16543217 * (1 - votesSeed),
-      66582982 * (1 - votesSeed),
-      14596107 * (1 - votesSeed),
-      27472813 * (1 - votesSeed),
-      25271918 * (1 - votesSeed),
+    antiEvents: [
+      16543217 * (1 - eventsSeed),
+      66582982 * (1 - eventsSeed),
+      14596107 * (1 - eventsSeed),
+      27472813 * (1 - eventsSeed),
+      25271918 * (1 - eventsSeed),
     ],
-    photonVotes: [
-      1643217 * (1 - votesSeed),
-      6658982 * (1 - votesSeed),
-      1459617 * (1 - votesSeed),
-      2772813 * (1 - votesSeed),
-      2571918 * (1 - votesSeed),
+    photonEvents: [
+      1643217 * (1 - eventsSeed),
+      6658982 * (1 - eventsSeed),
+      1459617 * (1 - eventsSeed),
+      2772813 * (1 - eventsSeed),
+      2571918 * (1 - eventsSeed),
     ],
-    baryonVotes: [
-      1654217 * (1 - votesSeed),
-      6682982 * (1 - votesSeed),
-      1459607 * (1 - votesSeed),
-      2472813 * (1 - votesSeed),
-      2527118 * (1 - votesSeed),
+    baryonEvents: [
+      1654217 * (1 - eventsSeed),
+      6682982 * (1 - eventsSeed),
+      1459607 * (1 - eventsSeed),
+      2472813 * (1 - eventsSeed),
+      2527118 * (1 - eventsSeed),
     ],
     tokenRangesPro: {
       "0-100k": Math.floor(45 * Math.random()),

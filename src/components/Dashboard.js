@@ -8,10 +8,10 @@ Chart.register(ChartDataLabels, ...registerables);
 
 const Dashboard = ({
   emissionsData,
-  tokensData,
-  votesOverTime,
-  voterDistributionData,
-  totalDistributionData,
+  collisionsData,
+  eventsOverTime,
+  colliderDistribution,
+  totalDistribution,
   onRefresh,
   state = false,
 }) => {
@@ -19,16 +19,16 @@ const Dashboard = ({
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
   const [barChartData, setBarChartData] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
-  const [totalDistribution, setTotalDistribution] = useState(null);
-  const [voterDistribution, setVoterDistribution] = useState(null);
+  const [netDistribution, setNetDistribution] = useState(null);
+  const [userDistribution, setUserDistribution] = useState(null);
 
   useEffect(() => {
-    // Prepare pie chart data for voters
+    // Prepare pie chart data for events
     setPieChartDataEmissions({
-      labels: ["Baryon", "Photon"],
+      labels: ["Photon", "Baryon"],
       datasets: [
         {
-          data: [emissionsData.baryonTokens, emissionsData.photonTokens],
+          data: [emissionsData.photonTokens, emissionsData.baryonTokens],
           backgroundColor: ["rgb(123, 191, 255)", "rgb(58, 183, 192)"],
           borderColor: ["#000000", "#000000"],
         },
@@ -94,14 +94,10 @@ const Dashboard = ({
 
     // Prepare pie chart data for tokens
     setPieChartDataTokens({
-      labels: ["Pro", "Anti", "Unused"],
+      labels: ["Pro", "Anti"],
       datasets: [
         {
-          data: [
-            tokensData.proTokens,
-            tokensData.antiTokens,
-            tokensData.total - (tokensData.proTokens + tokensData.antiTokens),
-          ],
+          data: [collisionsData.proTokens, collisionsData.antiTokens],
           backgroundColor: ["#00bb7a", "#c12f00", "#808080"],
           borderColor: ["#000000", "#000000", "#000000"],
         },
@@ -122,7 +118,7 @@ const Dashboard = ({
             },
           },
           datalabels: {
-            display: true,
+            display: collisionsData.antiTokens + collisionsData.proTokens > 0,
             font: {
               family: "'SF Mono Round'",
             },
@@ -137,7 +133,11 @@ const Dashboard = ({
             borderRadius: 3,
             anchor: "center",
             formatter: (value, context) => {
-              return `${((value / tokensData.total) * 100).toFixed(1)}%`;
+              return `${(
+                (value /
+                  (collisionsData.antiTokens + collisionsData.proTokens)) *
+                100
+              ).toFixed(1)}%`;
             },
           },
           tooltip: {
@@ -151,9 +151,11 @@ const Dashboard = ({
             callbacks: {
               label: (context) => {
                 const value = context.raw;
-                return ` ${((value / tokensData.total) * 100).toFixed(
-                  1
-                )}% (${value
+                return ` ${(
+                  (value /
+                    (collisionsData.antiTokens + collisionsData.proTokens)) *
+                  100
+                ).toFixed(1)}% (${value
                   .toFixed(0)
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})`;
@@ -166,14 +168,14 @@ const Dashboard = ({
 
     // Prepare bar chart data
     setBarChartData({
-      labels: Object.keys(votesOverTime.tokenRangesPro), // x-axis labels are common
+      labels: Object.keys(eventsOverTime.tokenRangesPro), // x-axis labels are common
       datasets: [
         {
           label: state ? "Pro" : "Photon",
           data: Object.values(
             state
-              ? votesOverTime.tokenRangesPro
-              : votesOverTime.tokenRangesPhoton
+              ? eventsOverTime.tokenRangesPro
+              : eventsOverTime.tokenRangesPhoton
           ),
           backgroundColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
         },
@@ -181,8 +183,8 @@ const Dashboard = ({
           label: state ? "Anti" : "Baryon",
           data: Object.values(
             state
-              ? votesOverTime.tokenRangesAnti
-              : votesOverTime.tokenRangesBaryon
+              ? eventsOverTime.tokenRangesAnti
+              : eventsOverTime.tokenRangesBaryon
           ),
           backgroundColor: state ? "#c12f00" : "rgb(58, 182, 193)",
         },
@@ -249,17 +251,17 @@ const Dashboard = ({
 
     // Prepare line chart data
     setLineChartData({
-      labels: votesOverTime.timestamps,
+      labels: eventsOverTime.timestamps,
       datasets: [
         {
           label: state ? "Pro" : "Photon",
           data: state
-            ? votesOverTime.proVotes.every((value) => value === 0)
+            ? eventsOverTime.proEvents.every((value) => value === 0)
               ? []
-              : votesOverTime.proVotes
-            : votesOverTime.photonVotes.every((value) => value === 0)
+              : eventsOverTime.proEvents
+            : eventsOverTime.photonEvents.every((value) => value === 0)
             ? []
-            : votesOverTime.photonVotes,
+            : eventsOverTime.photonEvents,
           borderColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
           backgroundColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
           fill: false,
@@ -267,12 +269,12 @@ const Dashboard = ({
         {
           label: state ? "Anti" : "Baryon",
           data: state
-            ? votesOverTime.antiVotes.every((value) => value === 0)
+            ? eventsOverTime.antiEvents.every((value) => value === 0)
               ? []
-              : votesOverTime.antiVotes
-            : votesOverTime.baryonVotes.every((value) => value === 0)
+              : eventsOverTime.antiEvents
+            : eventsOverTime.baryonEvents.every((value) => value === 0)
             ? []
-            : votesOverTime.baryonVotes,
+            : eventsOverTime.baryonEvents,
           borderColor: state ? "#c12f00" : "rgb(58, 182, 193)",
           backgroundColor: state ? "#c12f00" : "rgb(58, 182, 193)",
           fill: false,
@@ -351,16 +353,16 @@ const Dashboard = ({
       },
     });
 
-    setTotalDistribution({
+    setNetDistribution({
       type: "line",
-      labels: totalDistributionData
-        ? totalDistributionData.range.map((value) => value.toFixed(2))
+      labels: totalDistribution
+        ? totalDistribution.range.map((value) => value.toFixed(2))
         : [],
       datasets: [
         {
           label: "Live Distribution",
-          data: totalDistributionData
-            ? totalDistributionData.distribution.map((item) => item.value)
+          data: totalDistribution
+            ? totalDistribution.distribution.map((item) => item.value)
             : [],
           borderColor: "#3d9bff",
           backgroundColor: "#3d9bff", // Match the legend marker color
@@ -411,15 +413,15 @@ const Dashboard = ({
       },
     });
 
-    setVoterDistribution({
-      labels: voterDistributionData
-        ? voterDistributionData.range.map((value) => value.toFixed(2))
+    setUserDistribution({
+      labels: colliderDistribution
+        ? colliderDistribution.range.map((value) => value.toFixed(2))
         : [],
       datasets: [
         {
           label: "Your Distribution",
-          data: voterDistributionData
-            ? voterDistributionData.distribution.map((item) => item.value)
+          data: colliderDistribution
+            ? colliderDistribution.distribution.map((item) => item.value)
             : [],
           borderColor: "#c4c4c4",
           backgroundColor: "#c4c4c4", // Match the legend marker color
@@ -472,10 +474,10 @@ const Dashboard = ({
   }, [
     state,
     emissionsData,
-    tokensData,
-    votesOverTime,
-    voterDistributionData,
-    totalDistributionData,
+    collisionsData,
+    eventsOverTime,
+    colliderDistribution,
+    totalDistribution,
   ]);
 
   return (
@@ -532,7 +534,8 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays the percentage of emitted BARYON & PHOTON tokens
+                Displays the distribution of emitted BARYON & PHOTON tokens in
+                the pool
               </span>
             </div>
           </div>
@@ -545,7 +548,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Token Participation</div>
+            <div>Token Collisions</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -567,8 +570,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Shows the distribution of PRO & ANTI tokens in the pool, along
-                with unused tokens
+                Shows the distribution of collided PRO & ANTI tokens in the pool
               </span>
             </div>
           </div>
@@ -581,7 +583,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{`${state ? "Predicter" : "Claimer"} Participation`}</div>
+            <div>{`${state ? "Collision" : "Emission"} Ranges`}</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -603,10 +605,9 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Highlights the contribution range of ${
-                  state ? "predicters" : "claimers"
-                } based on tokens
-                cast as ${state ? "predictions" : "claims"}`}
+                {`Highlights the ranges of ${
+                  state ? "PRO & ANTI collisions" : "PHOTON & BARYON emissions"
+                }`}
               </span>
             </div>
           </div>
@@ -616,7 +617,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Tokens Over Time</div>
+            <div>{`${state ? "Collisions" : "Emissions"} Over Time`}</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -639,8 +640,8 @@ const Dashboard = ({
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Tracks the number of ${
-                  state ? "PRO & ANTI" : "PHOTONS & BARYONS"
-                } tokens cast as ${state ? "predictions" : "claims"}
+                  state ? "PRO & ANTI" : "PHOTON & BARYON"
+                } tokens ${state ? "collided" : "emitted"}
                 over time`}
               </span>
             </div>
@@ -677,11 +678,8 @@ const Dashboard = ({
               </span>
             </div>
           </div>
-          {totalDistribution && (
-            <Line
-              data={totalDistribution}
-              options={totalDistribution.options}
-            />
+          {netDistribution && (
+            <Line data={netDistribution} options={netDistribution.options} />
           )}
         </div>
         <div className="p-4 rounded-lg">
@@ -712,11 +710,8 @@ const Dashboard = ({
               </span>
             </div>
           </div>
-          {voterDistribution && (
-            <Line
-              data={voterDistribution}
-              options={voterDistribution.options}
-            />
+          {userDistribution && (
+            <Line data={userDistribution} options={userDistribution.options} />
           )}
         </div>
       </div>

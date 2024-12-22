@@ -1,7 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
 
-export const recordVote = async (walletAddress, voteData) => {
-  const response = await fetch(`${API_URL}/vote`, {
+export const recordPrediction = async (walletAddress, voteData) => {
+  const response = await fetch(`${API_URL}/predict`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

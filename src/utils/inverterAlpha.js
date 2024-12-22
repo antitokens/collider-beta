@@ -1,13 +1,25 @@
-export const calculateInversion = (anti, pro) => {
-  if (anti === 0 && pro === 0) {
-    throw new Error("BOTH_ANTI_AND_PRO_CANNOT_BE_ZERO");
+export const calculateInversion = (baryon, photon) => {
+  if (baryon === 0 && photon === 0) {
+    throw new Error("BOTH_BARYON_AND_PHOTON_CANNOT_BE_ZERO");
   }
 
+  /*
+  if (Math.abs(baryon - photon) < 1 && Math.abs(baryon - photon) !== 0) {
+    throw new Error("TOKEN_DIFFERENCE_CANNOT_BE_SMALLER_THAN_ONE_UNLESS_ZERO");
+  }
+  if (baryon + photon < 1 && baryon + photon !== 0) {
+    throw new Error("TOKEN_SUM_CANNOT_BE_SMALLER_THAN_ONE_UNLESS_ZERO");
+  }
+  if (photon < 0.5 && photon !== 0) {
+    throw new Error("PHOTON_COUNT_CANNOT_BE_SMALLER_THAN_HALF_UNLESS_ZERO");
+  }
+  */
+
   // Step 1: Calculate u (= mean)
-  const u = Math.max(anti / (anti + pro), pro / (anti + pro));
+  const u = baryon * (photon + 0.5);
 
   // Step 2: Calculate s (= standard deviation)
-  const s = (anti + pro) / Math.abs(anti - pro);
+  const s = baryon * (photon - 0.5);
 
   // Step 3: Generate a normal distribution in -5s to 5s range
   const distribution = [];
@@ -18,7 +30,7 @@ export const calculateInversion = (anti, pro) => {
 
   for (let x of range) {
     const value =
-      anti === pro
+      baryon === photon
         ? 0
         : Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
           (Math.sqrt(2 * Math.PI) * s);
@@ -31,7 +43,7 @@ export const calculateInversion = (anti, pro) => {
 
   for (let x of short) {
     const value =
-      anti === pro
+      baryon === photon
         ? 0
         : Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
           (Math.sqrt(2 * Math.PI) * s);

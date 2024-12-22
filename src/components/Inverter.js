@@ -3,13 +3,13 @@ import { recordClaim } from "../utils/api";
 import { calculateInversion } from "../utils/inverterAlpha";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
-import BinaryOrbit from "../components/BinaryOrbit";
+import BinaryOrbit from "./BinaryOrbit";
 import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
 import { toastContainerConfig, toast, emptyConfig2 } from "../utils/utils";
 Chart.register(...registerables);
 
-const InvertCollider = ({
+const Inverter = ({
   wallet,
   antiBalance,
   proBalance,
@@ -46,11 +46,10 @@ const InvertCollider = ({
   useEffect(() => {
     if (userDistribution) {
       // Trial
-      const F = (baryonTokens + photonTokens) / 2;
-      const G = (baryonTokens + photonTokens) / 2;
-
-      setAntiTokens((F * (1 * userDistribution.u)).toFixed(2));
-      setProTokens((G * (1 / userDistribution.s)).toFixed(2));
+      const F_ = antiBalance > proBalance ? -1 : 1;
+      const G_ = antiBalance > proBalance ? 1 : -1;
+      setAntiTokens(F_ < G_ ? userDistribution.u : userDistribution.s);
+      setProTokens(F_ < G_ ? userDistribution.s : userDistribution.u);
       setLineChartData({
         type: "line",
         labels: userDistribution.range.map((value) =>
@@ -216,6 +215,11 @@ const InvertCollider = ({
         return;
       }
 
+      if (photonTokens < 0.5 && photonTokens !== 0) {
+        toast.error("Photon value must be larger than 1/2, unless exactly 0!");
+        return;
+      }
+
       if (baryonTokens > baryonBalance || photonTokens > photonBalance) {
         toast.error("You cannot claim with more tokens than you have!");
         return;
@@ -304,9 +308,16 @@ const InvertCollider = ({
               <input
                 id="photonTokens"
                 type="number"
-                min="0"
+                min="0.5"
                 max={photonBalance}
                 value={Math.abs(photonTokens) || ""}
+                disabled={
+                  config.startTime === "-"
+                    ? true
+                    : new Date() < new Date(config.startTime)
+                    ? true
+                    : false
+                }
                 onChange={(e) =>
                   setPhotonTokens(Math.abs(Number(e.target.value)))
                 }
@@ -338,6 +349,13 @@ const InvertCollider = ({
                 type="number"
                 min="0"
                 max={baryonBalance}
+                disabled={
+                  config.startTime === "-"
+                    ? true
+                    : new Date() < new Date(config.startTime)
+                    ? true
+                    : false
+                }
                 value={Math.abs(baryonTokens) || ""}
                 onChange={(e) =>
                   setBaryonTokens(Math.abs(Number(e.target.value)))
@@ -492,18 +510,30 @@ const InvertCollider = ({
       {/* Submit Button */}
       <button
         onClick={handleReclaim}
-        disabled={disabled || loading}
+        disabled={
+          disabled ||
+          loading ||
+          (baryonTokens === 0 && photonTokens === 0) ||
+          new Date() < new Date(config.startTime) ||
+          (photonTokens < 0.5 && photonTokens !== 0)
+        }
         className={`w-full mt-4 py-3 rounded-full transition-all ${
-          disabled || loading
+          disabled || loading || new Date() < new Date(config.startTime)
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {loading ? "Reclaiming..." : "Reclaim"}
+        {new Date() < new Date(config.startTime)
+          ? "Not Open Yet"
+          : photonTokens < 0.5 && photonTokens !== 0
+          ? "Reclaim"
+          : loading
+          ? "Reclaiming..."
+          : "Reclaim"}
       </button>
       <ToastContainer {...toastContainerConfig} />
     </div>
   );
 };
 
-export default InvertCollider;
+export default Inverter;

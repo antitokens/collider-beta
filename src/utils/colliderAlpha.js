@@ -3,11 +3,28 @@ export const calculateCollision = (anti, pro) => {
     throw new Error("BOTH_ANTI_AND_PRO_CANNOT_BE_ZERO");
   }
 
+  /*
+  if (Math.abs(anti - pro) < 1) {
+    throw new Error("TOKEN_DIFFERENCE_CANNOT_BE_SMALLER_THAN_ONE");
+  }
+  if (anti + pro < 1) {
+    throw new Error("TOKEN_SUM_CANNOT_BE_SMALLER_THAN_ONE");
+  }
+  */
+
   // Step 1: Calculate u (= mean)
-  const u = Math.max(anti / (anti + pro), pro / (anti + pro));
+  const u =
+    Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
+      ? 1
+      : Math.abs(anti - pro);
 
   // Step 2: Calculate s (= standard deviation)
-  const s = (anti + pro) / Math.abs(anti - pro);
+  const s =
+    anti + pro > 0 && anti + pro < 1
+      ? 1
+      : Math.abs(anti - pro) === 0
+      ? (anti + pro) / 2
+      : (anti + pro) / (2 * Math.abs(anti - pro));
 
   // Step 3: Generate a normal distribution in -5s to 5s range
   const distribution = [];
