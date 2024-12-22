@@ -443,7 +443,7 @@ const Dashboard = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? totalDistribution.short[index].toFixed(2)
+                  ? formatShort(totalDistribution.short[index].toFixed(2))
                   : 0;
               },
               font: {
