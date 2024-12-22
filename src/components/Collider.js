@@ -530,7 +530,7 @@ const Collider = ({
                 htmlFor="proTokens"
                 className="text-accent-secondary font-medium text-sm"
               >
-                $tPRO
+                $PRO
               </label>
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <input
@@ -581,7 +581,7 @@ const Collider = ({
                 htmlFor="antiTokens"
                 className="text-accent-orange font-medium text-sm"
               >
-                $tANTI
+                $ANTI
               </label>
             </div>
             <div className="text-xs">
@@ -622,7 +622,7 @@ const Collider = ({
                   htmlFor="photonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  $tPHOTON
+                  $PHOTON
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
@@ -679,7 +679,7 @@ const Collider = ({
                   htmlFor="baryonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  $tBARYON
+                  $BARYON
                 </label>
               </div>
               <div className="text-sm flex flex-row items-center">
@@ -731,7 +731,7 @@ const Collider = ({
       </button>
       <ToastContainer {...toastContainerConfig} />
       <p
-        className={`mt-0 text-sm ${
+        className={`mt-1 text-sm font-sfmono ${
           wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"
         }`}
       >

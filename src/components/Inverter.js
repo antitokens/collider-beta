@@ -302,7 +302,7 @@ const Inverter = ({
                 htmlFor="photonTokens"
                 className="text-gray-300 font-medium text-xs sm:text-sm"
               >
-                $tPHOTON
+                $PHOTON
               </label>
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <input
@@ -369,7 +369,7 @@ const Inverter = ({
                 htmlFor="baryonTokens"
                 className="text-gray-300 font-medium text-xs sm:text-sm"
               >
-                $tBARYON
+                $BARYON
               </label>
             </div>
             <div className="text-xs text-gray-500">
@@ -410,7 +410,7 @@ const Inverter = ({
                   htmlFor="antiTokens"
                   className="text-accent-secondary font-medium text-xs sm:text-sm"
                 >
-                  $tPRO
+                  $PRO
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
@@ -461,7 +461,7 @@ const Inverter = ({
                   htmlFor="antiTokens"
                   className="text-accent-orange font-medium text-xs sm:text-sm"
                 >
-                  $tANTI
+                  $ANTI
                 </label>
               </div>
               <div className="text-xs text-gray-500">

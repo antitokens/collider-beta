@@ -74,29 +74,31 @@ const TokenBalance = (trigger) => {
       {dropdownOpen && (
         <div className="absolute right-0 mt-2 bg-gray-900 text-gray-300 rounded-lg shadow-lg p-4">
           <div className="grid grid-cols-[auto,auto] gap-2 items-center font-sfmono text-sm">
-            <b className="text-accent-primary">
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$ANTI:
-            </b>
-            <span>{antiBalance ? antiBalance.toFixed(2) : "-"}</span>
             <b className="text-accent-secondary">
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$PRO:
             </b>
             <span>{proBalance ? proBalance.toFixed(2) : "-"}</span>
+            <b className="text-accent-primary">
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$ANTI:
+            </b>
+            <span>{antiBalance ? antiBalance.toFixed(2) : "-"}</span>
             <b className="text-gray-400">
-              RATIO (<span className="text-accent-primary">A</span>/
-              <span className="text-accent-secondary">P</span>):
+              RATIO (<span className="text-accent-secondary">P</span>/
+              <span className="text-accent-primary">A</span>):
             </b>
             <span>
-              {proBalance ? (antiBalance / proBalance).toFixed(2) : "-"}
+              {antiBalance > 0 && proBalance > 0
+                ? (proBalance / antiBalance).toFixed(2)
+                : "-"}
             </span>
-            <b className="text-accent-primary">
-              &nbsp;&nbsp;&nbsp;&nbsp;$BARYON:
-            </b>
-            <span>{proBalance ? baryonBalance.toFixed(2) : "-"}</span>
-            <b className="text-accent-secondary">
+            <b className="text-accent-steel">
               &nbsp;&nbsp;&nbsp;&nbsp;$PHOTON:
             </b>
             <span>{proBalance ? photonBalance.toFixed(2) : "-"}</span>
+            <b className="text-accent-cement">
+              &nbsp;&nbsp;&nbsp;&nbsp;$BARYON:
+            </b>
+            <span>{proBalance ? baryonBalance.toFixed(2) : "-"}</span>
           </div>
         </div>
       )}

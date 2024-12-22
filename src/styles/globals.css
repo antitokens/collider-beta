@@ -99,7 +99,7 @@ button.wallet-adapter-button-trigger {
   @apply bg-accent-primary rounded-full text-sm w-full justify-center px-4 h-9 font-normal md:w-auto;
 }
 
-input[type='range'] {
+input[type="range"] {
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
@@ -109,7 +109,7 @@ input[type='range'] {
   border-radius: 8px;
 }
 
-input[type='range']::-webkit-slider-thumb {
+input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   background: white;
@@ -118,10 +118,10 @@ input[type='range']::-webkit-slider-thumb {
   width: 16px;
   border-radius: 50%;
   border: none;
-  transition: .2s ease-in-out;
+  transition: 0.2s ease-in-out;
 }
 
-input[type='range']::-moz-range-thumb {
+input[type="range"]::-moz-range-thumb {
   -webkit-appearance: none;
   appearance: none;
   background: white;
@@ -130,11 +130,11 @@ input[type='range']::-moz-range-thumb {
   width: 16px;
   border-radius: 50%;
   border: none;
-  transition: .2s ease-in-out;
+  transition: 0.2s ease-in-out;
 }
 
-input[type='number']::-webkit-outer-spin-button,
-input[type='number']::-webkit-inner-spin-button {
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }

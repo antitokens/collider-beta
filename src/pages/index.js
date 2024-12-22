@@ -12,7 +12,7 @@ import {
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import Collider from "../components/Collider";
-import InvertCollider from "../components/Inverter";
+import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
 import Navbar from "../components/TopNavbar";
 import BinaryOrbit from "../components/BinaryOrbit";
@@ -49,7 +49,7 @@ const Home = ({ BASE_URL }) => {
         />
 
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Antitoken Voting Station" />
+        <meta property="og:title" content="Antitoken Predicting Station" />
         <meta
           property="og:description"
           content="Experience the future of prediction markets with $ANTI and $PRO tokens."
@@ -63,7 +63,7 @@ const Home = ({ BASE_URL }) => {
 
         {/* Twitter Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Antitoken Voting Station" />
+        <meta name="twitter:title" content="Antitoken Predicting Station" />
         <meta
           name="twitter:description"
           content="Experience the future of prediction markets with $ANTI and $PRO tokens."
@@ -287,8 +287,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               </svg>
             </div>
             <p className="text-left">
-              The voting program is built off-chain for demonstration purposes.
-              No funds will be deducted from your wallet.
+              The prediction program is built off-chain for demonstration
+              purposes. No funds will be deducted from your wallet.
             </p>
           </div>
         </div>
@@ -296,7 +296,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           {/* Hero Text */}
           <div>
             <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300 font-bold font-outfit">
-              VOTE WITH
+              PREDICT WITH
               <br />
               <span className="text-accent-primary">$ANTI</span> and{" "}
               <span className="text-accent-secondary">$PRO</span>
@@ -439,7 +439,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 </div>
                 <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
                   <div className="bg-dark-card p-4 rounded w-full mb-4 flex flex-col justify-center">
-                    <h2 className="text-2xl text-gray-300 text-center font-medium mb-2">
+                    <h2 className="text-xl text-gray-300 text-center font-medium mb-2">
                       Claim your Collider Emissions
                     </h2>
                     <div className="flex flex-row justify-between">
@@ -546,7 +546,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       </div>
                     </div>
                   </div>
-                  <InvertCollider
+                  <Inverter
                     wallet={wallet}
                     antiBalance={antiBalance}
                     proBalance={proBalance}
@@ -567,7 +567,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     isMobile={isMobile}
                   />
                   <p
-                    className={`mt-0 text-sm ${
+                    className={`mt-1 text-sm font-sfmono ${
                       wallet.connected
                         ? "text-gray-300"
                         : "text-red-500 animate-pulse"
@@ -575,7 +575,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   >
                     {wallet.connected
                       ? ""
-                      : "Connect your wallet to enable voting"}
+                      : "Connect your wallet to enable predictions"}
                   </p>
                 </div>
               </div>
