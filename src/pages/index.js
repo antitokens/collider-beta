@@ -173,14 +173,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           // Calculate distributions using API data
           const colliderDistribution =
             baryonBalance >= 0 && photonBalance > 0.5
-              ? calculateCollision(baryonBalance, photonBalance)
+              ? calculateCollision(baryonBalance, photonBalance, true)
               : emptyGaussian;
           const totalDistribution =
             data.totalDistribution.value1 >= 0 &&
             data.totalDistribution.value2 > 0.5
               ? calculateCollision(
                   data.totalDistribution.value1,
-                  data.totalDistribution.value2
+                  data.totalDistribution.value2,
+                  true
                 )
               : emptyGaussian;
 
@@ -598,6 +599,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 totalDistribution={metadata.totalDistribution}
                 onRefresh={onRefresh}
                 state={showCollider}
+                connected={wallet.connected}
               />
             ) : (
               <div className="flex justify-center items-center w-full">

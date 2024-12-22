@@ -14,6 +14,7 @@ const Dashboard = ({
   totalDistribution,
   onRefresh,
   state = false,
+  connected = false,
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -369,8 +370,14 @@ const Dashboard = ({
 
     setNetDistribution({
       type: "line",
-      labels: totalDistribution
-        ? totalDistribution.short.map((value) =>
+      labels: !connected
+        ? totalDistribution
+          ? totalDistribution.short.map((value) =>
+              value > 0 ? formatPrecise(value.toFixed(6)) : ""
+            )
+          : []
+        : colliderDistribution
+        ? colliderDistribution.short.map((value) =>
             value > 0 ? formatPrecise(value.toFixed(6)) : ""
           )
         : [],
@@ -386,8 +393,10 @@ const Dashboard = ({
         },
         {
           label: "Yours",
-          data: colliderDistribution
-            ? colliderDistribution.curve.map((item) => item.value)
+          data: connected
+            ? colliderDistribution
+              ? colliderDistribution.curve.map((item) => item.value)
+              : []
             : [],
           borderColor: "#c4c4c4",
           backgroundColor: "#c4c4c4",
@@ -419,6 +428,8 @@ const Dashboard = ({
         scales: {
           x: {
             ticks: {
+              display: connected,
+              maxTicksLimit: 10,
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
@@ -427,12 +438,13 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
           },
           x2: {
-            position: "top",
+            position: connected ? "top" : "bottom",
             ticks: {
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
-                const range2 = colliderDistribution.short;
-                return range2[index] ? range2[index].toFixed(2) : 0;
+                return totalDistribution.short[index]
+                  ? totalDistribution.short[index].toFixed(2)
+                  : 0;
               },
               font: {
                 family: "'SF Mono Round'",

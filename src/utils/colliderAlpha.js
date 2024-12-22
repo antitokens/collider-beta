@@ -1,17 +1,19 @@
-export const calculateCollision = (anti, pro) => {
+export const calculateCollision = (anti, pro, flag = false) => {
   // Step 1: Calculate u (= mean)
-  const u =
-    Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
-      ? 1
-      : Math.abs(anti - pro);
+  const u = flag
+    ? anti
+    : Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
+    ? 1
+    : Math.abs(anti - pro);
 
   // Step 2: Calculate s (= standard deviation)
-  const s =
-    anti + pro > 0 && anti + pro < 1
-      ? 1
-      : Math.abs(anti - pro) === 0
-      ? (anti + pro) / 2
-      : (anti + pro) / (2 * Math.abs(anti - pro));
+  const s = flag
+    ? pro
+    : anti + pro > 0 && anti + pro < 1
+    ? 1
+    : Math.abs(anti - pro) === 0
+    ? (anti + pro) / 2
+    : (anti + pro) / (2 * Math.abs(anti - pro));
 
   // Step 3: Generate a normal distribution in -5s to 5s range
   const distribution = [];
