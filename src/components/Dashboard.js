@@ -168,25 +168,29 @@ const Dashboard = ({
 
     // Prepare bar chart data
     setBarChartData({
-      labels: Object.keys(eventsOverTime.tokenRangesPro), // x-axis labels are common
+      labels: state
+        ? Object.keys(eventsOverTime.tokenRangesPro)
+        : Object.keys(eventsOverTime.tokenRangesPro), // x-axis labels are common
       datasets: [
         {
-          label: state ? "Pro" : "Photon",
-          data: Object.values(
-            state
-              ? eventsOverTime.tokenRangesPro
-              : eventsOverTime.tokenRangesPhoton
-          ),
-          backgroundColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
+          label: "Pro",
+          data: Object.values(eventsOverTime.tokenRangesPro),
+          backgroundColor: "#00bb7a",
         },
         {
-          label: state ? "Anti" : "Baryon",
-          data: Object.values(
-            state
-              ? eventsOverTime.tokenRangesAnti
-              : eventsOverTime.tokenRangesBaryon
-          ),
-          backgroundColor: state ? "#c12f00" : "rgb(58, 182, 193)",
+          label: "Anti",
+          data: Object.values(eventsOverTime.tokenRangesAnti),
+          backgroundColor: "#c12f00",
+        },
+        {
+          label: "Photon",
+          data: Object.values(eventsOverTime.tokenRangesPhoton),
+          backgroundColor: "rgb(123, 191, 255)",
+        },
+        {
+          label: "Baryon",
+          data: Object.values(eventsOverTime.tokenRangesBaryon),
+          backgroundColor: "rgb(58, 182, 193)",
         },
       ],
       options: {
@@ -251,32 +255,42 @@ const Dashboard = ({
 
     // Prepare line chart data
     setLineChartData({
-      labels: eventsOverTime.timestamps,
+      labels: state ? eventsOverTime.timestamps : eventsOverTime.timestamps,
       datasets: [
         {
-          label: state ? "Pro" : "Photon",
-          data: state
-            ? eventsOverTime.proEvents.every((value) => value === 0)
-              ? []
-              : eventsOverTime.proEvents
-            : eventsOverTime.photonEvents.every((value) => value === 0)
+          label: "Pro",
+          data: eventsOverTime.proEvents.every((value) => value === 0)
             ? []
-            : eventsOverTime.photonEvents,
-          borderColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
-          backgroundColor: state ? "#00bb7a" : "rgb(123, 191, 255)",
+            : eventsOverTime.proEvents,
+          borderColor: "#00bb7a",
+          backgroundColor: "#00bb7a",
           fill: false,
         },
         {
-          label: state ? "Anti" : "Baryon",
-          data: state
-            ? eventsOverTime.antiEvents.every((value) => value === 0)
-              ? []
-              : eventsOverTime.antiEvents
-            : eventsOverTime.baryonEvents.every((value) => value === 0)
+          label: "Anti",
+          data: eventsOverTime.antiEvents.every((value) => value === 0)
+            ? []
+            : eventsOverTime.antiEvents,
+          borderColor: "#c12f00",
+          backgroundColor: "#c12f00",
+          fill: false,
+        },
+        {
+          label: "Photon",
+          data: eventsOverTime.photonEvents.every((value) => value === 0)
+            ? []
+            : eventsOverTime.photonEvents,
+          borderColor: "rgb(123, 191, 255)",
+          backgroundColor: "rgb(123, 191, 255)",
+          fill: false,
+        },
+        {
+          label: "Baryon",
+          data: eventsOverTime.baryonEvents.every((value) => value === 0)
             ? []
             : eventsOverTime.baryonEvents,
-          borderColor: state ? "#c12f00" : "rgb(58, 182, 193)",
-          backgroundColor: state ? "#c12f00" : "rgb(58, 182, 193)",
+          borderColor: "rgb(58, 182, 193)",
+          backgroundColor: "rgb(58, 182, 193)",
           fill: false,
         },
       ],
@@ -362,12 +376,21 @@ const Dashboard = ({
         : [],
       datasets: [
         {
-          label: "Live Distribution",
+          label: "Live",
           data: totalDistribution
             ? totalDistribution.curve.map((item) => item.value)
             : [],
           borderColor: "#3d9bff",
-          backgroundColor: "#3d9bff", // Match the legend marker color
+          backgroundColor: "#3d9bff",
+          pointStyle: "line",
+        },
+        {
+          label: "Yours",
+          data: colliderDistribution
+            ? colliderDistribution.curve.map((item) => item.value)
+            : [],
+          borderColor: "#c4c4c4",
+          backgroundColor: "#c4c4c4",
           pointStyle: "line",
         },
       ],
@@ -403,6 +426,24 @@ const Dashboard = ({
             },
             grid: { color: "#d3d3d322" },
           },
+          x2: {
+            position: "top",
+            ticks: {
+              callback: function (value, index) {
+                // Map index to a new labels array for the second axis
+                const range2 = colliderDistribution.short;
+                return range2[index] ? range2[index].toFixed(2) : 0;
+              },
+              font: {
+                family: "'SF Mono Round'",
+                size: 10,
+              },
+              color: "#3d9bff",
+            },
+            grid: {
+              color: "#d3d3d300",
+            },
+          },
           y: {
             grid: { color: "#d3d3d322" },
             ticks: {
@@ -416,17 +457,11 @@ const Dashboard = ({
     });
 
     setUserDistribution({
-      labels: colliderDistribution
-        ? colliderDistribution.short.map((value) =>
-            value > 0 ? formatPrecise(value.toFixed(6)) : ""
-          )
-        : [],
+      labels: [],
       datasets: [
         {
-          label: "Your Distribution",
-          data: colliderDistribution
-            ? colliderDistribution.curve.map((item) => item.value)
-            : [],
+          label: "US Dollar",
+          data: [],
           borderColor: "#c4c4c4",
           backgroundColor: "#c4c4c4", // Match the legend marker color
           pointStyle: "line",
@@ -538,8 +573,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays the distribution of emitted BARYON & PHOTON tokens in
-                the pool
+                {`Displays the distribution of BARYON & PHOTON emissions in the pool`}
               </span>
             </div>
           </div>
@@ -574,7 +608,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Shows the distribution of collided PRO & ANTI tokens in the pool
+                {`Displays the distribution of PRO & ANTI collisions in the pool`}
               </span>
             </div>
           </div>
@@ -587,7 +621,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{`${state ? "Collision" : "Emission"} Ranges`}</div>
+            <div>{`Events Ranges`}</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -609,9 +643,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Highlights the ranges of ${
-                  state ? "PRO & ANTI collisions" : "PHOTON & BARYON emissions"
-                }`}
+                {`Displays the ranges of PRO & ANTI collisions, and PHOTON & BARYON emissions in the pool`}
               </span>
             </div>
           </div>
@@ -621,7 +653,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{`${state ? "Collisions" : "Emissions"} Over Time`}</div>
+            <div>{`Events Over Time`}</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -643,10 +675,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Tracks the number of ${
-                  state ? "PRO & ANTI" : "PHOTON & BARYON"
-                } tokens ${state ? "collided" : "emitted"}
-                over time`}
+                {`Displays the PRO & ANTI collisions, and PHOTON & BARYON emissions over time`}
               </span>
             </div>
           </div>
@@ -678,7 +707,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Represents the distribution of the current state
+                {`Shows your prediction overlapped against the global prediction`}
               </span>
             </div>
           </div>
@@ -688,7 +717,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Your Prediction</div>
+            <div>Profit or Loss</div>
             <div className="relative group">
               <div className="cursor-pointer">
                 <svg
@@ -710,7 +739,7 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Represents the distribution of your prediction
+                {`Displays the current unrealised profit or loss of the user`}
               </span>
             </div>
           </div>

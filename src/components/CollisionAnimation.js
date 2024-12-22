@@ -458,14 +458,16 @@ export const ParticleCollision = ({
       {/* Metadata display */}
       <Stars length={50} />
       {height + width === 0 && (
-        <div className="flex flex-col items-center justify-between bg-dark-card rounded-2xl mx-8 lg:mx-64 py-8">
+        <div className="flex flex-col items-center justify-between bg-dark-card rounded-2xl mx-8 lg:mx-64 py-8 lg:mt-0 -mt-48">
           <div
             className="font-ocr bg-accent-secondary bg-clip-text text-transparent overflow-hidden text-xl lg:text-2xl text-center flex flex-col items-center lg:mx-8 mx-2 opacity-85"
             role="alert"
             aria-live="polite"
           >
             <BadgeCheck className="stroke-accent-secondary mb-8" size={64} />
-            <span>Your prediction has been successfully recorded!</span>
+            <span>{`Your ${
+              inverse ? "reclaim" : "prediction"
+            } has been successfully recorded!`}</span>
           </div>
           <button
             onClick={() => {
