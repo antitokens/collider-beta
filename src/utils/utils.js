@@ -323,15 +323,19 @@ export const emptyGaussian = {
 
 export const formatCount = (_value) => {
   const value = Number(_value);
-  if (value > 1e9) {
-    return 0;
-  } else {
-    return value >= 1e6
-      ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
-      : value >= 1e3
-      ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
-      : value.toFixed(0).toString();
-  }
+  return value >= 1e6
+    ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
+    : value >= 1e3
+    ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
+    : value.toFixed(0).toString();
+};
+
+export const formatPrecise = (_value) => {
+  const value = Number(_value);
+  return value
+    .toFixed(2)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 export const emptyConfig = {

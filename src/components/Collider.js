@@ -11,6 +11,7 @@ import {
   toast,
   emptyConfig,
   formatCount,
+  formatPrecise,
   convertToLocaleTime,
 } from "../utils/utils";
 Chart.register(...registerables);
@@ -65,22 +66,15 @@ const Collider = ({
       setPhotonTokens(G * userDistribution.s);
       setLineChartData({
         type: "line",
-        labels: userDistribution.range.map((value) =>
-          value ? value.toFixed(2) : ""
+        labels: userDistribution.short.map((value) =>
+          value > 0 ? formatPrecise(value.toFixed(6)) : ""
         ),
         datasets: [
           {
             label: "Collider",
-            data: userDistribution.distribution.map((item) => item.value),
+            data: userDistribution.curve.map((item) => item.value),
             borderColor: "#ffffff",
             backgroundColor: "#ffffff", // Match the legend marker color
-            pointStyle: "line",
-          },
-          {
-            label: "Emitter",
-            data: userDistribution.curve.map((item) => item.value),
-            borderColor: "#ff5f3b",
-            backgroundColor: "#ff5f3b", // Match the legend marker color
             pointStyle: "line",
           },
         ],
@@ -122,86 +116,37 @@ const Collider = ({
               position: "bottom",
               title: {
                 display: true,
-                text: "Your Normalised Prediction", // Label for the X-axis
+                text: "Your Prediction", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
                   size: 12,
                   weight: "bold",
                 },
-                color: "#808080",
+                color: "#999999",
               },
               ticks: {
                 font: {
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color: antiTokens !== proTokens ? "#ffffffa2" : "#d3d3d300",
+                color: "#ffffffa2",
               },
               grid: {
-                color: antiTokens !== proTokens ? "#ffffffa2" : "#d3d3d300",
-              },
-            },
-            x2: {
-              position: "top",
-              title: {
-                display: false,
-                text: "Your Normalised Prediction", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#808080",
-              },
-              ticks: {
-                callback: function (value, index) {
-                  // Map index to a new labels array for the second axis
-                  const range2 = userDistribution.short;
-                  return antiTokens !== proTokens
-                    ? range2[index].toFixed(2)
-                    : "";
-                },
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: "#ff5f3b",
-              },
-              grid: {
-                color: antiTokens !== proTokens ? "#d3d3d322" : "#d3d3d300",
+                color: "#d3d3d322",
               },
             },
             y: {
               title: {
-                display: true,
+                display: false,
                 text: "Emissions", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
                   size: 12,
                   weight: "bold",
                 },
-                color: "#808080",
+                color: "#999999",
               },
               grid: { color: "#d3d3d322" },
-              ticks: {
-                callback: function (value) {
-                  return ""; // Format y-axis
-                },
-              },
-            },
-            y2: {
-              position: "right",
-              title: {
-                display: true,
-                text: "Emissions", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#808080",
-              },
-              grid: { color: "#d3d3d300" },
               ticks: {
                 callback: function (value) {
                   return ""; // Format y-axis

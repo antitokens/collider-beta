@@ -6,7 +6,12 @@ import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "./BinaryOrbit";
 import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
-import { toastContainerConfig, toast, emptyConfig2 } from "../utils/utils";
+import {
+  toastContainerConfig,
+  toast,
+  emptyConfig2,
+  formatPrecise,
+} from "../utils/utils";
 Chart.register(...registerables);
 
 const Inverter = ({
@@ -52,22 +57,15 @@ const Inverter = ({
       setProTokens(F_ < G_ ? userDistribution.s : userDistribution.u);
       setLineChartData({
         type: "line",
-        labels: userDistribution.range.map((value) =>
-          value ? value.toFixed(2) : ""
+        labels: userDistribution.short.map((value) =>
+          value ? formatPrecise(value.toFixed(6)) : ""
         ),
         datasets: [
           {
             label: "Inverter",
-            data: userDistribution.distribution.map((item) => item.value),
+            data: userDistribution.curve.map((item) => item.value),
             borderColor: "#ffffff",
             backgroundColor: "#ffffff", // Match the legend marker color
-            pointStyle: "line",
-          },
-          {
-            label: "Reclaimer",
-            data: userDistribution.curve.map((item) => item.value),
-            borderColor: "#ff5f3b",
-            backgroundColor: "#ff5f3b", // Match the legend marker color
             pointStyle: "line",
           },
         ],
@@ -115,82 +113,31 @@ const Inverter = ({
                   size: 12,
                   weight: "bold",
                 },
-                color: "#808080",
+                color: "#999999",
               },
               ticks: {
                 font: {
                   family: "'SF Mono Round'",
                   size: 10,
                 },
-                color:
-                  baryonTokens !== photonTokens ? "#ffffffa2" : "#ffffff00",
+                color: "#ffffffa2",
               },
               grid: {
-                color:
-                  baryonTokens !== photonTokens ? "#d3d3d322" : "#d3d3d300",
-              },
-            },
-            x2: {
-              position: "top",
-              title: {
-                display: false,
-                text: "Probability Range", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#808080",
-              },
-              ticks: {
-                callback: function (value, index) {
-                  // Map index to a new labels array for the second axis
-                  const range2 = userDistribution.short;
-                  return baryonTokens !== photonTokens
-                    ? range2[index].toFixed(2)
-                    : "";
-                },
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: baryonTokens !== photonTokens ? "#ff5f3b" : "#ff5f3b00",
-              },
-              grid: {
-                color:
-                  baryonTokens !== photonTokens ? "#d3d3d322" : "#d3d3d300",
+                color: "#d3d3d322",
               },
             },
             y: {
               title: {
-                display: true,
+                display: false,
                 text: "Reclaim", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
                   size: 12,
                   weight: "bold",
                 },
-                color: "#808080",
+                color: "#999999",
               },
               grid: { color: "#d3d3d322" },
-              ticks: {
-                callback: function (value) {
-                  return ""; // Format y-axis
-                },
-              },
-            },
-            y2: {
-              position: "right",
-              title: {
-                display: true,
-                text: "Reclaim", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#808080",
-              },
               ticks: {
                 callback: function (value) {
                   return ""; // Format y-axis
