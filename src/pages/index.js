@@ -1,17 +1,12 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Head from "next/head";
-import Script from "next/script";
 import {
   ConnectionProvider,
   WalletProvider,
   useWallet,
 } from "@solana/wallet-adapter-react";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import {
-  WalletModalProvider,
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
-import {
-  PhantomWalletAdapter,
   SolflareWalletAdapter,
   TorusWalletAdapter,
   LedgerWalletAdapter,
@@ -38,7 +33,7 @@ import {
   formatCount,
 } from "../utils/utils";
 import { getKVBalance, getMetadata } from "../utils/api";
-import { calculateDistribution } from "../utils/colliderAlpha";
+import { calculateCollision } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 const Home = ({ BASE_URL }) => {
@@ -122,7 +117,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [antiData, setAntiData] = useState(null);
   const [proData, setProData] = useState(null);
   const [showAnimation, setShowAnimation] = useState(false);
-  const [currentPredictionData, setCurrentPredictionData] = useState(emptyMetadata);
+  const [currentPredictionData, setCurrentPredictionData] =
+    useState(emptyMetadata);
   const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
   const [metadata, setMetadata] = useState(metadataInit);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
@@ -176,17 +172,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const data = JSON.parse(blob.message);
           // Calculate distributions using API data
           const colliderDistribution =
-            data.colliderDistribution.value1 > 0 &&
-            data.colliderDistribution.value2 > 0
-              ? calculateDistribution(
-                  data.colliderDistribution.value1,
-                  data.colliderDistribution.value2
-                )
+            baryonBalance >= 0 && photonBalance > 0.5
+              ? calculateCollision(baryonBalance, photonBalance)
               : emptyGaussian;
           const totalDistribution =
-            data.totalDistribution.value1 > 0 &&
-            data.totalDistribution.value2 > 0
-              ? calculateDistribution(
+            data.totalDistribution.value1 >= 0 &&
+            data.totalDistribution.value2 > 0.5
+              ? calculateCollision(
                   data.totalDistribution.value1,
                   data.totalDistribution.value2
                 )
@@ -212,7 +204,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       fetchData();
       setRefresh(false);
     }
-  }, [refresh]);
+  }, [refresh, baryonBalance, photonBalance]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -220,10 +212,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         // Fetch data for both tokens
         const [antiResponse, proResponse] = await Promise.all([
           fetch(
-            "https://api.dexscreener.com/latest/dex/tokens/HB8KrN7Bb3iLWUPsozp67kS4gxtbA4W5QJX4wKPvpump"
+            `https://api.dexscreener.com/latest/dex/tokens/${ANTI_TOKEN_MINT}`
           ),
           fetch(
-            "https://api.dexscreener.com/latest/dex/tokens/CWFa2nxUMf5d1WwKtG9FS9kjUKGwKXWSjH8hFdWspump"
+            `https://api.dexscreener.com/latest/dex/tokens/${PRO_TOKEN_MINT}`
           ),
         ]);
 
@@ -265,6 +257,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       setBaryonBalance(balance.baryon);
       setPhotonBalance(balance.photon);
       setDataUpdated(false);
+      setRefresh(true);
     };
 
     if (wallet.publicKey) checkBalance();
