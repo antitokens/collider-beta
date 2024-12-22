@@ -187,15 +187,15 @@ export const toast = {
     toastify(message, {
       position: "top-right",
       style: {
-        background: "black",
+        background: "#111212",
         color: "#48ff00",
         fontFamily: "SF Mono Round",
         fontSize: "18px",
-        border: "2px solid #48ff00",
+        border: "2px solid #48ff00c1",
         borderRadius: "8px",
       },
       progressStyle: {
-        background: "#48ff00",
+        background: "#48ff00c1",
       },
       icon: <BadgeCheck className="stroke-[#48ff00]" />,
     });
@@ -205,15 +205,15 @@ export const toast = {
     toastify(message, {
       position: "top-right",
       style: {
-        background: "black",
+        background: "#111212",
         color: "#ff1500",
         fontFamily: "SF Mono Round",
         fontSize: "18px",
-        border: "2px solid #ff1500",
+        border: "2px solid #ff1500c1",
         borderRadius: "8px",
       },
       progressStyle: {
-        background: "#ff1500",
+        background: "#ff1500c1",
       },
       icon: <CircleAlert className="stroke-[#ff1500]" />,
     });

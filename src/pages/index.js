@@ -635,8 +635,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       {showAnimation && (
         <div className="w-screen h-screen fixed top-0 left-0 z-50">
           <ParticleCollision
-            width={1400}
-            height={1000}
+            width={0}
+            height={0}
             incomingSpeed={2}
             outgoingSpeed={1}
             curve={1}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { BadgeCheck } from "lucide-react";
 import {
   truncateMiddle,
   randomiseTextEffect,
@@ -456,6 +457,27 @@ export const ParticleCollision = ({
     <div className="relative w-full h-full flex items-center justify-center bg-black">
       {/* Metadata display */}
       <Stars length={50} />
+      {height + width === 0 && (
+        <div className="flex flex-col items-center justify-between bg-dark-card rounded-2xl mx-8 lg:mx-64 py-8">
+          <div
+            className="font-ocr bg-accent-secondary bg-clip-text text-transparent overflow-hidden text-xl lg:text-2xl text-center flex flex-col items-center lg:mx-8 mx-2 opacity-85"
+            role="alert"
+            aria-live="polite"
+          >
+            <BadgeCheck className="stroke-accent-secondary mb-8" size={64} />
+            <span>Your prediction has been successfully recorded!</span>
+          </div>
+          <button
+            onClick={() => {
+              setIsRunning(false);
+              onComplete();
+            }}
+            className="text-accent-secondary font-sfmono border border-accent-secondary bg-gray-300 bg-opacity-0 hover:border-accent-secondary hover:bg-accent-secondary hover:text-black px-4 py-2 rounded-md w-20 h-12 flex items-center justify-center mt-8 mb-2"
+          >
+            <span className="text-xl font-sfmono">OK</span>
+          </button>
+        </div>
+      )}
       <div className="absolute bottom-4 right-4 z-10 text-right">
         <div className="flex flex-col items-end">
           <button className="border border-accent-primary rounded-3xl text-accent-primary font-mono bg-transparent w-24 p-1 hover:bg-accent-secondary hover:text-black hover:border-accent-secondary transition mb-4 hidden disabled">
@@ -474,7 +496,7 @@ export const ParticleCollision = ({
                   id={`randomise-effect-${index}`}
                   className={`text-${
                     inverse ? "text-gray-300" : "text-gray-300"
-                  } break-all bg-dark-card p-1 rounded-md whitespace-pre`}
+                  } break-all bg-dark-card p-1 rounded-md`}
                 >
                   {(() => {
                     randomiseTextEffect(
