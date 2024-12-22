@@ -111,6 +111,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [proBalance, setProBalance] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
+  const [photonBalances, setPhotonBalances] = useState([]);
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
@@ -180,7 +181,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             data.totalDistribution.value2 > 0.5
               ? calculateCollision(
                   data.totalDistribution.value1,
-                  data.totalDistribution.value2,
+                  Math.sqrt(
+                    data.totalDistribution.value3.reduce(
+                      (sum, x) => sum + x ** 2,
+                      0
+                    ) / data.totalDistribution.value3.length
+                  ),
                   true
                 )
               : emptyGaussian;

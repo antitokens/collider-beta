@@ -13,11 +13,15 @@ const eventsSeed = Math.random();
 export const metadataInit = {
   startTime: "-",
   endTime: "-",
-  colliderDistribution: calculateCollision(
-    50 * Math.random(),
-    30 * Math.random()
-  ),
-  totalDistribution: calculateCollision(60 * Math.random(), 20 * Math.random()),
+  colliderDistribution: {
+    value1: calculateCollision(50 * Math.random(), 30 * Math.random()).u,
+    value2: calculateCollision(20 * Math.random(), 30 * Math.random()).s,
+  },
+  totalDistribution: {
+    value1: calculateCollision(60 * Math.random(), 30 * Math.random()).u,
+    value3: calculateCollision(30 * Math.random(), 30 * Math.random()).s,
+    value3: [],
+  },
   emissionsData: {
     total: 1e5 * emissionsSeed,
     photonTokens: 1e5 * _Seed * emissionsSeed,
@@ -92,6 +96,7 @@ export const metaPlaceholder = {
   totalDistribution: {
     value1: 60 * Math.random(),
     value2: 20 * Math.random(),
+    value3: [],
   },
   emissionsData: {
     total: 1e5 * emissionsSeed,
