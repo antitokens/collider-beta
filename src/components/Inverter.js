@@ -116,6 +116,7 @@ const Inverter = ({
                 color: "#999999",
               },
               ticks: {
+                display: photonTokens > 0,
                 font: {
                   family: "'SF Mono Round'",
                   size: 10,
@@ -471,7 +472,7 @@ const Inverter = ({
         }`}
       >
         {new Date() < new Date(config.startTime)
-          ? "Not Open Yet"
+          ? "Closed"
           : photonTokens < 0.5 && photonTokens !== 0
           ? "Reclaim"
           : loading
