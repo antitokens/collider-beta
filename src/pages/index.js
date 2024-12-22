@@ -212,10 +212,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         // Fetch data for both tokens
         const [antiResponse, proResponse] = await Promise.all([
           fetch(
-            `https://api.dexscreener.com/latest/dex/tokens/${ANTI_TOKEN_MINT}`
+            `https://api.dexscreener.com/latest/dex/tokens/${process.env.NEXT_PUBLIC_ANTI_TOKEN_MINT}`
           ),
           fetch(
-            `https://api.dexscreener.com/latest/dex/tokens/${PRO_TOKEN_MINT}`
+            `https://api.dexscreener.com/latest/dex/tokens/${process.env.NEXT_PUBLIC_PRO_TOKEN_MINT}`
           ),
         ]);
 

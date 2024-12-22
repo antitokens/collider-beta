@@ -44,7 +44,7 @@ export const calculateCollision = (anti, pro) => {
 
   // Step 4: Generate a normal distribution within the range [0, 1]
   const curve = [];
-  const short = Array.from({ length: 100 }, (_, i) => i / 99); // Generate 100 points evenly spaced between 0 and 1
+  const short = Array.from({ length: 100 }, (_, i) => (i / 99) * 10 * s); // Generate 100 points evenly spaced between 0 and 1
 
   for (let x of short) {
     const value =
