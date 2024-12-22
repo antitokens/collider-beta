@@ -321,28 +321,21 @@ export const emptyGaussian = {
   curve: [],
 };
 
-export const formatCount = (_value) => {
+export const formatCount = (_value, _decimal = 1) => {
   const value = Number(_value);
   return value >= 1e6
-    ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
+    ? (value / 1e6).toFixed(_decimal > 1 ? 0 : _decimal).replace(/\.0$/, "") +
+        "m"
     : value >= 1e3
-    ? (value / 1e3).toFixed(1).replace(/\.0$/, "") + "k"
-    : value.toFixed(1).toString();
+    ? (value / 1e3).toFixed(_decimal > 1 ? 0 : _decimal).replace(/\.0$/, "") +
+      "k"
+    : value.toFixed(_decimal > 1 ? 0 : _decimal).toString();
 };
 
-export const formatShort = (_value) => {
-  const value = Number(_value);
-  return value >= 1e6
-    ? (value / 1e6).toFixed(0).replace(/\.0$/, "") + "m"
-    : value >= 1e3
-    ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
-    : value.toFixed(0).toString();
-};
-
-export const formatPrecise = (_value) => {
+export const formatPrecise = (_value, _decimal = 1) => {
   const value = Number(_value);
   return value
-    .toFixed(2)
+    .toFixed(_decimal)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };

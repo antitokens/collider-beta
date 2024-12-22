@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { formatCount, formatShort } from "../utils/utils";
+import { formatCount } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
 
@@ -373,12 +373,24 @@ const Dashboard = ({
       labels: !connected
         ? totalDistribution
           ? totalDistribution.short.map((value) =>
-              value > 0 ? formatShort(value.toFixed(6)) : ""
+              value > 0
+                ? formatCount(
+                    value.toFixed(6),
+                    Math.abs(totalDistribution.s).toString().split(".")[0]
+                      .length
+                  )
+                : ""
             )
           : []
         : colliderDistribution
         ? colliderDistribution.short.map((value) =>
-            value > 0 ? formatShort(value.toFixed(6)) : ""
+            value > 0
+              ? formatCount(
+                  value.toFixed(6),
+                  Math.abs(colliderDistribution.s).toString().split(".")[0]
+                    .length
+                )
+              : ""
           )
         : [],
       datasets: [
@@ -443,7 +455,11 @@ const Dashboard = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? formatShort(totalDistribution.short[index].toFixed(2))
+                  ? formatCount(
+                      totalDistribution.short[index].toFixed(2),
+                      Math.abs(totalDistribution.s).toString().split(".")[0]
+                        .length
+                    )
                   : 0;
               },
               font: {
