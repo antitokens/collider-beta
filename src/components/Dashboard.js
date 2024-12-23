@@ -10,8 +10,8 @@ const Dashboard = ({
   emissionsData,
   collisionsData,
   eventsOverTime,
-  colliderDistribution,
-  totalDistribution,
+  colliderDistribution = null,
+  totalDistribution = null,
   onRefresh,
   state = false,
   connected = false,
@@ -470,7 +470,9 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
-                return value.toFixed(1);;
+                return totalDistribution || colliderDistribution
+                  ? value.toFixed(1)
+                  : "";
               },
               font: {
                 family: "'SF Mono Round'",
@@ -483,7 +485,9 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
-                return value.toFixed(1);;
+                return totalDistribution || colliderDistribution
+                  ? value.toFixed(1)
+                  : "";
               },
               font: {
                 family: "'SF Mono Round'",

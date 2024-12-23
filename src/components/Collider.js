@@ -244,7 +244,7 @@ const Collider = ({
               grid: { color: "#d3d3d322" },
               ticks: {
                 callback: function (value) {
-                  return value.toFixed(1); // Format y-axis
+                  return totalInvest > 0 ? value.toFixed(1) : "";
                 },
                 font: {
                   family: "'SF Mono Round'",
@@ -268,7 +268,7 @@ const Collider = ({
               grid: { color: "#d3d3d322" },
               ticks: {
                 callback: function (value) {
-                  return value.toFixed(1); // Format y-axis
+                  return totalInvest > 0 ? value.toFixed(1) : "";
                 },
                 font: {
                   family: "'SF Mono Round'",
