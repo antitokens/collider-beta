@@ -35,11 +35,3 @@ export const calculateInversion = (baryon, photon, flag = false) => {
 
   return { u, s, range, distribution, short, curve };
 };
-
-export function formatCount(value) {
-  return value >= 1e6
-    ? (value / 1e6).toFixed(1).replace(/\.0$/, "") + "m"
-    : value >= 1e3
-    ? (value / 1e3).toFixed(0).replace(/\.0$/, "") + "k"
-    : value.toString();
-}

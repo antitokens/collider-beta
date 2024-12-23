@@ -25,16 +25,21 @@ import {
   getTokenBalance,
 } from "../utils/solana";
 import {
+  toastContainerConfig,
+  toast,
   useIsMobile,
   emptyMetadata,
   metadataInit,
   emptyGaussian,
+  emptyBags,
   convertToLocaleTime,
   formatCount,
 } from "../utils/utils";
 import { getKVBalance, getMetadata } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Home = ({ BASE_URL }) => {
   const [trigger, setTrigger] = useState(null); // Shared state
@@ -111,7 +116,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [proBalance, setProBalance] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
-  const [photonBalances, setPhotonBalances] = useState([]);
+  const [bags, setBags] = useState(emptyBags);
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
@@ -165,6 +170,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   };
 
   useEffect(() => {
+    const checkMeta = async () => {
+      toast.error("Error fetching metadata from server!");
+      return;
+    };
+    if (metaError) checkMeta();
+  }, [metaError]);
+
+  useEffect(() => {
     if (refresh) {
       const fetchData = async () => {
         try {
@@ -177,15 +190,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               ? calculateCollision(baryonBalance, photonBalance, true)
               : emptyGaussian;
           const totalDistribution =
-            data.totalDistribution.value1 >= 0 &&
-            data.totalDistribution.value2 > 0.5
+            data.totalDistribution.u >= 0 && data.totalDistribution.s > 0.5
               ? calculateCollision(
-                  data.totalDistribution.value1,
+                  data.totalDistribution.u,
                   Math.sqrt(
-                    data.totalDistribution.value3.reduce(
+                    data.totalDistribution.photonBags.reduce(
                       (sum, x) => sum + x ** 2,
                       0
-                    ) / data.totalDistribution.value3.length
+                    ) / data.totalDistribution.photonBags.length
                   ),
                   true
                 )
@@ -199,6 +211,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             emissionsData: data.emissionsData,
             collisionsData: data.collisionsData,
             eventsOverTime: data.eventsOverTime,
+          });
+          setBags({
+            baryon: data.totalDistribution.baryonBags,
+            photon: data.totalDistribution.photonBags,
+            baryonPool: data.emissionsData.baryonTokens,
+            photonPool: data.emissionsData.photonTokens,
+            anti: data.totalDistribution.antiBags,
+            pro: data.totalDistribution.proBags,
+            antiPoolPool: data.collisionsData.antiTokens,
+            proPool: data.collisionsData.proTokens,
           });
         } catch (err) {
           console.error("Error fetching metadata:", err);
@@ -404,6 +426,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     proLive: metadata.collisionsData.proTokens || 0,
                   }}
                   isMobile={isMobile}
+                  bags={bags}
                 />
               </div>
             ) : (
@@ -662,6 +685,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           />
         </div>
       )}
+      <ToastContainer {...toastContainerConfig} />
     </>
   );
 };

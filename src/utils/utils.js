@@ -14,13 +14,16 @@ export const metadataInit = {
   startTime: "-",
   endTime: "-",
   colliderDistribution: {
-    value1: calculateCollision(50 * Math.random(), 30 * Math.random()).u,
-    value2: calculateCollision(20 * Math.random(), 30 * Math.random()).s,
+    u: calculateCollision(50 * Math.random(), 30 * Math.random()).u,
+    s: calculateCollision(20 * Math.random(), 30 * Math.random()).s,
   },
   totalDistribution: {
-    value1: calculateCollision(60 * Math.random(), 30 * Math.random()).u,
-    value3: calculateCollision(30 * Math.random(), 30 * Math.random()).s,
-    value3: [],
+    u: calculateCollision(60 * Math.random(), 30 * Math.random()).u,
+    s: calculateCollision(30 * Math.random(), 30 * Math.random()).s,
+    baryonBags: [],
+    photonBags: [],
+    antibags: [],
+    probags: [],
   },
   emissionsData: {
     total: 1e5 * emissionsSeed,
@@ -90,13 +93,16 @@ export const metaPlaceholder = {
   startTime: "-",
   endTime: "-",
   colliderDistribution: {
-    value1: 50 * Math.random(),
-    value2: 30 * Math.random(),
+    u: 50 * Math.random(),
+    s: 30 * Math.random(),
   },
   totalDistribution: {
-    value1: 60 * Math.random(),
-    value2: 20 * Math.random(),
-    value3: [],
+    u: 60 * Math.random(),
+    s: 20 * Math.random(),
+    baryonBags: [],
+    photonBags: [],
+    antibags: [],
+    probags: [],
   },
   emissionsData: {
     total: 1e5 * emissionsSeed,
@@ -368,4 +374,15 @@ export const emptyConfig2 = {
   endTime: "-",
   baryonLive: 0,
   photonLive: 0,
+};
+
+export const emptyBags = {
+  baryon: [],
+  photon: [],
+  baryonPool: 0,
+  photonPool: 0,
+  anti: [],
+  pro: [],
+  antiPool: 0,
+  proPool: 0,
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { recordPrediction } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
+import { calculateScattering } from "../utils/scatterAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
@@ -10,6 +11,7 @@ import {
   toastContainerConfig,
   toast,
   emptyConfig,
+  emptyBags,
   formatCount,
   formatPrecise,
   convertToLocaleTime,
@@ -30,6 +32,7 @@ const Collider = ({
   proData,
   config = emptyConfig,
   isMobile = false,
+  bags = emptyBags,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -66,6 +69,19 @@ const Collider = ({
       const G = 1;
       setBaryonTokens(F * userDistribution.u);
       setPhotonTokens(G * userDistribution.s);
+
+      const reward =
+        bags !== emptyBags
+          ? calculateScattering(
+              bags.baryon,
+              bags.photon,
+              bags.baryonPool,
+              bags.photonPool,
+              bags.anti,
+              bags.pro
+            )
+          : {};
+
       setLineChartData({
         type: "line",
         labels: userDistribution.short.map((value) =>

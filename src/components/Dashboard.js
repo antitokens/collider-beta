@@ -3,6 +3,7 @@ import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { formatCount } from "../utils/utils";
+import { calculateScattering } from "../utils/scatterAlpha";
 
 Chart.register(ChartDataLabels, ...registerables);
 
