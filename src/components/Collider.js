@@ -37,6 +37,8 @@ const Collider = ({
   const [baryonTokens, setBaryonTokens] = useState(0);
   const [photonTokens, setPhotonTokens] = useState(0);
   const [userDistribution, setUserDistribution] = useState(null);
+  const [pastDistribution, setPastDistribution] = useState(null);
+  const [totalDistribution, setTotalDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
   const [dollarBet, setDollarbet] = useState(0);
@@ -71,15 +73,34 @@ const Collider = ({
         ),
         datasets: [
           {
-            label: "Collider",
+            label: "Current",
             data: userDistribution.curve.map((item) => item.value),
             borderColor: "#ffffff",
-            backgroundColor: "#ffffff", // Match the legend marker color
+            backgroundColor: "#ffffff",
+            pointStyle: "line",
+          },
+          {
+            label: "Past",
+            data: pastDistribution
+              ? pastDistribution.curve.map((item) => item.value)
+              : [],
+            borderColor: "#44c1cf",
+            backgroundColor: "#44c1cf",
+            pointStyle: "line",
+          },
+          {
+            label: "Net",
+            data: totalDistribution
+              ? totalDistribution.curve.map((item) => item.value)
+              : [],
+            borderColor: "#fcba03",
+            backgroundColor: "#fcba03",
             pointStyle: "line",
           },
         ],
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: {
               labels: {
@@ -126,6 +147,17 @@ const Collider = ({
               },
               ticks: {
                 display: totalInvest > 0,
+                callback: function (value, index) {
+                  // Map index to a new labels array for the second axis
+                  return userDistribution
+                    ? userDistribution.short[index]
+                      ? formatCount(
+                          userDistribution.short[index].toFixed(6),
+                          false
+                        )
+                      : 0
+                    : 0;
+                },
                 font: {
                   family: "'SF Mono Round'",
                   size: 10,
@@ -134,6 +166,56 @@ const Collider = ({
               },
               grid: {
                 color: "#d3d3d322",
+              },
+            },
+            x2: {
+              position: "top",
+              ticks: {
+                display: totalInvest > 0,
+                callback: function (value, index) {
+                  // Map index to a new labels array for the second axis
+                  return userDistribution
+                    ? totalDistribution.short[index]
+                      ? formatCount(
+                          totalDistribution.short[index].toFixed(6),
+                          false
+                        )
+                      : 0
+                    : 0;
+                },
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 10,
+                },
+                color: "#fcba03",
+              },
+              grid: {
+                color: "#d3d3d300",
+              },
+            },
+            x3: {
+              position: "top",
+              ticks: {
+                display: totalInvest > 0,
+                callback: function (value, index) {
+                  // Map index to a new labels array for the second axis
+                  return userDistribution
+                    ? pastDistribution.short[index]
+                      ? formatCount(
+                          pastDistribution.short[index].toFixed(6),
+                          false
+                        )
+                      : 0
+                    : 0;
+                },
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 10,
+                },
+                color: "#44c1cf",
+              },
+              grid: {
+                color: "#d3d3d300",
               },
             },
             y: {
@@ -158,7 +240,13 @@ const Collider = ({
         },
       });
     }
-  }, [userDistribution, antiTokens, proTokens]);
+  }, [
+    userDistribution,
+    pastDistribution,
+    totalDistribution,
+    antiTokens,
+    proTokens,
+  ]);
 
   const handlePrediction = async () => {
     if (disabled || loading) return;
@@ -234,9 +322,16 @@ const Collider = ({
   };
 
   useEffect(() => {
-    if (antiTokens || proTokens) {
-      const distribution = calculateCollision(antiTokens, proTokens);
-      setUserDistribution(distribution);
+    setPastDistribution(calculateCollision(baryonBalance, photonBalance, true));
+    if (totalInvest > 0) {
+      setTotalDistribution(
+        calculateCollision(
+          baryonBalance + baryonTokens,
+          photonBalance + photonTokens,
+          true
+        )
+      );
+      setUserDistribution(calculateCollision(antiTokens, proTokens));
     } else {
       setUserDistribution({
         u: 0,
@@ -252,8 +347,19 @@ const Collider = ({
           { x: 1, value: 0 },
         ],
       });
+      setTotalDistribution(
+        calculateCollision(baryonBalance, photonBalance, true)
+      );
     }
-  }, [antiTokens, proTokens]);
+  }, [
+    antiTokens,
+    proTokens,
+    baryonTokens,
+    photonTokens,
+    baryonBalance,
+    photonBalance,
+    totalInvest,
+  ]);
 
   const updateSplit = (total, percentage) => {
     const pro = (percentage / 100) * total;
@@ -646,8 +752,40 @@ const Collider = ({
               </div>
             </div>
           </div>
+
           {lineChartData && (
-            <Line data={lineChartData} options={lineChartData.options} />
+            <>
+              <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200 -mb-2">
+                <div className="-mb-0">Your Predictions</div>
+                <div className="relative group">
+                  <div className="cursor-pointer">
+                    <svg
+                      className="w-4 h-4 text-gray-200"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    {`Displays your current, past and net predictions`}
+                  </span>
+                </div>
+              </div>
+              <div style={{ height: "400px" }}>
+                <Line data={lineChartData} options={lineChartData.options} />
+              </div>
+            </>
           )}
         </div>
       )}

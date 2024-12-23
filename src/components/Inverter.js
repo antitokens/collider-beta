@@ -71,6 +71,7 @@ const Inverter = ({
         ],
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: {
               labels: {
@@ -429,7 +430,9 @@ const Inverter = ({
             </div>
           </div>
           {lineChartData && (
-            <Line data={lineChartData} options={lineChartData.options} />
+            <div style={{ height: "300px" }}>
+              <Line data={lineChartData} options={lineChartData.options} />
+            </div>
           )}
         </div>
       )}
