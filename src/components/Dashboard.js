@@ -196,6 +196,7 @@ const Dashboard = ({
       ],
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             labels: {
@@ -297,6 +298,7 @@ const Dashboard = ({
       ],
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             labels: {
@@ -320,7 +322,7 @@ const Dashboard = ({
             anchor: "center",
             align: "end",
             formatter: (value, context) => {
-              return ` ${formatCount(value)}`;
+              return ` ${formatCount(value, true)}`;
             },
           },
           tooltip: {
@@ -360,7 +362,7 @@ const Dashboard = ({
                 size: 10,
               },
               callback: function (value) {
-                return value > 1e6 ? (value * 1e-6).toFixed(0) + "m" : value; // Format y-axis
+                return formatCount(value, true);
               },
             },
           },
@@ -373,24 +375,12 @@ const Dashboard = ({
       labels: !connected
         ? totalDistribution
           ? totalDistribution.short.map((value) =>
-              value > 0
-                ? formatCount(
-                    value.toFixed(6),
-                    Math.abs(totalDistribution.s).toString().split(".")[0]
-                      .length
-                  )
-                : ""
+              value > 0 ? formatCount(value.toFixed(6), false) : ""
             )
           : []
         : colliderDistribution
         ? colliderDistribution.short.map((value) =>
-            value > 0
-              ? formatCount(
-                  value.toFixed(6),
-                  Math.abs(colliderDistribution.s).toString().split(".")[0]
-                    .length
-                )
-              : ""
+            value > 0 ? formatCount(value.toFixed(6), false) : ""
           )
         : [],
       datasets: [
@@ -417,6 +407,7 @@ const Dashboard = ({
       ],
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             labels: {
@@ -456,9 +447,8 @@ const Dashboard = ({
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
                   ? formatCount(
-                      totalDistribution.short[index].toFixed(2),
-                      Math.abs(totalDistribution.s).toString().split(".")[0]
-                        .length
+                      totalDistribution.short[index].toFixed(6),
+                      false
                     )
                   : 0;
               },
@@ -476,8 +466,13 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
-                return ""; // Format y-axis
+                return "";
               },
+              font: {
+                family: "'SF Mono Round'",
+                size: 10,
+              },
+              color: "#d3d3d399",
             },
           },
         },
@@ -497,6 +492,7 @@ const Dashboard = ({
       ],
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             labels: {
@@ -671,12 +667,14 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the ranges of PRO & ANTI collisions, and PHOTON & BARYON emissions in the pool`}
+                {`Displays the sizes of PRO & ANTI collisions, and PHOTON & BARYON emissions in the pool`}
               </span>
             </div>
           </div>
           {barChartData && (
-            <Bar data={barChartData} options={barChartData.options} />
+            <div style={{ height: "250px" }}>
+              <Bar data={barChartData} options={barChartData.options} />
+            </div>
           )}
         </div>
         <div className="p-4 rounded-lg">
@@ -703,12 +701,14 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the PRO & ANTI collisions, and PHOTON & BARYON emissions over time`}
+                {`Displays the count of PRO & ANTI collisions, and PHOTON & BARYON emissions over time`}
               </span>
             </div>
           </div>
           {lineChartData && (
-            <Line data={lineChartData} options={lineChartData.options} />
+            <div style={{ height: "250px" }}>
+              <Line data={lineChartData} options={lineChartData.options} />
+            </div>
           )}
         </div>
         <div className="p-4 rounded-lg">
@@ -735,12 +735,14 @@ const Dashboard = ({
                 </svg>
               </div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Shows your prediction overlapped against the global prediction`}
+                {`Displays your prediction overlapped against the global prediction`}
               </span>
             </div>
           </div>
           {netDistribution && (
-            <Line data={netDistribution} options={netDistribution.options} />
+            <div style={{ height: "300px" }}>
+              <Line data={netDistribution} options={netDistribution.options} />
+            </div>
           )}
         </div>
         <div className="p-4 rounded-lg">
@@ -772,7 +774,12 @@ const Dashboard = ({
             </div>
           </div>
           {userDistribution && (
-            <Line data={userDistribution} options={userDistribution.options} />
+            <div style={{ height: "300px" }}>
+              <Line
+                data={userDistribution}
+                options={userDistribution.options}
+              />
+            </div>
           )}
         </div>
       </div>

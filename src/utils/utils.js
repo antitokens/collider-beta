@@ -326,15 +326,26 @@ export const emptyGaussian = {
   curve: [],
 };
 
-export const formatCount = (_value, _decimal = 1) => {
+export const formatCount = (_value, _flag = undefined, _fill = 4) => {
   const value = Number(_value);
-  return value >= 1e6
-    ? (value / 1e6).toFixed(_decimal > 1 ? 0 : _decimal).replace(/\.0$/, "") +
-        "m"
-    : value >= 1e3
-    ? (value / 1e3).toFixed(_decimal > 1 ? 0 : _decimal).replace(/\.0$/, "") +
-      "k"
-    : value.toFixed(_decimal > 1 ? 0 : _decimal).toString();
+  if (value >= 1e6) {
+    // For millions, fill-2 digits (accounting for 'm' and one leading zero + decimal)
+    const digits = _fill - Math.abs(_value).toString().split(".")[0].length;
+    const scaled = value / 1e6;
+    const formatted = scaled
+      .toFixed(digits >= 0 ? digits : 1)
+      .replace(/^0+/, "0");
+    return formatted + "m";
+  }
+  if (value >= 1e3) {
+    // For thousands, fill-2 digits (accounting for 'k')
+    const digits = _fill - Math.abs(_value).toString().split(".")[0].length;
+    const scaled = value / 1e3;
+    const formatted = scaled.toFixed(digits >= 0 ? digits : _flag ? 0 : 1);
+    return formatted + "k";
+  }
+  // For regular numbers, use all fill digits
+  return value.toFixed(_flag ? 0 : 1);
 };
 
 export const formatPrecise = (_value, _decimal = 1) => {
