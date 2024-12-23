@@ -74,28 +74,40 @@ const Collider = ({
         datasets: [
           {
             label: "Current",
-            data: userDistribution.curve.map((item) => item.value),
+            data:
+              totalInvest <= 0
+                ? []
+                : userDistribution.curve.map((item) => item.value),
             borderColor: "#ffffff",
             backgroundColor: "#ffffff",
             pointStyle: "line",
+            hidden: totalInvest <= 0,
           },
           {
             label: "Past",
-            data: pastDistribution
-              ? pastDistribution.curve.map((item) => item.value)
-              : [],
+            data:
+              totalInvest <= 0
+                ? []
+                : pastDistribution
+                ? pastDistribution.curve.map((item) => item.value)
+                : [],
             borderColor: "#44c1cf",
             backgroundColor: "#44c1cf",
             pointStyle: "line",
+            hidden: totalInvest <= 0,
           },
           {
             label: "Net",
-            data: totalDistribution
-              ? totalDistribution.curve.map((item) => item.value)
-              : [],
+            data:
+              totalInvest <= 0
+                ? []
+                : totalDistribution
+                ? totalDistribution.curve.map((item) => item.value)
+                : [],
             borderColor: "#fcba03",
             backgroundColor: "#fcba03",
             pointStyle: "line",
+            hidden: totalInvest <= 0,
           },
         ],
         options: {
