@@ -470,13 +470,25 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
-                return "";
+                return value.toFixed(1);;
               },
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
               },
-              color: "#d3d3d399",
+            },
+          },
+          y2: {
+            position: "right",
+            grid: { color: "#d3d3d322" },
+            ticks: {
+              callback: function (value) {
+                return value.toFixed(1);;
+              },
+              font: {
+                family: "'SF Mono Round'",
+                size: 10,
+              },
             },
           },
         },

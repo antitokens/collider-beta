@@ -167,8 +167,8 @@ const Collider = ({
                           userDistribution.short[index].toFixed(6),
                           false
                         )
-                      : 0
-                    : 0;
+                      : undefined
+                    : undefined;
                 },
                 font: {
                   family: "'SF Mono Round'",
@@ -192,8 +192,8 @@ const Collider = ({
                           totalDistribution.short[index].toFixed(6),
                           false
                         )
-                      : 0
-                    : 0;
+                      : undefined
+                    : undefined;
                 },
                 font: {
                   family: "'SF Mono Round'",
@@ -217,8 +217,8 @@ const Collider = ({
                           pastDistribution.short[index].toFixed(6),
                           false
                         )
-                      : 0
-                    : 0;
+                      : undefined
+                    : undefined;
                 },
                 font: {
                   family: "'SF Mono Round'",
@@ -244,8 +244,37 @@ const Collider = ({
               grid: { color: "#d3d3d322" },
               ticks: {
                 callback: function (value) {
-                  return ""; // Format y-axis
+                  return value.toFixed(1); // Format y-axis
                 },
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 10,
+                },
+                color: "#999999",
+              },
+            },
+            y2: {
+              position: "right",
+              title: {
+                display: false,
+                text: "Emissions", // Label for the X-axis
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 12,
+                  weight: "bold",
+                },
+                color: "#999999",
+              },
+              grid: { color: "#d3d3d322" },
+              ticks: {
+                callback: function (value) {
+                  return value.toFixed(1); // Format y-axis
+                },
+                font: {
+                  family: "'SF Mono Round'",
+                  size: 10,
+                },
+                color: "#999999",
               },
             },
           },
