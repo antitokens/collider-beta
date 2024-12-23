@@ -267,7 +267,7 @@ const Dashboard = ({
           borderColor: "#00bb7a",
           backgroundColor: "#00bb7a",
           fill: false,
-          tension: 0.4,
+          tension: 0.25,
         },
         {
           label: "Anti",
@@ -277,7 +277,7 @@ const Dashboard = ({
           borderColor: "#c12f00",
           backgroundColor: "#c12f00",
           fill: false,
-          tension: 0.4,
+          tension: 0.25,
         },
         {
           label: "Photon",
@@ -287,7 +287,7 @@ const Dashboard = ({
           borderColor: "rgb(123, 191, 255)",
           backgroundColor: "rgb(123, 191, 255)",
           fill: false,
-          tension: 0.4,
+          tension: 0.25,
         },
         {
           label: "Baryon",
@@ -297,7 +297,7 @@ const Dashboard = ({
           borderColor: "rgb(58, 182, 193)",
           backgroundColor: "rgb(58, 182, 193)",
           fill: false,
-          tension: 0.4,
+          tension: 0.25,
         },
       ],
       options: {
