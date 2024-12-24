@@ -396,6 +396,7 @@ const Collider = ({
     dollarBet,
     totalInvest,
     wallet,
+    bags,
   ]);
 
   const handlePrediction = async () => {
