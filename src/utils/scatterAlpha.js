@@ -22,6 +22,17 @@ export const calculateScattering = (
     );
   });
 
+  // Calculate overlap values
+  const overlapShifted = baryonBags.map((baryon, i) => {
+    const photon = photonBags[i];
+    return (
+      Math.exp(
+        -Math.pow(Math.max(...baryonBags) - baryon, 2) /
+          (2 * Math.pow(photon, 2))
+      ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
+    );
+  });
+
   // Calculate forward distribution
   const forward = calculateDistribution(
     overlap,
@@ -74,8 +85,7 @@ export const calculateScattering = (
     ),
     wallets: wallets,
   };
-
-  return { overlap, invert, change };
+  return { overlap: overlapShifted, invert, change };
 };
 
 function calculateDistribution(
@@ -84,7 +94,7 @@ function calculateDistribution(
   photonBags,
   antiBags,
   proBags,
-  numBins = 5
+  numBins = 100
 ) {
   // Step 1: Initialise bins
   const bins = Array(numBins).fill(0);

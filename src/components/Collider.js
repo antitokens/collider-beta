@@ -50,8 +50,6 @@ const Collider = ({
   const [dollarStake, setDollarStake] = useState(0);
   const [gain, setGain] = useState(0);
   const [newGain, setNewGain] = useState(0);
-  const [loss, setLoss] = useState(0);
-  const [newLoss, setNewLoss] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
   const sliderRef = useRef(null);
 
@@ -73,7 +71,7 @@ const Collider = ({
         proUsage * proData.priceUsd + antiUsage * antiData.priceUsd
       );
     }
-  }, [proData, antiData]);
+  }, [proUsage, antiUsage, antiData, proData]);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
@@ -91,14 +89,9 @@ const Collider = ({
 
   // Prepare line chart data
   useEffect(() => {
-    if (userDistribution && totalDistribution && dollarStake) {
-      // Trial
-      const F = 1;
-      const G = 1;
-      setBaryonTokens(totalInvest > 0 ? F * totalDistribution.u : 0);
-      setPhotonTokens(totalInvest > 0 ? G * totalDistribution.s : 0);
-
-      // Calculate expected rewardCurrents
+    // Calculate expected rewardCurrents
+    let myBag = -1;
+    if (wallet.publicKey) {
       const rewardCurrent =
         bags !== emptyBags
           ? calculateScattering(
@@ -110,14 +103,17 @@ const Collider = ({
               bags.pro,
               bags.antiPool,
               bags.proPool,
-              [Number(antiData.priceUsd), Number(proData.priceUsd)],
+              antiData && proData
+                ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+                : [0, 0],
               bags.wallets
             )
           : undefined;
 
-      const myBag = rewardCurrent
+      myBag = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
+
       if (myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
@@ -125,6 +121,14 @@ const Collider = ({
           (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) * 100
         );
       }
+    }
+
+    if (userDistribution && totalDistribution && dollarStake) {
+      // Trial
+      const F = 1;
+      const G = 1;
+      setBaryonTokens(totalInvest > 0 ? F * totalDistribution.u : 0);
+      setPhotonTokens(totalInvest > 0 ? G * totalDistribution.s : 0);
 
       // Create new arrays with updated values
       const updatedBaryonBags = [...bags.baryon];
@@ -150,7 +154,9 @@ const Collider = ({
               updatedProBags,
               bags.antiPool + antiTokens,
               bags.proPool + proTokens,
-              [Number(antiData.priceUsd), Number(proData.priceUsd)],
+              antiData && proData
+                ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+                : [1, 1],
               bags.wallets
             )
           : undefined;
@@ -385,6 +391,11 @@ const Collider = ({
     antiData,
     proData,
     dollarStake,
+    antiUsage,
+    proUsage,
+    dollarBet,
+    totalInvest,
+    wallet,
   ]);
 
   const handlePrediction = async () => {
@@ -449,6 +460,7 @@ const Collider = ({
         timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
       };
+      setGain(newGain);
       onPredictionSubmitted(true, predictionData);
       toast.success("Your prediction has been recorded!");
     } catch (error) {
@@ -666,25 +678,7 @@ const Collider = ({
             <div className="flex flex-row justify-between text-sm text-gray-500 -mb-0">
               <div className="flex flex-row">
                 <div className="relative group">
-                  <div className="cursor-pointer">
-                    <svg
-                      className="w-3 h-3 text-gray-500"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                      />
-                    </svg>
-                  </div>
+                  <div className="cursor-pointer text-xs">&#9432;</div>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                     {`Displays your current tokens in the pool`}
                   </span>
@@ -701,7 +695,7 @@ const Collider = ({
               </div>
               <div className="flex flex-row gap-2">
                 <div>
-                  USD in Pool:{" "}
+                  Pool:{" "}
                   <span className="text-[12px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
                     {formatCount(dollarStake.toFixed(2))}
@@ -715,25 +709,7 @@ const Collider = ({
                     </span>
                   </span>
                   <div className="relative group">
-                    <div className="cursor-pointer">
-                      <svg
-                        className="w-3 h-3 text-gray-500"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                      </svg>
-                    </div>
+                    <div className="cursor-pointer text-xs">&#9432;</div>
                     <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                       {`Displays your current maximum gain`}
                     </span>
@@ -745,7 +721,7 @@ const Collider = ({
               <div>Add More Tokens to Pool </div>
               <div className="flex flex-row gap-2">
                 <div>
-                  USD in Bet:{" "}
+                  Bet:{" "}
                   <span className="text-[12px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
                     {formatCount(dollarBet.toFixed(2))}
@@ -760,25 +736,7 @@ const Collider = ({
                     </span>
                   </span>
                   <div className="relative group">
-                    <div className="cursor-pointer">
-                      <svg
-                        className="w-3 h-3 text-gray-500"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                      </svg>
-                    </div>
+                    <div className="cursor-pointer text-xs">&#9432;</div>
                     <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                       {`Displays your updated maximum gain`}
                     </span>
@@ -1000,25 +958,7 @@ const Collider = ({
               <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200 -mb-2">
                 <div className="-mb-0">Your Predictions</div>
                 <div className="relative group">
-                  <div className="cursor-pointer">
-                    <svg
-                      className="w-4 h-4 text-gray-200"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                      />
-                    </svg>
-                  </div>
+                  <div className="cursor-pointer">&#9432;</div>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                     {`Displays your current, past and net predictions`}
                   </span>

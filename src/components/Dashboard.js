@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { formatCount } from "../utils/utils";
-import { calculateScattering } from "../utils/scatterAlpha";
+import { formatCount, truncateMiddle } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
 
@@ -16,6 +15,8 @@ const Dashboard = ({
   onRefresh,
   state = false,
   connected = false,
+  dynamics = [],
+  holders = [],
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -515,13 +516,13 @@ const Dashboard = ({
     });
 
     setUserDistribution({
-      labels: [],
+      labels: dynamics.map((value, index) => index + 1),
       datasets: [
         {
-          label: "US Dollar",
-          data: [],
-          borderColor: "#c4c4c4",
-          backgroundColor: "#c4c4c4", // Match the legend marker color
+          label: "Predicters",
+          data: dynamics,
+          borderColor: "#c4c4c4d2",
+          backgroundColor: "#c4c4c4d2",
           pointStyle: "line",
         },
       ],
@@ -545,7 +546,26 @@ const Dashboard = ({
             display: false,
           },
           tooltip: {
-            enabled: false,
+            bodyFont: {
+              family: "'SF Mono Round'",
+            },
+            titleFont: {
+              family: "'SF Mono Round'",
+              size: 14,
+            },
+            callbacks: {
+              title: (context) => {
+                const dataIndex = context[0].dataIndex;
+                return `${
+                  holders[dataIndex]
+                    ? truncateMiddle(holders[dataIndex], 20, 6)
+                    : ""
+                }`;
+              },
+              label: (context) => {
+                return ` ${context.raw.toFixed(2)}`;
+              },
+            },
           },
         },
         scales: {
@@ -562,7 +582,11 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
-                return ""; // Format y-axis
+                return value.toFixed(2); // Format y-axis
+              },
+              font: {
+                family: "'SF Mono Round'",
+                size: 10,
               },
             },
           },
@@ -576,6 +600,7 @@ const Dashboard = ({
     eventsOverTime,
     colliderDistribution,
     totalDistribution,
+    dynamics,
   ]);
 
   return (
@@ -612,25 +637,7 @@ const Dashboard = ({
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
             <div>Token Emissions</div>
             <div className="relative group">
-              <div className="cursor-pointer">
-                <svg
-                  className="w-4 h-4 text-gray-200"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              </div>
+              <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Displays the distribution of BARYON & PHOTON emissions in the pool`}
               </span>
@@ -647,25 +654,7 @@ const Dashboard = ({
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
             <div>Token Collisions</div>
             <div className="relative group">
-              <div className="cursor-pointer">
-                <svg
-                  className="w-4 h-4 text-gray-200"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              </div>
+              <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Displays the distribution of PRO & ANTI collisions in the pool`}
               </span>
@@ -682,25 +671,7 @@ const Dashboard = ({
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
             <div>{`Events Ranges`}</div>
             <div className="relative group">
-              <div className="cursor-pointer">
-                <svg
-                  className="w-4 h-4 text-gray-200"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              </div>
+              <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Displays the sizes of PRO & ANTI collisions, and PHOTON & BARYON emissions in the pool`}
               </span>
@@ -716,25 +687,7 @@ const Dashboard = ({
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
             <div>{`Events Over Time`}</div>
             <div className="relative group">
-              <div className="cursor-pointer">
-                <svg
-                  className="w-4 h-4 text-gray-200"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              </div>
+              <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Displays the count of PRO & ANTI collisions, and PHOTON & BARYON emissions over time`}
               </span>
@@ -750,25 +703,7 @@ const Dashboard = ({
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
             <div>Global Prediction</div>
             <div className="relative group">
-              <div className="cursor-pointer">
-                <svg
-                  className="w-4 h-4 text-gray-200"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              </div>
+              <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Displays your prediction overlapped against the global prediction`}
               </span>
@@ -782,38 +717,17 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Profit or Loss</div>
+            <div>Scattering</div>
             <div className="relative group">
-              <div className="cursor-pointer">
-                <svg
-                  className="w-4 h-4 text-gray-200"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              </div>
+              <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the current unrealised profit or loss of the user`}
+                {`Displays the current dynamics of profits among users`}
               </span>
             </div>
           </div>
           {userDistribution && (
             <div style={{ height: "300px" }}>
-              <Line
-                data={userDistribution}
-                options={userDistribution.options}
-              />
+              <Bar data={userDistribution} options={userDistribution.options} />
             </div>
           )}
         </div>

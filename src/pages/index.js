@@ -14,6 +14,7 @@ import {
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
+import { calculateScattering } from "../utils/scatterAlpha";
 import Navbar from "../components/TopNavbar";
 import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
@@ -132,6 +133,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
+  const [dynamics, setDynamics] = useState([]);
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
@@ -219,6 +221,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             proPool: data.collisionsData.proTokens,
             wallets: data.totalDistribution.wallets,
           });
+          const rewardCurrent = calculateScattering(
+            data.totalDistribution.baryonBags,
+            data.totalDistribution.photonBags,
+            data.emissionsData.baryonTokens,
+            data.emissionsData.photonTokens,
+            data.totalDistribution.antiBags,
+            data.totalDistribution.proBags,
+            data.collisionsData.antiTokens,
+            data.collisionsData.proTokens,
+            antiData && proData
+              ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+              : [1, 1],
+            data.totalDistribution.wallets
+          );
+          setDynamics(rewardCurrent ? rewardCurrent.overlap : []);
         } catch (err) {
           console.error("Error fetching metadata:", err);
           setMetaError(err);
@@ -226,11 +243,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setIsMetaLoading(false);
         }
       };
-
       fetchData();
       setRefresh(false);
     }
-  }, [refresh, baryonBalance, photonBalance]);
+  }, [refresh, baryonBalance, photonBalance, antiData, proData]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -632,6 +648,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 onRefresh={onRefresh}
                 state={showCollider}
                 connected={wallet.connected}
+                dynamics={dynamics}
+                holders={bags.wallets}
               />
             ) : (
               <div className="flex justify-center items-center w-full">
