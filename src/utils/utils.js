@@ -24,6 +24,7 @@ export const metadataInit = {
     photonBags: [],
     antibags: [],
     probags: [],
+    wallets: [],
   },
   emissionsData: {
     total: 1e5 * emissionsSeed,
@@ -103,6 +104,7 @@ export const metaPlaceholder = {
     photonBags: [],
     antibags: [],
     probags: [],
+    wallets: [],
   },
   emissionsData: {
     total: 1e5 * emissionsSeed,
@@ -385,4 +387,5 @@ export const emptyBags = {
   pro: [],
   antiPool: 0,
   proPool: 0,
+  wallets: [],
 };

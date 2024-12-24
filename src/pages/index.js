@@ -194,14 +194,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const totalDistribution =
             data.totalDistribution.u >= 0 && data.totalDistribution.s > 0.5
               ? calculateCollision(
-                  data.totalDistribution.u,
-                  Math.sqrt(
-                    data.totalDistribution.photonBags.reduce(
-                      (sum, x) => sum + x ** 2,
-                      0
-                    ) / data.totalDistribution.photonBags.length
-                  ),
-                  true
+                  data.collisionsData.antiTokens,
+                  data.collisionsData.proTokens
                 )
               : emptyGaussian;
 
@@ -223,6 +217,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             pro: data.totalDistribution.proBags,
             antiPool: data.collisionsData.antiTokens,
             proPool: data.collisionsData.proTokens,
+            wallets: data.totalDistribution.wallets,
           });
         } catch (err) {
           console.error("Error fetching metadata:", err);
@@ -586,6 +581,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     wallet={wallet}
                     antiBalance={antiBalance}
                     proBalance={proBalance}
+                    antiUsage={antiUsage}
+                    proUsage={proUsage}
                     baryonBalance={baryonBalance}
                     photonBalance={photonBalance}
                     disabled={!wallet.connected}

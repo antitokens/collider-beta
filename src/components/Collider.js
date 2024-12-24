@@ -46,9 +46,35 @@ const Collider = ({
   const [totalDistribution, setTotalDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
-  const [dollarBet, setDollarbet] = useState(0);
+  const [dollarBet, setDollarBet] = useState(0);
+  const [dollarStake, setDollarStake] = useState(0);
+  const [gain, setGain] = useState(0);
+  const [newGain, setNewGain] = useState(0);
+  const [loss, setLoss] = useState(0);
+  const [newLoss, setNewLoss] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
   const sliderRef = useRef(null);
+
+  useEffect(() => {
+    if (sliderRef.current) {
+      let percentage = 50;
+
+      if (totalInvest > 0) {
+        percentage = (proTokens / totalInvest) * 100;
+      }
+
+      handleSliderInput(percentage);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (antiData && proData) {
+      setDollarStake(
+        proUsage * proData.priceUsd + antiUsage * antiData.priceUsd
+      );
+    }
+  }, [proData, antiData]);
+
   // Clear input fields when `clearFields` changes
   useEffect(() => {
     if (clearFields) {
@@ -57,7 +83,7 @@ const Collider = ({
       setBaryonTokens(0);
       setPhotonTokens(0);
       setTotalInvest(0);
-      setDollarbet(0);
+      setDollarBet(0);
       setSplitPercentage(50);
       handleSliderInput(50);
     }
@@ -65,15 +91,15 @@ const Collider = ({
 
   // Prepare line chart data
   useEffect(() => {
-    if (userDistribution && totalDistribution) {
+    if (userDistribution && totalDistribution && dollarStake) {
       // Trial
       const F = 1;
       const G = 1;
       setBaryonTokens(totalInvest > 0 ? F * totalDistribution.u : 0);
       setPhotonTokens(totalInvest > 0 ? G * totalDistribution.s : 0);
 
-      // Calculate expected rewards
-      const reward =
+      // Calculate expected rewardCurrents
+      const rewardCurrent =
         bags !== emptyBags
           ? calculateScattering(
               bags.baryon,
@@ -81,11 +107,59 @@ const Collider = ({
               bags.baryonPool,
               bags.photonPool,
               bags.anti,
-              bags.pro
+              bags.pro,
+              bags.antiPool,
+              bags.proPool,
+              [Number(antiData.priceUsd), Number(proData.priceUsd)],
+              bags.wallets
             )
-          : {};
+          : undefined;
 
-      //console.log(reward);
+      const myBag = rewardCurrent
+        ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
+        : -1;
+      if (myBag >= 0) {
+        const originalPosition =
+          proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
+        setGain(
+          (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) * 100
+        );
+      }
+
+      // Create new arrays with updated values
+      const updatedBaryonBags = [...bags.baryon];
+      const updatedPhotonBags = [...bags.photon];
+      const updatedAntiBags = [...bags.anti];
+      const updatedProBags = [...bags.pro];
+
+      if (myBag >= 0) {
+        updatedBaryonBags[myBag] += baryonTokens;
+        updatedPhotonBags[myBag] += photonTokens;
+        updatedAntiBags[myBag] += antiTokens;
+        updatedProBags[myBag] += proTokens;
+      }
+
+      const rewardUpdated =
+        bags !== emptyBags
+          ? calculateScattering(
+              updatedBaryonBags,
+              updatedPhotonBags,
+              bags.baryonPool + baryonTokens,
+              bags.photonPool + photonTokens,
+              updatedAntiBags,
+              updatedProBags,
+              bags.antiPool + antiTokens,
+              bags.proPool + proTokens,
+              [Number(antiData.priceUsd), Number(proData.priceUsd)],
+              bags.wallets
+            )
+          : undefined;
+
+      if (myBag >= 0) {
+        setNewGain(
+          (Math.abs(rewardUpdated.change.gain[myBag]) / dollarStake) * 100
+        );
+      }
 
       setLineChartData({
         type: "line",
@@ -308,6 +382,9 @@ const Collider = ({
     totalDistribution,
     antiTokens,
     proTokens,
+    antiData,
+    proData,
+    dollarStake,
   ]);
 
   const handlePrediction = async () => {
@@ -425,7 +502,11 @@ const Collider = ({
     if (!proData || !antiData) {
       return;
     }
-    setDollarbet(pro * proData.priceUsd + anti * antiData.priceUsd);
+    setDollarBet(pro * proData.priceUsd + anti * antiData.priceUsd);
+    setDollarStake(
+      (proUsage + pro) * proData.priceUsd +
+        (antiUsage + anti) * antiData.priceUsd
+    );
     setProTokens(pro);
     setAntiTokens(anti);
   };
@@ -471,18 +552,6 @@ const Collider = ({
   const handleSliderInput = (value) => {
     sliderRef.current.style.background = `linear-gradient(to right, var(--accent-secondary) ${value}%, var(--accent-primary) ${value}%)`;
   };
-
-  useEffect(() => {
-    if (sliderRef.current) {
-      let percentage = 50;
-
-      if (totalInvest > 0) {
-        percentage = (proTokens / totalInvest) * 100;
-      }
-
-      handleSliderInput(percentage);
-    }
-  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
@@ -593,14 +662,129 @@ const Collider = ({
       <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full">
         <div className="text-lg text-gray-300">Predict</div>
         <div className="w-full space-y-2 mt-4">
-          <div className="flex flex-row justify-between text-sm text-gray-500">
-            <div>Total Tokens in Stake &nbsp;</div>
-            <div>
-              USD Value:{" "}
-              <span className="text-[12px] text-white font-sfmono">
-                <span className="text-gray-400">$</span>
-                {dollarBet.toFixed(2)}
-              </span>
+          <div>
+            <div className="flex flex-row justify-between text-sm text-gray-500 -mb-0">
+              <div className="flex flex-row">
+                <div className="relative group">
+                  <div className="cursor-pointer">
+                    <svg
+                      className="w-3 h-3 text-gray-500"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    {`Displays your current tokens in the pool`}
+                  </span>
+                </div>
+                &nbsp;
+                <span>Tokens in Pool:&nbsp;</span>
+                <span className="font-sfmono text-accent-primary text-[12px] opacity-75">
+                  {formatCount(antiUsage.toFixed(2))}
+                </span>
+                {"/"}
+                <span className="font-sfmono text-accent-secondary text-[12px] opacity-75">
+                  {formatCount(proUsage.toFixed(2))}
+                </span>
+              </div>
+              <div className="flex flex-row gap-2">
+                <div>
+                  USD in Pool:{" "}
+                  <span className="text-[12px] text-white font-sfmono">
+                    <span className="text-gray-400">$</span>
+                    {formatCount(dollarStake.toFixed(2))}
+                  </span>{" "}
+                </div>
+                <div className="flex flex-row gap-1">
+                  P/L:{" "}
+                  <span className="text-[12px] text-white font-sfmono">
+                    <span className="text-accent-secondary opacity-75">
+                      {formatCount(gain.toFixed(2))}%
+                    </span>
+                  </span>
+                  <div className="relative group">
+                    <div className="cursor-pointer">
+                      <svg
+                        className="w-3 h-3 text-gray-500"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                      {`Displays your current maximum gain`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-row justify-between text-sm text-gray-500">
+              <div>Add More Tokens to Pool </div>
+              <div className="flex flex-row gap-2">
+                <div>
+                  USD in Bet:{" "}
+                  <span className="text-[12px] text-white font-sfmono">
+                    <span className="text-gray-400">$</span>
+                    {formatCount(dollarBet.toFixed(2))}
+                  </span>{" "}
+                </div>
+                <div className="flex flex-row gap-1">
+                  P/L:{" "}
+                  <span className="text-[12px] text-white font-sfmono">
+                    <span className="text-accent-secondary opacity-75">
+                      {gain !== newGain ? formatCount(newGain.toFixed(2)) : "0"}
+                      %
+                    </span>
+                  </span>
+                  <div className="relative group">
+                    <div className="cursor-pointer">
+                      <svg
+                        className="w-3 h-3 text-gray-500"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                      {`Displays your updated maximum gain`}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <input
@@ -811,7 +995,7 @@ const Collider = ({
             </div>
           </div>
 
-          {lineChartData && (
+          {lineChartData && totalInvest > 0 && (
             <>
               <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200 -mb-2">
                 <div className="-mb-0">Your Predictions</div>
