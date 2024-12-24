@@ -393,13 +393,11 @@ const Dashboard = ({
 
     setNetDistribution({
       type: "line",
-      labels: !connected
-        ? totalDistribution
-          ? totalDistribution.short.map((value) =>
-              value > 0 ? formatCount(value.toFixed(6), false) : ""
-            )
-          : []
-        : colliderDistribution
+      labels: totalDistribution
+        ? totalDistribution.short.map((value) =>
+            value > 0 ? formatCount(value.toFixed(6), false) : ""
+          )
+        : []
         ? colliderDistribution.short.map((value) =>
             value > 0 ? formatCount(value.toFixed(6), false) : ""
           )
@@ -451,6 +449,7 @@ const Dashboard = ({
         },
         scales: {
           x: {
+            display: connected,
             ticks: {
               maxTicksLimit: 10,
               font: {
