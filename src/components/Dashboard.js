@@ -247,7 +247,16 @@ const Dashboard = ({
                 size: 10,
               },
               callback: function (value) {
-                return Number.isInteger(value) ? value.toFixed(0) : ""; // Format y-axis
+                return eventsOverTime.baryonEvents.every(
+                  (value) => value === 0
+                ) &&
+                  eventsOverTime.photonEvents.every((value) => value === 0) &&
+                  eventsOverTime.antiEvents.every((value) => value === 0) &&
+                  eventsOverTime.proEvents.every((value) => value === 0)
+                  ? ""
+                  : Number.isInteger(value)
+                  ? value.toFixed(0)
+                  : ""; // Format y-axis
               },
             },
             grid: { color: "#d3d3d322" },
@@ -367,7 +376,14 @@ const Dashboard = ({
                 size: 10,
               },
               callback: function (value) {
-                return formatCount(value, true);
+                return eventsOverTime.baryonEvents.every(
+                  (value) => value === 0
+                ) &&
+                  eventsOverTime.photonEvents.every((value) => value === 0) &&
+                  eventsOverTime.antiEvents.every((value) => value === 0) &&
+                  eventsOverTime.proEvents.every((value) => value === 0)
+                  ? ""
+                  : formatCount(value, true);
               },
             },
           },
@@ -436,7 +452,6 @@ const Dashboard = ({
         scales: {
           x: {
             ticks: {
-              display: connected,
               maxTicksLimit: 10,
               font: {
                 family: "'SF Mono Round'",
@@ -471,7 +486,7 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
-                return totalDistribution || colliderDistribution
+                return totalDistribution.u || colliderDistribution.u
                   ? value.toFixed(1)
                   : "";
               },
@@ -486,7 +501,7 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
             ticks: {
               callback: function (value) {
-                return totalDistribution || colliderDistribution
+                return totalDistribution.u || colliderDistribution.u
                   ? value.toFixed(1)
                   : "";
               },

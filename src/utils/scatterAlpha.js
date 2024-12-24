@@ -1,12 +1,78 @@
 import { calculateInversion } from "./inverterAlpha";
 
-export function calculateDistribution(
+export const calculateScattering = (
+  baryonBags,
+  photonBags,
+  baryonPool,
+  photonPool,
+  antiBags,
+  proBags,
+  flag = false
+) => {
+  // Calculate overlap values
+  const overlap = baryonBags.map((baryon, i) => {
+    const photon = photonBags[i];
+    return (
+      Math.exp(-Math.pow(baryonPool - baryon, 2) / (2 * Math.pow(photon, 2))) /
+      (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
+    );
+  });
+
+  // Calculate forward distribution
+  const forward = calculateDistribution(
+    overlap,
+    baryonBags,
+    photonBags,
+    antiBags,
+    proBags
+  );
+
+  // Calculate returns
+  const baryonChange = distributeCountOverBins(
+    forward.distribution,
+    baryonPool
+  );
+  console.log(baryonChange);
+  const _returns = {
+    baryon: distributeCountOverBins(forward.distribution, baryonPool),
+    photon: distributeCountOverBins(forward.distribution, photonPool),
+  };
+
+  const returns = [
+    distributeValuesInBins(_returns.baryon.resampled, forward.index),
+    distributeValuesInBins(_returns.photon.resampled, forward.index),
+  ];
+
+  // Calculate inversions
+  const invert = { anti: [], pro: [], baryon: [], photon: [] };
+  for (let i = 0; i < returns[0].length; i++) {
+    for (let j = 0; j < returns[0][i].length; j++) {
+      const _revert = calculateInversion(returns[0][i][j], returns[1][i][j]);
+      invert.anti.push(_revert.u);
+      invert.pro.push(_revert.s);
+      invert.baryon.push(-returns[0][i][j]);
+      invert.photon.push(-returns[1][i][j]);
+    }
+  }
+
+  // Calculate changes
+  const change = {
+    baryon: baryonBags.map((value, index) => value - invert.baryon[index]),
+    photon: photonBags.map((value, index) => value - invert.photon[index]),
+    anti: antiBags.map((value, index) => value - invert.anti[index]),
+    pro: proBags.map((value, index) => value - invert.pro[index]),
+  };
+
+  return { overlap, invert, change };
+};
+
+function calculateDistribution(
   values,
   baryonBags,
   photonBags,
   antiBags,
   proBags,
-  numBins = 100
+  numBins = 5
 ) {
   // Step 1: Initialise bins
   const bins = Array(numBins).fill(0);
@@ -61,15 +127,28 @@ export function calculateDistribution(
 }
 
 function distributeCountOverBins(bins, totalCount) {
-  const totalBinValues = bins.reduce((sum, bin) => sum + bin, 0);
+  // Find indices of non-zero bins
+  const nonZeroBinIndices = bins
+    .map((value, index) => ({ value, index }))
+    .filter((item) => item.value > 0)
+    .map((item) => item.index);
 
-  if (totalBinValues === 0) {
-    throw new Error("BAD_INPUT_IN_SCATTERING");
+  if (nonZeroBinIndices.length === 0) {
+    //throw new Error("BAD_INPUT_IN_SCATTERING");
   }
-
-  const resampled = bins.map(
-    (binValue) => (binValue / totalBinValues) * totalCount
+  // Initialise result array with zeros
+  const resampled = new Array(bins.length).fill(0);
+  // Calculate values for non-zero bins before normalisation
+  const totalBinValues = nonZeroBinIndices.length + 1;
+  const unnormalised = nonZeroBinIndices.map(
+    (index) => (index + 1) / totalBinValues
   );
+  // Calculate sum of unnormalised values
+  const totalUnnormalised = unnormalised.reduce((sum, val) => sum + val, 0);
+  // Normalise and assign only to non-zero bin positions
+  nonZeroBinIndices.forEach((binIndex, i) => {
+    resampled[binIndex] = (unnormalised[i] / totalUnnormalised) * totalCount;
+  });
 
   return { resampled };
 }
@@ -81,64 +160,3 @@ function distributeValuesInBins(valueSums, indicesInBins) {
     return Array(count).fill(sums / count);
   });
 }
-
-export const calculateScattering = (
-  baryonBags,
-  photonBags,
-  baryonPool,
-  photonPool,
-  antiBags,
-  proBags,
-  flag = false
-) => {
-  // Calculate overlap values
-  const overlap = baryonBags.map((baryon, i) => {
-    const photon = photonBags[i];
-    return (
-      Math.exp(-Math.pow(baryonPool - baryon, 2) / (2 * Math.pow(photon, 2))) /
-      (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
-    );
-  });
-
-  // Calculate forward distribution
-  const forward = calculateDistribution(
-    overlap,
-    baryonBags,
-    photonBags,
-    antiBags,
-    proBags
-  );
-
-  // Calculate returns
-  const _returns = {
-    baryon: distributeCountOverBins(forward.distribution, baryonPool),
-    photon: distributeCountOverBins(forward.distribution, photonPool),
-  };
-
-  const returns = [
-    distributeValuesInBins(_returns.baryon.resampled, forward.index),
-    distributeValuesInBins(_returns.photon.resampled, forward.index),
-  ];
-
-  // Calculate inversions
-  const invert = { anti: [], pro: [], baryon: [], photon: [] };
-  for (let i = 0; i < returns[0].length; i++) {
-    for (let j = 0; j < returns[0][i].length; j++) {
-      const _revert = calculateInversion(returns[0][i][j], returns[1][i][j]);
-      invert.anti.push(_revert.u);
-      invert.pro.push(_revert.s);
-      invert.baryon.push(returns[0][i][j]);
-      invert.photon.push(returns[1][i][j]);
-    }
-  }
-
-  // Calculate changes
-  const change = {
-    baryon: baryonBags.map((value, index) => value - invert.baryon[index]),
-    photon: photonBags.map((value, index) => value - invert.photon[index]),
-    anti: antiBags.map((value, index) => value - invert.anti[index]),
-    pro: proBags.map((value, index) => value - invert.pro[index]),
-  };
-
-  return { overlap, returns, change };
-};

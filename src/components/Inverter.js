@@ -189,19 +189,19 @@ const Inverter = ({
       const timestamp = new Date().toISOString();
       // Record the claim
       await recordClaim(wallet.publicKey.toString(), {
-        antiTokens,
-        proTokens,
-        baryonTokens,
-        photonTokens,
+        antiTokens: antiBalance - antiTokens,
+        proTokens: proBalance - proTokens,
+        baryonTokens: baryonBalance + baryonTokens,
+        photonTokens: photonBalance + photonTokens,
         signature,
         timestamp,
       });
       // Create claim data object
       const claimData = {
-        antiTokens,
-        proTokens,
-        baryonTokens,
-        photonTokens,
+        antiTokens: antiBalance - antiTokens,
+        proTokens: proBalance - proTokens,
+        baryonTokens: baryonBalance + baryonTokens,
+        photonTokens: photonBalance + photonTokens,
         signature,
         timestamp: timestamp,
         wallet: wallet.publicKey.toString(),

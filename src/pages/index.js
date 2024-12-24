@@ -114,6 +114,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
+  const [antiUsage, setAntiUsage] = useState(0);
+  const [proUsage, setProUsage] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
   const [bags, setBags] = useState(emptyBags);
@@ -219,7 +221,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             photonPool: data.emissionsData.photonTokens,
             anti: data.totalDistribution.antiBags,
             pro: data.totalDistribution.proBags,
-            antiPoolPool: data.collisionsData.antiTokens,
+            antiPool: data.collisionsData.antiTokens,
             proPool: data.collisionsData.proTokens,
           });
         } catch (err) {
@@ -283,6 +285,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       const balance = JSON.parse(_balance.message);
       setAntiBalance(antiBalanceResult - balance.anti);
       setProBalance(proBalanceResult - balance.pro);
+      setAntiUsage(balance.anti);
+      setProUsage(balance.pro);
       setBaryonBalance(balance.baryon);
       setPhotonBalance(balance.photon);
       setDataUpdated(false);
@@ -411,6 +415,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   wallet={wallet}
                   antiBalance={antiBalance}
                   proBalance={proBalance}
+                  antiUsage={antiUsage}
+                  proUsage={proUsage}
                   baryonBalance={baryonBalance}
                   photonBalance={photonBalance}
                   disabled={!wallet.connected}

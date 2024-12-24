@@ -22,6 +22,8 @@ const Collider = ({
   wallet,
   antiBalance,
   proBalance,
+  antiUsage,
+  proUsage,
   baryonBalance,
   photonBalance,
   disabled,
@@ -63,13 +65,14 @@ const Collider = ({
 
   // Prepare line chart data
   useEffect(() => {
-    if (userDistribution) {
+    if (userDistribution && totalDistribution) {
       // Trial
       const F = 1;
       const G = 1;
-      setBaryonTokens(F * userDistribution.u);
-      setPhotonTokens(G * userDistribution.s);
+      setBaryonTokens(totalInvest > 0 ? F * totalDistribution.u : 0);
+      setPhotonTokens(totalInvest > 0 ? G * totalDistribution.s : 0);
 
+      // Calculate expected rewards
       const reward =
         bags !== emptyBags
           ? calculateScattering(
@@ -81,6 +84,8 @@ const Collider = ({
               bags.pro
             )
           : {};
+
+      //console.log(reward);
 
       setLineChartData({
         type: "line",
@@ -350,19 +355,19 @@ const Collider = ({
       const timestamp = new Date().toISOString();
       // Record the prediction
       await recordPrediction(wallet.publicKey.toString(), {
-        antiTokens,
-        proTokens,
-        baryonTokens,
-        photonTokens,
+        antiTokens: antiTokens + antiUsage,
+        proTokens: proTokens + proUsage,
+        baryonTokens: baryonTokens,
+        photonTokens: photonTokens,
         signature,
         timestamp,
       });
       // Create prediction data object
       const predictionData = {
-        antiTokens,
-        proTokens,
-        baryonTokens,
-        photonTokens,
+        antiTokens: antiTokens + antiUsage,
+        proTokens: proTokens + proUsage,
+        baryonTokens: baryonTokens,
+        photonTokens: photonTokens,
         signature,
         timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
@@ -382,11 +387,7 @@ const Collider = ({
     setPastDistribution(calculateCollision(baryonBalance, photonBalance, true));
     if (totalInvest > 0) {
       setTotalDistribution(
-        calculateCollision(
-          baryonBalance + baryonTokens,
-          photonBalance + photonTokens,
-          true
-        )
+        calculateCollision(antiUsage + antiTokens, proUsage + proTokens)
       );
       setUserDistribution(calculateCollision(antiTokens, proTokens));
     } else {

@@ -1,9 +1,9 @@
 export const calculateInversion = (baryon, photon, flag = false) => {
   // Step 1: Calculate u (= mean)
-  const u = flag ? baryon : baryon * (photon + 0.5);
+  const u = flag ? baryon : baryon * (photon + 1);
 
   // Step 2: Calculate s (= standard deviation)
-  const s = flag ? photon : baryon * (photon - 0.5);
+  const s = flag ? photon : baryon * (photon - 1);
 
   // Step 3: Generate a normal distribution in -5s to 5s range
   const distribution = [];
