@@ -676,72 +676,83 @@ const Collider = ({
         <div className="text-lg text-gray-300">Predict</div>
         <div className="w-full space-y-2 mt-4">
           <div>
-            <div className="flex flex-row justify-between text-sm text-gray-500 -mb-0">
-              <div className="flex flex-row">
+            <div className="flex flex-row justify-between text-sm text-gray-500">
+              <div className="flex text-left text-xs">
                 <div className="relative group">
-                  <div className="cursor-pointer text-xs">&#9432;</div>
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    {`Displays your current tokens in the pool`}
+                  <div className="cursor-pointer">&#9432;&nbsp;</div>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    Displays your current tokens in the pool
                   </span>
                 </div>
-                &nbsp;
-                <span>Tokens in Pool:&nbsp;</span>
-                <span className="font-sfmono text-accent-primary text-[12px] opacity-75">
-                  {formatCount(antiUsage.toFixed(2))}
-                </span>
-                {"/"}
-                <span className="font-sfmono text-accent-secondary text-[12px] opacity-75">
-                  {formatCount(proUsage.toFixed(2))}
-                </span>
+                <div>&nbsp;Tokens in Pool:&nbsp;</div>
+                <div className="flex flex-row justify-center font-sfmono mt-[1px]">
+                  <div className="text-accent-primary text-[11px] opacity-75">
+                    {formatCount(antiUsage.toFixed(2))}
+                  </div>
+                  <div>/</div>
+                  <div className="text-accent-secondary text-[11px] opacity-75">
+                    {formatCount(proUsage.toFixed(2))}
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-row text-right text-[12px]">
                 <div>
                   Pool:{" "}
-                  <span className="text-[12px] text-white font-sfmono">
+                  <span className="text-[11px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
                     {formatCount(dollarStake.toFixed(2))}
                   </span>{" "}
                 </div>
-                <div className="flex flex-row gap-1">
-                  P/L:{" "}
-                  <span className="text-[12px] text-white font-sfmono">
+                &nbsp;
+                <div className="flex flex-row text-right">
+                  <span>&nbsp;P/L:&nbsp;</span>
+                  <span className="text-[11px] text-white font-sfmono pt-[1px]">
                     <span className="text-accent-secondary opacity-75">
-                      {formatCount(gain.toFixed(2))}%
+                      {formatCount(gain.toFixed(2))}%&nbsp;
                     </span>
                   </span>
-                  <div className="relative group">
-                    <div className="cursor-pointer text-xs">&#9432;</div>
+                  <span className="relative group">
+                    <div className="cursor-pointer text-xs mt-[2px]">
+                      &#9432;
+                    </div>
                     <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                       {`Displays your current maximum gain`}
                     </span>
-                  </div>
+                  </span>
                 </div>
               </div>
             </div>
-            <div className="flex flex-row justify-between text-sm text-gray-500">
-              <div>Add More Tokens to Pool </div>
-              <div className="flex flex-row gap-2">
+            <div className="flex flex-row justify-between text-[12px] text-gray-500">
+              <div className="text-sm">Add More Tokens to Pool</div>
+              <div className="flex flex-row text-right">
                 <div>
                   Bet:{" "}
-                  <span className="text-[12px] text-white font-sfmono">
+                  <span className="text-[11px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
                     {formatCount(dollarBet.toFixed(2))}
-                  </span>{" "}
-                </div>
-                <div className="flex flex-row gap-1">
-                  P/L:{" "}
-                  <span className="text-[12px] text-white font-sfmono">
-                    <span className="text-accent-secondary opacity-75">
-                      {gain !== newGain ? formatCount(newGain.toFixed(2)) : "0"}
-                      %
-                    </span>
                   </span>
-                  <div className="relative group">
-                    <div className="cursor-pointer text-xs">&#9432;</div>
+                </div>
+                &nbsp;
+                <div className="flex flex-row text-right">
+                  <div>
+                    &nbsp;P/L:{" "}
+                    <span className="text-[11px] text-white font-sfmono pt-[2px]">
+                      <span className="text-accent-secondary opacity-75">
+                        {gain !== newGain
+                          ? formatCount(newGain.toFixed(2))
+                          : "0"}
+                        %&nbsp;
+                      </span>
+                    </span>
+                  </div>
+                  <span className="relative group">
+                    <div className="cursor-pointer text-xs mt-[1px]">
+                      &#9432;
+                    </div>
                     <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                       {`Displays your updated maximum gain`}
                     </span>
-                  </div>
+                  </span>
                 </div>
               </div>
             </div>
