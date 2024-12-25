@@ -604,7 +604,7 @@ const Dashboard = ({
               },
             },
             title: {
-              display: true,
+              display: !dynamics.every((item) => item === 0),
               text: "Rank",
               font: {
                 family: "'SF Mono Round'",
@@ -616,6 +616,7 @@ const Dashboard = ({
           y: {
             grid: { color: "#d3d3d322" },
             ticks: {
+              display: !dynamics.every((item) => item === 0),
               callback: function (value) {
                 return value.toFixed(2); // Format y-axis
               },

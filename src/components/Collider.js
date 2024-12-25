@@ -987,10 +987,13 @@ const Collider = ({
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={disabled || loading}
+        disabled={
+          disabled || loading || new Date() < new Date(config.startTime)
+        }
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
           loading ||
+          new Date() < new Date(config.startTime) ||
           (antiTokens === 0 && proTokens === 0) ||
           (Math.abs(antiTokens - proTokens) < 1 &&
             Math.abs(antiTokens - proTokens) !== 0) ||
@@ -999,9 +1002,11 @@ const Collider = ({
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {(Math.abs(antiTokens - proTokens) < 1 &&
-          Math.abs(antiTokens - proTokens) !== 0) ||
-        (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
+        {new Date() < new Date(config.startTime)
+          ? "Closed"
+          : (Math.abs(antiTokens - proTokens) < 1 &&
+              Math.abs(antiTokens - proTokens) !== 0) ||
+            (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
           ? "Submit"
           : loading
           ? "Submitting..."

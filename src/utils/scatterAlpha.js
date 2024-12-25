@@ -159,9 +159,6 @@ function distributeCountOverBins(bins, totalCount) {
     .filter((item) => item.value > 0)
     .map((item) => item.index);
 
-  if (nonZeroBinIndices.length === 0) {
-    throw new Error("BAD_INPUT_IN_SCATTERING");
-  }
   // Initialise result array with zeros
   const resampled = new Array(bins.length).fill(0);
   // Calculate values for non-zero bins before normalisation
