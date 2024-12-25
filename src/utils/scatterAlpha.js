@@ -23,16 +23,18 @@ export const calculateScattering = (
   });
 
   // Calculate overlap values
-  const overlapShifted = baryonBags.map((baryon, i) => {
-    const photon = photonBags[i];
-    return (
-      Math.exp(
-        -Math.pow(Math.log10(Math.max(...baryonBags) - baryon), 2) /
-          (2 * Math.pow(Math.log10(photon), 2))
-      ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
-    );
-  });
-  console.log(overlapShifted);
+  const overlapShifted = baryonBags
+    .map((baryon, i) => {
+      const photon = photonBags[i];
+      return (
+        Math.exp(
+          -Math.pow(Math.log10(Math.max(...baryonBags) - baryon), 2) /
+            (2 * Math.pow(Math.log10(photon), 2))
+        ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
+      );
+    })
+    .map((value) => (value === 0 ? 1 : 1 / Math.abs(Math.log10(value))));
+
   // Calculate forward distribution
   const forward = calculateDistribution(
     overlap,
