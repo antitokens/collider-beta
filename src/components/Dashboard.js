@@ -21,6 +21,7 @@ const Dashboard = ({
   connected = false,
   dynamics = [],
   holders = [],
+  isMobile = false,
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -646,7 +647,7 @@ const Dashboard = ({
           onClick={() => onRefresh(true)}
         >
           <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-            <div className="mr-1">Refresh</div>
+            {!isMobile && <div className="mr-1">Refresh</div>}
             <svg
               width="18"
               height="18"

@@ -650,6 +650,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 connected={wallet.connected}
                 dynamics={dynamics}
                 holders={bags.wallets}
+                isMobile={isMobile}
               />
             ) : (
               <div className="flex justify-center items-center w-full">
