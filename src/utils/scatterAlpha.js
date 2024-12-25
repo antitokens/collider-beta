@@ -33,7 +33,9 @@ export const calculateScattering = (
         ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
       );
     })
-    .map((value) => (value === 0 ? 1 : 1 / Math.abs(Math.log10(value))));
+    .map((value) =>
+      value === 0 ? 0 : value === 1 ? 1 : 1 / Math.abs(Math.log10(value))
+    );
 
   // Calculate forward distribution
   const forward = calculateDistribution(
