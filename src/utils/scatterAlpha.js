@@ -1,5 +1,3 @@
-import { calculateInversion } from "./inverterAlpha";
-
 export const calculateScattering = (
   baryonBags,
   photonBags,
@@ -17,8 +15,10 @@ export const calculateScattering = (
   const overlap = baryonBags.map((baryon, i) => {
     const photon = photonBags[i];
     return (
-      Math.exp(-Math.pow(baryonPool - baryon, 2) / (2 * Math.pow(photon, 2))) /
-      (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
+      Math.exp(
+        -Math.pow(Math.log10(baryonPool - baryon), 2) /
+          (2 * Math.pow(Math.log10(photon), 2))
+      ) / (flag ? Math.sqrt(2 * Math.PI) * Math.log10(photon) : 1)
     );
   });
 
@@ -27,12 +27,12 @@ export const calculateScattering = (
     const photon = photonBags[i];
     return (
       Math.exp(
-        -Math.pow(Math.max(...baryonBags) - baryon, 2) /
-          (2 * Math.pow(photon, 2))
+        -Math.pow(Math.log10(Math.max(...baryonBags) - baryon), 2) /
+          (2 * Math.pow(Math.log10(photon), 2))
       ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
     );
   });
-
+  console.log(overlapShifted);
   // Calculate forward distribution
   const forward = calculateDistribution(
     overlap,

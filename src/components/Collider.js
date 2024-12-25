@@ -114,7 +114,7 @@ const Collider = ({
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
 
-      if (myBag >= 0) {
+      if (proData && antiData && myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         setGain(
@@ -676,7 +676,7 @@ const Collider = ({
         <div className="text-lg text-gray-300">Predict</div>
         <div className="w-full space-y-2 mt-4">
           <div>
-            <div className="flex flex-row justify-between text-sm text-gray-500">
+            <div className="flex flex-row justify-between items-center text-sm text-gray-500">
               <div className="flex text-left text-xs">
                 <div className="relative group">
                   <div className="cursor-pointer">&#9432;&nbsp;</div>
@@ -684,7 +684,7 @@ const Collider = ({
                     Displays your current tokens in the pool
                   </span>
                 </div>
-                <div>&nbsp;Tokens in Pool:&nbsp;</div>
+                <div>&nbsp;Pool:&nbsp;</div>
                 <div className="flex flex-row justify-center font-sfmono mt-[1px]">
                   <div className="text-accent-primary text-[11px] opacity-75">
                     {formatCount(antiUsage.toFixed(2))}
