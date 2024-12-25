@@ -521,7 +521,7 @@ const Dashboard = ({
 
     setWinnerDistribution({
       labels: dynamics.map(
-        (value, index, arr) => [...arr].sort((a, b) => b - a).indexOf(value) + 1
+        (value, index, arr) => arr.filter((v) => v > value).length + 1
       ),
       datasets: [
         {
