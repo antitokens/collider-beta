@@ -518,7 +518,7 @@ const Dashboard = ({
         },
       },
     });
-
+    console.log(dynamics);
     setWinnerDistribution({
       labels: dynamics.map(
         (value, index, arr) => arr.filter((v) => v > value).length + 1
