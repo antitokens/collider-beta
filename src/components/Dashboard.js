@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { formatCount, truncateMiddle } from "../utils/utils";
+import {
+  formatCount,
+  truncateMiddle,
+  generateGradientColor,
+} from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
 
@@ -23,7 +27,7 @@ const Dashboard = ({
   const [barChartData, setBarChartData] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [netDistribution, setNetDistribution] = useState(null);
-  const [userDistribution, setUserDistribution] = useState(null);
+  const [winnerDistribution, setWinnerDistribution] = useState(null);
 
   useEffect(() => {
     // Prepare pie chart data for events
@@ -515,14 +519,36 @@ const Dashboard = ({
       },
     });
 
-    setUserDistribution({
-      labels: dynamics.map((value, index) => index + 1),
+    setWinnerDistribution({
+      labels: dynamics.map(
+        (value, index, arr) => [...arr].sort((a, b) => b - a).indexOf(value) + 1
+      ),
       datasets: [
         {
-          label: "Predicters",
+          label: "Ranking Metric",
           data: dynamics,
-          borderColor: "#c4c4c4d2",
-          backgroundColor: "#c4c4c4d2",
+          borderColor: dynamics
+            .map((value) =>
+              generateGradientColor(
+                value,
+                Math.min(...dynamics),
+                Math.max(...dynamics),
+                [255, 51, 0],
+                [0, 219, 84]
+              )
+            )
+            .map((color) =>
+              color.replace(/rgba\((.+), (\d+\.\d+)\)/, "rgba($1, 1)")
+            ),
+          backgroundColor: dynamics.map((value) =>
+            generateGradientColor(
+              value,
+              Math.min(...dynamics),
+              Math.max(...dynamics),
+              [255, 51, 0],
+              [0, 219, 84]
+            )
+          ),
           pointStyle: "line",
         },
       ],
@@ -574,6 +600,14 @@ const Dashboard = ({
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
+              },
+            },
+            title: {
+              display: true,
+              text: "Rank",
+              font: {
+                family: "'SF Mono Round'",
+                size: 12,
               },
             },
             grid: { color: "#d3d3d322" },
@@ -717,17 +751,20 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Scattering</div>
+            <div>Rankings</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the current dynamics of profits among users`}
+                {`Displays the rankings based on maximum potential profits`}
               </span>
             </div>
           </div>
-          {userDistribution && (
+          {winnerDistribution && (
             <div style={{ height: "300px" }}>
-              <Bar data={userDistribution} options={userDistribution.options} />
+              <Bar
+                data={winnerDistribution}
+                options={winnerDistribution.options}
+              />
             </div>
           )}
         </div>

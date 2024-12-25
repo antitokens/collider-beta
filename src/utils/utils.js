@@ -389,3 +389,16 @@ export const emptyBags = {
   proPool: 0,
   wallets: [],
 };
+
+export const generateGradientColor = (value, min, max, startColor, endColor) => {
+  const intensity = (value - min) / (max - min); // Normalize value between 0 and 1
+  const [r1, g1, b1] = startColor; // Start RGB color
+  const [r2, g2, b2] = endColor;   // End RGB color
+
+  // Interpolate each color channel based on intensity
+  const r = Math.round(r1 + intensity * (r2 - r1));
+  const g = Math.round(g1 + intensity * (g2 - g1));
+  const b = Math.round(b1 + intensity * (b2 - b1));
+
+  return `rgb(${r}, ${g}, ${b})`;
+};
