@@ -619,6 +619,7 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
           },
           y: {
+            type: "logarithmic",
             grid: { color: "#d3d3d322" },
             ticks: {
               display: !dynamics.every((item) => item === 0),
