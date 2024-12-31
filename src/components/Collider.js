@@ -44,6 +44,7 @@ const Collider = ({
   const [userDistribution, setUserDistribution] = useState(null);
   const [pastDistribution, setPastDistribution] = useState(null);
   const [totalDistribution, setTotalDistribution] = useState(null);
+  const [predictionHistoryChartData, setPredictionHistoryChartData] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
   const [dollarBet, setDollarBet] = useState(0);
@@ -51,6 +52,7 @@ const Collider = ({
   const [gain, setGain] = useState(0);
   const [newGain, setNewGain] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
+  const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] = useState('1D');
   const sliderRef = useRef(null);
 
   useEffect(() => {
@@ -63,6 +65,100 @@ const Collider = ({
 
       handleSliderInput(percentage);
     }
+  }, []);
+
+  useEffect(() => {
+    setPredictionHistoryChartData({
+      type: "line",
+      labels: ['Dec 1', 'Dec 2', 'Dec 3', 'Dec 4', 'Dec 5', 'Dec 6', 'Dec 7', 'Dec 8', 'Dec 9', 'Dec 10'],
+      datasets: [
+        {
+          label: 'PRO',
+          data: [50.00, 50.80, 60.20, 81.5, 80.4, 80.1, 79.4, 83.12, 92.80, 98.90],
+          borderColor: '#00CC8E',
+          backgroundColor: 'rgba(0, 255, 0, 0.2)',
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 0,
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `PRO    ${context.parsed.y}%`;
+              },
+            },
+          }
+        },
+        {
+          label: 'ANTI',
+          data: [50.00, 49.20, 39.80, 28.50, 19.60, 19.90, 20.60, 16.78, 7.20, 1.10],
+          borderColor: '#D13800',
+          backgroundColor: 'rgba(255, 0, 0, 0.2)',
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 0,
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `ANTI    ${context.parsed.y}%`;
+              },
+            },
+          }
+        },
+      ],
+      plugins: [{
+          beforeDatasetDraw(chart) {
+            const {ctx, chartArea: {top, bottom} } = chart;
+            ctx.save();
+
+            chart.getDatasetMeta(0).data.forEach((dataPoint) => {
+              if (dataPoint.active) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'gray';
+                ctx.moveTo(dataPoint.x, top);
+                ctx.lineTo(dataPoint.x, bottom);
+                ctx.stroke();
+              }
+            })
+          }
+        }
+      ],
+      options: {
+        responsive: true,
+        interaction: {
+          intersect: false,
+          mode: 'index',
+        },
+        plugins: {
+          datalabels: {
+            display: false,
+          },
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+          },
+          y: {
+            grid: {
+              display: true,
+              color: 'rgba(255, 255, 255, 0.1)',
+            },
+            ticks: {
+              stepSize: 20,
+              callback: function (value) {
+                return value + '%';
+              }
+            },
+            suggestedMin: 0,
+            suggestedMax: 100,
+          },
+        },
+      }
+    })
   }, []);
 
   useEffect(() => {
@@ -509,6 +605,11 @@ const Collider = ({
     totalInvest,
   ]);
 
+  const handleTimeframeChange = (timeframe) => {
+    setPredictionHistoryTimeframe(timeframe);
+    // TODO: reload data with a different timeframe
+  }
+
   const updateSplit = (total, percentage) => {
     const pro = (percentage / 100) * total;
     const anti = total - pro;
@@ -670,6 +771,21 @@ const Collider = ({
             </span>
           </div>
         </div>
+      </div>
+      <div className="mb-4 bg-dark-card p-4 rounded w-full">
+          {predictionHistoryChartData &&
+            <div>
+              <Line data={predictionHistoryChartData} options={predictionHistoryChartData.options} plugins={predictionHistoryChartData.plugins}/>
+              <div className="flex gap-2 mt-4">
+                <div className={ predictionHistoryTimeframe === '1H' ? 'timeframe-pill-active' : "timeframe-pill" } onClick={ () => handleTimeframeChange('1H') }>1H</div>
+                <div className={ predictionHistoryTimeframe === '6H' ? 'timeframe-pill-active' : "timeframe-pill" } onClick={ () => handleTimeframeChange('6H') }>6H</div>
+                <div className={ predictionHistoryTimeframe === '1D' ? 'timeframe-pill-active' : "timeframe-pill" } onClick={ () => handleTimeframeChange('1D') }>1D</div>
+                <div className={ predictionHistoryTimeframe === '1W' ? 'timeframe-pill-active' : "timeframe-pill" } onClick={ () => handleTimeframeChange('1W') }>1W</div>
+                <div className={ predictionHistoryTimeframe === '1M' ? 'timeframe-pill-active' : "timeframe-pill" } onClick={ () => handleTimeframeChange('1M') }>1M</div>
+                <div className={ predictionHistoryTimeframe === 'ALL' ? 'timeframe-pill-active ' : "timeframe-pill" } onClick={ () => handleTimeframeChange('ALL') }>ALL</div>
+              </div>
+            </div>
+          }
       </div>
       {/* Token Input Fields */}
       <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full">

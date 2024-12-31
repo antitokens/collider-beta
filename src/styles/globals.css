@@ -138,3 +138,11 @@ input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+.timeframe-pill {
+  @apply w-10 text-center text-sm rounded-full cursor-pointer font-medium;
+}
+
+.timeframe-pill-active {
+  @apply timeframe-pill bg-gray-300 text-black;
+}
