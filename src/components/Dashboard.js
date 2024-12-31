@@ -624,7 +624,9 @@ const Dashboard = ({
             ticks: {
               display: !dynamics.every((item) => item === 0),
               callback: function (value) {
-                return value.toFixed(2); // Format y-axis
+                return value > 0 && Number.isInteger(-Math.log10(value))
+                  ? value.toFixed(2)
+                  : ""; // Format y-axis
               },
               font: {
                 family: "'SF Mono Round'",
