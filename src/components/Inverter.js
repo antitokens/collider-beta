@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { recordClaim } from "../utils/api";
 import { calculateInversion } from "../utils/inverterAlpha";
+import { implementScattering } from "../utils/scatterAlpha";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "./BinaryOrbit";
@@ -10,7 +11,10 @@ import {
   toastContainerConfig,
   toast,
   emptyConfig2,
+  emptyBags,
+  formatCount,
   formatPrecise,
+  convertToLocaleTime,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -30,14 +34,73 @@ const Inverter = ({
   proData,
   config = emptyConfig2,
   isMobile = false,
+  bags = emptyBags,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
   const [photonTokens, setPhotonTokens] = useState(0);
+  const [change, setChange] = useState([0, 0, 0]);
+  const [updated, setUpdated] = useState([0, 0]);
+  const [gain, setGain] = useState(0);
+  const [dollarGain, setDollarGain] = useState(0);
+  const [invest, setInvest] = useState(0);
   const [userDistribution, setUserDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
+
+  // Clear input fields when `clearFields` changes
+  useEffect(() => {
+    // Calculate expected rewardCurrents
+    let myBag = -1;
+    if (wallet.publicKey) {
+      const rewardCurrent =
+        bags !== emptyBags
+          ? implementScattering(
+              bags.baryon,
+              bags.photon,
+              bags.baryonPool,
+              bags.photonPool,
+              bags.anti,
+              bags.pro,
+              bags.antiPool,
+              bags.proPool,
+              antiData && proData
+                ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+                : [0, 0],
+              bags.wallets
+            )
+          : undefined;
+
+      myBag = rewardCurrent
+        ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
+        : -1;
+
+      if (proData && antiData && myBag >= 0) {
+        const originalPosition =
+          proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
+        setChange([
+          rewardCurrent.change.photon[myBag],
+          rewardCurrent.change.baryon[myBag],
+          rewardCurrent.change.gain[myBag],
+        ]);
+        setUpdated([
+          rewardCurrent.invert.photon[myBag],
+          rewardCurrent.invert.baryon[myBag],
+        ]);
+        if (proData && antiData && myBag >= 0) {
+          const originalPosition =
+            proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
+          setInvest(originalPosition);
+          setDollarGain(rewardCurrent.change.gain[myBag]);
+          setGain(
+            (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) *
+              100
+          );
+        }
+      }
+    }
+  }, [antiData, proData, bags]);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
@@ -51,6 +114,7 @@ const Inverter = ({
 
   // Prepare line chart data
   useEffect(() => {
+    // Set Graphs
     if (userDistribution) {
       // Trial
       const F_ = antiBalance > proBalance ? -1 : 1;
@@ -245,7 +309,118 @@ const Inverter = ({
     <div className="flex flex-col items-center justify-center w-full">
       {/* Emission Input */}
       <div className="flex flex-col items-center justify-between bg-dark-card w-full p-4 rounded gap-2">
-        <div className="text-lg text-gray-300 mb-4">Reclaim</div>
+        <div className="text-lg text-gray-300 mb-2">Reclaim</div>
+        <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full">
+          <div className="flex text-left text-xs">
+            <div className="relative group">
+              <div className="cursor-pointer">&#9432;&nbsp;</div>
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Displays your current tokens in the pool
+              </span>
+            </div>
+            <div>&nbsp;Your Tokens:&nbsp;</div>
+            <div className="flex flex-row justify-center font-sfmono mb-[2px]">
+              <div className="text-accent-steel text-[11px] opacity-95">
+                {formatPrecise(updated[0])}
+              </div>
+              <div>/</div>
+              <div className="text-accent-cement text-[11px] opacity-95">
+                {formatPrecise(updated[1])}
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-row text-right text-[12px] -mt-[2px]">
+            <div>
+              Realised P/L:{" "}
+              <span className="text-[11px] text-white font-sfmono">
+                <span className="text-gray-400">$</span>
+                {formatCount(dollarGain.toFixed(2))}
+              </span>{" "}
+            </div>
+            &nbsp;
+            <div className="flex flex-row text-right">
+              <span className="text-[11px] text-gray-400 font-sfmono pt-[1px]">
+                (
+                <span className="text-accent-secondary opacity-95">
+                  {formatCount(gain.toFixed(2))}%
+                </span>
+                )&nbsp;
+              </span>
+              <span className="relative group">
+                <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  {`Displays your current realised profit or loss`}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full -mt-2">
+          <div className="flex text-left text-md">
+            <div>Claim Tokens from Pool</div>
+          </div>
+          <div className="flex flex-row text-right text-[12px]">
+            <div>
+              Token Change:{" "}
+              <span className="text-[11px] text-white font-sfmono">
+                <span
+                  className={`font-sfmono text-${
+                    Number(change[0]) > 0
+                      ? "accent-secondary"
+                      : Number(change[0]) < 0
+                      ? "accent-primary"
+                      : "gray-300"
+                  }`}
+                >
+                  {Number(change[0]) > 0
+                    ? "+" +
+                      Number(change[0])
+                        .toFixed(1)
+                        .toString()
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    : Number(change[0]) < 0
+                    ? "-" +
+                      Number(Math.abs(change[0]))
+                        .toFixed(1)
+                        .toString()
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    : "-"}
+                </span>
+              </span>
+              {"/"}
+              <span
+                className={`text-[11px] font-sfmono text-accent-${
+                  Number(change[1]) > 0
+                    ? "accent-secondary"
+                    : Number(change[1]) < 0
+                    ? "accent-primary"
+                    : "gray-300"
+                }`}
+              >
+                {Number(change[1]) > 0
+                  ? "+" +
+                    Number(change[1])
+                      .toFixed(1)
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  : Number(change[1]) < 0
+                  ? "-" +
+                    Number(Math.abs(change[1]))
+                      .toFixed(1)
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  : "-"}
+              </span>
+              &nbsp;&nbsp;
+            </div>
+            <span className="relative group">
+              <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                {`Displays your current realised changes in PHOTON & BARYON`}
+              </span>
+            </span>
+          </div>
+        </div>
         <div className="flex flex-row items-center w-full">
           <div className="flex flex-col items-start w-full mr-2">
             <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
@@ -283,9 +458,9 @@ const Inverter = ({
                 alt="photon-logo"
                 className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
               />
-              MAX:&nbsp;
+              BAL:&nbsp;
               <span className="font-sfmono text-gray-400">
-                {Number(photonBalance)
+                {Number(updated[0])
                   .toFixed(0)
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
@@ -329,9 +504,9 @@ const Inverter = ({
                 alt="baryon-logo"
                 className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
               />
-              MAX:&nbsp;
+              BAL:&nbsp;
               <span className="font-sfmono text-gray-400">
-                {Number(baryonBalance)
+                {Number(updated[1])
                   .toFixed(0)
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
@@ -431,7 +606,7 @@ const Inverter = ({
               </div>
             </div>
           </div>
-          {lineChartData && (
+          {lineChartData && baryonTokens > 0 && (
             <div style={{ height: "300px" }}>
               <Line data={lineChartData} options={lineChartData.options} />
             </div>

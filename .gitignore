@@ -14,7 +14,10 @@ docs/
 # Dotenv file
 .env
 
+# Packages
 .next
 node_modules
+
+# Local trash
 .DS_store
-**/.DS_Store
+**/.DS_Store 

@@ -651,9 +651,22 @@ const Collider = ({
             <span className="font-sfmono text-accent-primary text-[11px] text-opacity-90">
               {formatCount(config.antiLive)}
             </span>
+            {"/"}
+            <span className="font-sfmono text-gray-400 text-opacity-75">
+              {"$"}
+              <span className="font-sfmono text-gray-300 text-[11px] text-opacity-90">
+                {antiData && proData
+                  ? formatCount(
+                      config.proLive * Number(proData.priceUsd) +
+                        config.antiLive * Number(antiData.priceUsd)
+                    )
+                  : "-"}
+              </span>
+              {""}
+            </span>
           </div>
           <div className="text-[12px] text-gray-500 text-right">
-            Pool Ratio:{" "}
+            Token Ratio:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {config.antiLive > 0 && config.proLive > 0
                 ? (config.proLive / config.antiLive).toFixed(3)
@@ -684,20 +697,20 @@ const Collider = ({
                     Displays your current tokens in the pool
                   </span>
                 </div>
-                <div>&nbsp;Pool:&nbsp;</div>
+                <div>&nbsp;Your Pool:&nbsp;</div>
                 <div className="flex flex-row justify-center font-sfmono mt-[1px]">
-                  <div className="text-accent-primary text-[11px] opacity-75">
-                    {formatCount(antiUsage.toFixed(2))}
+                  <div className="text-accent-secondary text-[11px] opacity-95">
+                    {formatCount(proUsage.toFixed(2))}
                   </div>
                   <div>/</div>
-                  <div className="text-accent-secondary text-[11px] opacity-75">
-                    {formatCount(proUsage.toFixed(2))}
+                  <div className="text-accent-primary text-[11px] opacity-95">
+                    {formatCount(antiUsage.toFixed(2))}
                   </div>
                 </div>
               </div>
               <div className="flex flex-row text-right text-[12px]">
                 <div>
-                  Pool:{" "}
+                  In USD:{" "}
                   <span className="text-[11px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
                     {formatCount(dollarStake.toFixed(2))}
@@ -707,7 +720,7 @@ const Collider = ({
                 <div className="flex flex-row text-right">
                   <span>&nbsp;P/L:&nbsp;</span>
                   <span className="text-[11px] text-white font-sfmono pt-[1px]">
-                    <span className="text-accent-secondary opacity-75">
+                    <span className="text-accent-secondary opacity-95">
                       {formatCount(gain.toFixed(2))}%&nbsp;
                     </span>
                   </span>
@@ -726,7 +739,7 @@ const Collider = ({
               <div className="text-sm">Add More Tokens to Pool</div>
               <div className="flex flex-row text-right">
                 <div>
-                  Bet:{" "}
+                  Current Bet:{" "}
                   <span className="text-[11px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
                     {formatCount(dollarBet.toFixed(2))}
@@ -737,7 +750,7 @@ const Collider = ({
                   <div>
                     &nbsp;P/L:{" "}
                     <span className="text-[11px] text-white font-sfmono pt-[2px]">
-                      <span className="text-accent-secondary opacity-75">
+                      <span className="text-accent-secondary opacity-95">
                         {gain !== newGain
                           ? formatCount(newGain.toFixed(2))
                           : "0"}
@@ -764,6 +777,10 @@ const Collider = ({
             value={Math.abs(totalInvest) || ""}
             onChange={handleTotalInvestChange}
             onWheel={(e) => e.target.blur()}
+            disabled={
+              new Date() < new Date(config.startTime) ||
+              new Date() > new Date(config.endTime)
+            }
             placeholder="0"
             className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
           />
@@ -777,6 +794,10 @@ const Collider = ({
             max="100"
             value={splitPercentage}
             onChange={handlePercentageChange}
+            disabled={
+              new Date() < new Date(config.startTime) ||
+              new Date() > new Date(config.endTime)
+            }
           />
           <div className="flex flex-row items-center justify-between text-[14px]">
             <span className="text-accent-secondary font-sfmono">
@@ -808,6 +829,10 @@ const Collider = ({
                 onMouseDown={(e) => setProTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-sm"
+                disabled={
+                  new Date() < new Date(config.startTime) ||
+                  new Date() > new Date(config.endTime)
+                }
               />
             </div>
             <div className="text-xs">
@@ -839,6 +864,10 @@ const Collider = ({
                 onMouseDown={(e) => setAntiTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-xs sm:text-sm text-right"
+                disabled={
+                  new Date() < new Date(config.startTime) ||
+                  new Date() > new Date(config.endTime)
+                }
               />
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <label
@@ -988,12 +1017,16 @@ const Collider = ({
       <button
         onClick={handlePrediction}
         disabled={
-          disabled || loading || new Date() < new Date(config.startTime)
+          disabled ||
+          loading ||
+          new Date() < new Date(config.startTime) ||
+          new Date() > new Date(config.endTime)
         }
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
           loading ||
           new Date() < new Date(config.startTime) ||
+          new Date() > new Date(config.endTime) ||
           (antiTokens === 0 && proTokens === 0) ||
           (Math.abs(antiTokens - proTokens) < 1 &&
             Math.abs(antiTokens - proTokens) !== 0) ||
@@ -1002,7 +1035,8 @@ const Collider = ({
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {new Date() < new Date(config.startTime)
+        {new Date() < new Date(config.startTime) ||
+        new Date() > new Date(config.endTime)
           ? "Closed"
           : (Math.abs(antiTokens - proTokens) < 1 &&
               Math.abs(antiTokens - proTokens) !== 0) ||
