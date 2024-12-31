@@ -18,12 +18,10 @@ export const calculateScattering = (
     const photon = photonBags[i];
     return (
       Math.exp(
-        -Math.pow(Math.log10(2e9 - baryon), 2) /
-          (2 * Math.pow(photon <= 0 ? 1 : Math.log10(photon), 2))
+        -Math.pow(Math.log(2e9 - baryon), 2) /
+          (2 * Math.pow(photon <= 0 ? 1 : Math.log(photon), 2))
       ) /
-      (flag
-        ? Math.sqrt(2 * Math.PI) * (photon <= 0 ? 1 : Math.log10(photon))
-        : 1)
+      (flag ? Math.sqrt(2 * Math.PI) * (photon <= 0 ? 1 : Math.log(photon)) : 1)
     );
   });
 
@@ -33,14 +31,11 @@ export const calculateScattering = (
       const photon = photonBags[i];
       return (
         Math.exp(
-          -Math.pow(
-            Math.log10(2e9) - (baryon <= 0 ? 0 : Math.log10(baryon)),
-            2
-          ) /
-            (2 * Math.pow(photon <= 0 ? 1 : Math.log10(photon), 2))
+          -Math.pow(Math.log(2e9) - (baryon <= 0 ? 0 : Math.log(baryon)), 2) /
+            (2 * Math.pow(photon <= 0 ? 1 : Math.log(photon), 2))
         ) /
         (flag
-          ? Math.sqrt(2 * Math.PI) * (photon <= 0 ? 1 : Math.log10(photon))
+          ? Math.sqrt(2 * Math.PI) * (photon <= 0 ? 1 : Math.log(photon))
           : 1)
       );
     })
@@ -49,7 +44,7 @@ export const calculateScattering = (
         ? 0
         : value === 1
         ? 1
-        : 1 / Math.abs(value <= 0 ? 1 : Math.log10(value))
+        : 1 / Math.abs(value <= 0 ? 1 : Math.log(value))
     );
 
   // Calculate forward distribution
@@ -119,9 +114,9 @@ export const implementScattering = (
     const photon = photonBags[i];
     return (
       Math.exp(
-        -Math.pow(Math.log10(2e9 - baryon), 2) /
-          (2 * Math.pow(Math.log10(photon), 2))
-      ) / (flag ? Math.sqrt(2 * Math.PI) * Math.log10(photon) : 1)
+        -Math.pow(Math.log(2e9 - baryon), 2) /
+          (2 * Math.pow(Math.log(photon), 2))
+      ) / (flag ? Math.sqrt(2 * Math.PI) * Math.log(photon) : 1)
     );
   });
 
@@ -131,13 +126,13 @@ export const implementScattering = (
       const photon = photonBags[i];
       return (
         Math.exp(
-          -Math.pow(Math.log10(2e9) - Math.log10(baryon), 2) /
-            (2 * Math.pow(Math.log10(photon), 2))
+          -Math.pow(Math.log(2e9) - Math.log(baryon), 2) /
+            (2 * Math.pow(Math.log(photon), 2))
         ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
       );
     })
     .map((value) =>
-      value === 0 ? 0 : value === 1 ? 1 : 1 / Math.abs(Math.log10(value))
+      value === 0 ? 0 : value === 1 ? 1 : 1 / Math.abs(Math.log(value))
     );
 
   // Calculate forward distribution

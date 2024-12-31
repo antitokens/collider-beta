@@ -520,9 +520,8 @@ const Dashboard = ({
         },
       },
     });
-    const dynamics_ = dynamics;
-    console.log(dynamics_);
-    const winnerRanks = dynamics_.map(
+
+    const winnerRanks = dynamics.map(
       (value, index, arr) => arr.filter((v) => v > value).length + 1
     );
     setWinnerDistribution({
@@ -530,13 +529,13 @@ const Dashboard = ({
       datasets: [
         {
           label: "Ranking Metric",
-          data: dynamics_,
-          borderColor: dynamics_
+          data: dynamics,
+          borderColor: dynamics
             .map((value) =>
               generateGradientColor(
                 value,
-                Math.min(...dynamics_),
-                Math.max(...dynamics_),
+                Math.min(...dynamics),
+                Math.max(...dynamics),
                 [255, 51, 0],
                 [0, 219, 84]
               )
@@ -544,11 +543,11 @@ const Dashboard = ({
             .map((color) =>
               color.replace(/rgba\((.+), (\d+\.\d+)\)/, "rgba($1, 1)")
             ),
-          backgroundColor: dynamics_.map((value) =>
+          backgroundColor: dynamics.map((value) =>
             generateGradientColor(
               value,
-              Math.min(...dynamics_),
-              Math.max(...dynamics_),
+              Math.min(...dynamics),
+              Math.max(...dynamics),
               [255, 51, 0],
               [0, 219, 84]
             )
