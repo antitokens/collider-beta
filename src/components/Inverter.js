@@ -121,7 +121,7 @@ const Inverter = ({
       setLineChartData({
         type: "line",
         labels: userDistribution.short.map((value) =>
-          value ? formatPrecise(value.toFixed(6)) : ""
+          value ? formatPrecise(value) : ""
         ),
         datasets: [
           {

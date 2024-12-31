@@ -402,11 +402,11 @@ const Dashboard = ({
       type: "line",
       labels: totalDistribution
         ? totalDistribution.short.map((value) =>
-            value > 0 ? formatCount(value.toFixed(6), false) : ""
+            value > 0 ? formatCount(value, false) : ""
           )
         : []
         ? colliderDistribution.short.map((value) =>
-            value > 0 ? formatCount(value.toFixed(6), false) : ""
+            value > 0 ? formatCount(value, false) : ""
           )
         : [],
       datasets: [
@@ -472,10 +472,7 @@ const Dashboard = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? formatCount(
-                      totalDistribution.short[index].toFixed(6),
-                      false
-                    )
+                  ? formatCount(totalDistribution.short[index], false)
                   : 0;
               },
               font: {

@@ -170,7 +170,7 @@ const Collider = ({
       setLineChartData({
         type: "line",
         labels: userDistribution.short.map((value) =>
-          value > 0 ? formatPrecise(value.toFixed(6)) : ""
+          value > 0 ? formatPrecise(value) : ""
         ),
         datasets: [
           {
@@ -264,10 +264,7 @@ const Collider = ({
                   // Map index to a new labels array for the second axis
                   return userDistribution
                     ? userDistribution.short[index]
-                      ? formatCount(
-                          userDistribution.short[index].toFixed(6),
-                          false
-                        )
+                      ? formatCount(userDistribution.short[index], false)
                       : undefined
                     : undefined;
                 },
@@ -289,10 +286,7 @@ const Collider = ({
                   // Map index to a new labels array for the second axis
                   return userDistribution
                     ? totalDistribution.short[index]
-                      ? formatCount(
-                          totalDistribution.short[index].toFixed(6),
-                          false
-                        )
+                      ? formatCount(totalDistribution.short[index], false)
                       : undefined
                     : undefined;
                 },
@@ -314,10 +308,7 @@ const Collider = ({
                   // Map index to a new labels array for the second axis
                   return userDistribution
                     ? pastDistribution.short[index]
-                      ? formatCount(
-                          pastDistribution.short[index].toFixed(6),
-                          false
-                        )
+                      ? formatCount(pastDistribution.short[index], false)
                       : undefined
                     : undefined;
                 },
