@@ -71,7 +71,7 @@ const Inverter = ({
               bags.wallets
             )
           : undefined;
-      
+
       myBag = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
@@ -364,8 +364,12 @@ const Inverter = ({
               Token Change:{" "}
               <span className="text-[11px] text-white font-sfmono">
                 <span
-                  className={`font-sfmono text-accent-${
-                    Number(change[0]) > 0 ? "secondary" : "primary"
+                  className={`font-sfmono text-${
+                    Number(change[0]) > 0
+                      ? "accent-secondary"
+                      : Number(change[0]) < 0
+                      ? "accent-primary"
+                      : "gray-300"
                   }`}
                 >
                   {Number(change[0]) > 0
@@ -386,7 +390,11 @@ const Inverter = ({
               {"/"}
               <span
                 className={`text-[11px] font-sfmono text-accent-${
-                  Number(change[1]) > 0 ? "secondary" : "primary"
+                  Number(change[1]) > 0
+                    ? "accent-secondary"
+                    : Number(change[1]) < 0
+                    ? "accent-primary"
+                    : "gray-300"
                 }`}
               >
                 {Number(change[1]) > 0
