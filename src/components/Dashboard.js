@@ -404,7 +404,7 @@ const Dashboard = ({
         ? totalDistribution.short.map((value) =>
             value > 0 ? formatCount(value, false) : ""
           )
-        : []
+        : colliderDistribution && connected
         ? colliderDistribution.short.map((value) =>
             value > 0 ? formatCount(value, false) : ""
           )
