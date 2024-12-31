@@ -563,16 +563,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           </span>
                         </span>{" "}
                         &nbsp;Total Pool:{" "}
-                        <span className="font-sfmono text-accent-steel text-[12px] text-opacity-80">
+                        <span className="font-sfmono text-accent-steel text-[11px] text-opacity-80">
                           {formatCount(metadata.emissionsData.photonTokens)}
                         </span>
                         {"/"}
-                        <span className="font-sfmono text-accent-cement text-[12px] text-opacity-90">
+                        <span className="font-sfmono text-accent-cement text-[11px] text-opacity-90">
                           {formatCount(metadata.emissionsData.baryonTokens)}
                         </span>
                       </div>
                       <div className="text-[12px] text-gray-500 text-right">
-                        Pool Ratio:{" "}
+                        Token Ratio:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
                           {metadata.emissionsData.baryonTokens > 0
                             ? (
@@ -614,6 +614,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       photonLive: metadata.emissionsData.photonTokens || 0,
                     }}
                     isMobile={isMobile}
+                    bags={bags}
                   />
                   <p
                     className={`mt-1 text-sm font-sfmono ${

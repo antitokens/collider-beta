@@ -390,10 +390,16 @@ export const emptyBags = {
   wallets: [],
 };
 
-export const generateGradientColor = (value, min, max, startColor, endColor) => {
+export const generateGradientColor = (
+  value,
+  min,
+  max,
+  startColor,
+  endColor
+) => {
   const intensity = (value - min) / (max - min); // Normalize value between 0 and 1
   const [r1, g1, b1] = startColor; // Start RGB color
-  const [r2, g2, b2] = endColor;   // End RGB color
+  const [r2, g2, b2] = endColor; // End RGB color
 
   // Interpolate each color channel based on intensity
   const r = Math.round(r1 + intensity * (r2 - r1));

@@ -1,3 +1,5 @@
+import { calculateCollision } from "../utils/colliderAlpha";
+
 export const calculateScattering = (
   baryonBags,
   photonBags,
@@ -11,24 +13,24 @@ export const calculateScattering = (
   wallets,
   flag = false
 ) => {
-  // Calculate overlap values
+  // Calculate absolute overlap with truth
   const overlap = baryonBags.map((baryon, i) => {
     const photon = photonBags[i];
     return (
       Math.exp(
-        -Math.pow(Math.log10(baryonPool - baryon), 2) /
+        -Math.pow(Math.log10(2e9 - baryon), 2) /
           (2 * Math.pow(Math.log10(photon), 2))
       ) / (flag ? Math.sqrt(2 * Math.PI) * Math.log10(photon) : 1)
     );
   });
 
-  // Calculate overlap values
+  // Calculate normalised overlap with truth (inverse-log-normalised)
   const overlapShifted = baryonBags
     .map((baryon, i) => {
       const photon = photonBags[i];
       return (
         Math.exp(
-          -Math.pow(Math.log10(Math.max(...baryonBags) - baryon), 2) /
+          -Math.pow(Math.log10(2e9) - Math.log10(baryon), 2) /
             (2 * Math.pow(Math.log10(photon), 2))
         ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
       );
@@ -38,27 +40,21 @@ export const calculateScattering = (
     );
 
   // Calculate forward distribution
-  const forward = calculateDistribution(
-    overlap,
-    baryonBags,
-    photonBags,
-    antiBags,
-    proBags
-  );
+  const forward = calculateDistribution(overlap, [], [], antiBags, proBags);
 
   // Calculate returns
   const scatter = {
     anti: distributeCountOverBins(forward.distribution, antiPool),
     pro: distributeCountOverBins(forward.distribution, proPool),
-    baryon: distributeCountOverBins(forward.distribution, baryonPool),
-    photon: distributeCountOverBins(forward.distribution, photonPool),
+    baryon: [],
+    photon: [],
   };
 
   const returns = [
     distributeValuesInBins(scatter.anti.resampled, forward.index),
     distributeValuesInBins(scatter.pro.resampled, forward.index),
-    distributeValuesInBins(scatter.baryon.resampled, forward.index),
-    distributeValuesInBins(scatter.photon.resampled, forward.index),
+    [],
+    [],
   ];
 
   // Calculate inversions
@@ -67,22 +63,22 @@ export const calculateScattering = (
     for (let j = 0; j < returns[0][i].length; j++) {
       invert.anti.push(returns[0][i][j]);
       invert.pro.push(returns[1][i][j]);
-      invert.baryon.push(-returns[2][i][j]);
-      invert.photon.push(-returns[3][i][j]);
+      invert.baryon.push(0);
+      invert.photon.push(0);
       invert.wallet.push(wallets[j]);
     }
   }
 
   // Calculate changes
   const change = {
-    baryon: baryonBags.map((value, index) => value - invert.baryon[index]),
-    photon: photonBags.map((value, index) => value - invert.photon[index]),
-    anti: antiBags.map((value, index) => value - invert.anti[index]),
-    pro: proBags.map((value, index) => value - invert.pro[index]),
+    baryon: [],
+    photon: [],
+    anti: antiBags.map((value, index) => invert.anti[index] - value),
+    pro: proBags.map((value, index) => invert.pro[index] - value),
     gain: antiBags.map(
       (value, index) =>
-        (value - invert.anti[index]) * prices[0] +
-        (proBags[index] - invert.pro[index]) * prices[1]
+        (invert.anti[index] - value) * prices[0] +
+        (invert.pro[index] - proBags[index]) * prices[1]
     ),
     original: antiBags.map(
       (value, index) => value * prices[0] + proBags[index] * prices[1]
@@ -92,6 +88,100 @@ export const calculateScattering = (
   return { overlap: overlapShifted, invert, change };
 };
 
+export const implementScattering = (
+  baryonBags,
+  photonBags,
+  baryonPool,
+  photonPool,
+  antiBags,
+  proBags,
+  antiPool,
+  proPool,
+  prices,
+  wallets,
+  flag = false
+) => {
+  // Calculate absolute overlap with truth
+  const overlap = baryonBags.map((baryon, i) => {
+    const photon = photonBags[i];
+    return (
+      Math.exp(
+        -Math.pow(Math.log10(2e9 - baryon), 2) /
+          (2 * Math.pow(Math.log10(photon), 2))
+      ) / (flag ? Math.sqrt(2 * Math.PI) * Math.log10(photon) : 1)
+    );
+  });
+
+  // Calculate normalised overlap with truth (inverse-log-normalised)
+  const overlapShifted = baryonBags
+    .map((baryon, i) => {
+      const photon = photonBags[i];
+      return (
+        Math.exp(
+          -Math.pow(Math.log10(2e9) - Math.log10(baryon), 2) /
+            (2 * Math.pow(Math.log10(photon), 2))
+        ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
+      );
+    })
+    .map((value) =>
+      value === 0 ? 0 : value === 1 ? 1 : 1 / Math.abs(Math.log10(value))
+    );
+
+  // Calculate forward distribution
+  const forward = calculateDistribution(overlap, [], [], antiBags, proBags);
+
+  // Calculate returns
+  const scatter = {
+    anti: distributeCountOverBins(forward.distribution, antiPool),
+    pro: distributeCountOverBins(forward.distribution, proPool),
+    baryon: [],
+    photon: [],
+  };
+
+  const returns = [
+    distributeValuesInBins(scatter.anti.resampled, forward.index),
+    distributeValuesInBins(scatter.pro.resampled, forward.index),
+    [],
+    [],
+  ];
+
+  // Calculate inversions
+  const invert = { anti: [], pro: [], baryon: [], photon: [], wallet: [] };
+  for (let i = 0; i < returns[0].length; i++) {
+    for (let j = 0; j < returns[0][i].length; j++) {
+      const _anti = returns[0][i][j];
+      const _pro = returns[1][i][j];
+      invert.anti.push(_anti);
+      invert.pro.push(_pro);
+      const collide = calculateCollision(_anti, _pro);
+      const _baryon = collide.u;
+      const _photon = collide.s;
+      invert.baryon.push(_baryon);
+      invert.photon.push(_photon);
+      invert.wallet.push(wallets[j]);
+    }
+  }
+
+  // Calculate changes
+  const change = {
+    baryon: baryonBags.map((value, index) => invert.baryon[index] - value),
+    photon: photonBags.map((value, index) => invert.photon[index] - value),
+    anti: antiBags.map((value, index) => invert.anti[index] - value),
+    pro: proBags.map((value, index) => invert.pro[index] - value),
+    gain: antiBags.map(
+      (value, index) =>
+        (invert.anti[index] - value) * prices[0] +
+        (invert.pro[index] - proBags[index]) * prices[1]
+    ),
+    original: antiBags.map(
+      (value, index) => value * prices[0] + proBags[index] * prices[1]
+    ),
+    wallets: wallets,
+  };
+  return { overlap: overlapShifted, invert, change };
+};
+
+// Distribute indexed values over bins
 function calculateDistribution(
   values,
   baryonBags,
@@ -152,6 +242,7 @@ function calculateDistribution(
   };
 }
 
+// Distribute values across bins
 function distributeCountOverBins(bins, totalCount) {
   // Find indices of non-zero bins
   const nonZeroBinIndices = bins
@@ -176,6 +267,7 @@ function distributeCountOverBins(bins, totalCount) {
   return { resampled };
 }
 
+// Distribute values within one bin
 function distributeValuesInBins(valueSums, indicesInBins) {
   return valueSums.map((sums, binIndex) => {
     const count = indicesInBins[binIndex].length;
