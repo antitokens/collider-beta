@@ -196,8 +196,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const totalDistribution =
             data.totalDistribution.u >= 0 && data.totalDistribution.s > 0.5
               ? calculateCollision(
-                  data.collisionsData.antiTokens,
-                  data.collisionsData.proTokens
+                  data.emissionsData.totalBaryonTokens,
+                  data.emissionsData.totalPhotonTokens,
+                  true
                 )
               : emptyGaussian;
 
