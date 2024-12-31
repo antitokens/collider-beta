@@ -472,7 +472,7 @@ const Dashboard = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? formatCount(totalDistribution.short[index], false)
+                  ? totalDistribution.short[index]
                   : 0;
               },
               font: {
