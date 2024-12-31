@@ -93,10 +93,7 @@ const Inverter = ({
             proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
           setInvest(originalPosition);
           setDollarGain(rewardCurrent.change.gain[myBag]);
-          setGain(
-            (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) *
-              100
-          );
+          setGain((rewardCurrent.change.gain[myBag] / originalPosition) * 100);
         }
       }
     }
@@ -341,7 +338,15 @@ const Inverter = ({
             <div className="flex flex-row text-right">
               <span className="text-[11px] text-gray-400 font-sfmono pt-[1px]">
                 (
-                <span className="text-accent-secondary opacity-95">
+                <span
+                  className={`font-sfmono text-${
+                    Number(dollarGain) > 0
+                      ? "accent-secondary"
+                      : Number(dollarGain) < 0
+                      ? "accent-primary"
+                      : "gray-300"
+                  }`}
+                >
                   {formatCount(gain.toFixed(2))}%
                 </span>
                 )&nbsp;
@@ -389,7 +394,7 @@ const Inverter = ({
               </span>
               {"/"}
               <span
-                className={`text-[11px] font-sfmono text-accent-${
+                className={`text-[11px] font-sfmono text-${
                   Number(change[1]) > 0
                     ? "accent-secondary"
                     : Number(change[1]) < 0
