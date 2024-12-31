@@ -375,7 +375,7 @@ const Dashboard = ({
             grid: { color: "#d3d3d322" },
           },
           y: {
-            type: 'logarithmic',
+            type: "logarithmic",
             grid: { color: "#d3d3d322" },
             ticks: {
               font: {
@@ -521,10 +521,11 @@ const Dashboard = ({
       },
     });
 
+    const winnerRanks = dynamics.map(
+      (value, index, arr) => arr.filter((v) => v > value).length + 1
+    );
     setWinnerDistribution({
-      labels: dynamics.map(
-        (value, index, arr) => arr.filter((v) => v > value).length + 1
-      ),
+      labels: winnerRanks,
       datasets: [
         {
           label: "Ranking Metric",
@@ -591,7 +592,10 @@ const Dashboard = ({
                 }`;
               },
               label: (context) => {
-                return ` ${context.raw.toFixed(3)}`;
+                const dataIndex = context.dataIndex;
+                return dataIndex !== undefined
+                  ? ` ${context.raw.toFixed(3)} (${winnerRanks[dataIndex]})`
+                  : "-";
               },
             },
           },
