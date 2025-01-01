@@ -482,7 +482,7 @@ const Dashboard = ({
               color: "#3d9bff",
             },
             grid: {
-              color: connected ? "#d3d3d322" : "#d3d3d300",
+              color: "#d3d3d322",
             },
           },
           y: {
