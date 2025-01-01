@@ -73,16 +73,32 @@ const Collider = ({
   }, []);
 
   useEffect(() => {
+    const parseDateToISO = (dateStr) => {
+      return new Date(dateStr).toISOString();
+    };
     setPredictionHistoryChartData({
       type: "line",
-      labels: metadata.eventsOverTime.cummulative.timestamps,
+      labels: metadata.eventsOverTime.cummulative.timestamps
+        .filter((timestamp) => {
+          const dateISO = parseDateToISO(timestamp);
+          return dateISO >= config.startTime && dateISO <= config.endTime;
+        })
+        .map((value) => value.split(" ").slice(0, 2).join(" ").slice(0, -1)),
       datasets: [
         {
           label: "Yes",
-          data: metadata.eventsOverTime.cummulative.pro.map((pro, index) => {
-            const total = pro + metadata.eventsOverTime.cummulative.anti[index];
-            return total === 0 ? 0 : (pro / total) * 100;
-          }),
+          data: metadata.eventsOverTime.cummulative.timestamps
+            .map((timestamp, index) => {
+              const dateISO = parseDateToISO(timestamp);
+              if (dateISO >= config.startTime && dateISO <= config.endTime) {
+                const pro = metadata.eventsOverTime.cummulative.pro[index];
+                const anti = metadata.eventsOverTime.cummulative.anti[index];
+                const total = pro + anti;
+                return total === 0 ? 0 : (pro / total) * 100;
+              }
+              return null;
+            })
+            .filter((value) => value !== null),
           segment: {
             borderColor: (ctx) => {
               const start = ctx.p0.parsed.y;
@@ -216,7 +232,7 @@ const Collider = ({
         },
       },
     });
-  }, [metadata]);
+  }, [metadata, config]);
 
   useEffect(() => {
     if (antiData && proData) {
