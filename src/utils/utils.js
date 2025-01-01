@@ -64,6 +64,7 @@ export const metadataInit = {
       },
     },
     cummulative: {
+      timestamps: [],
       pro: [],
       anti: [],
       photon: [],
