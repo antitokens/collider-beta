@@ -73,6 +73,7 @@ const Collider = ({
   }, []);
 
   useEffect(() => {
+    console.log(metadata.eventsOverTime.timestamps);
     setPredictionHistoryChartData({
       type: "line",
       labels: metadata.eventsOverTime.timestamps,
@@ -951,7 +952,7 @@ const Collider = ({
                 &nbsp;
                 <div className="flex flex-row text-right">
                   <span>&nbsp;P/L:&nbsp;</span>
-                  <span className="text-[11px] text-white font-sfmono pt-[1px]">
+                  <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[1px]">
                     <span className="text-accent-secondary opacity-95">
                       {formatCount(gain.toFixed(2))}%&nbsp;
                     </span>
