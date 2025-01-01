@@ -120,7 +120,6 @@ const Collider = ({
           borderWidth: 2,
           pointRadius: 0,
           fill: false,
-          stepped: "middle",
         },
       ],
       plugins: [
