@@ -310,21 +310,23 @@ const Inverter = ({
       <div className="flex flex-col items-center justify-between bg-dark-card w-full p-4 rounded gap-2">
         <div className="text-lg text-gray-300 mb-2">Reclaim</div>
         <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full">
-          <div className="flex text-left text-xs mt-[-2px]">
+          <div className="flex text-left text-xs">
             <div className="relative group">
-              <div className="cursor-pointer">&#9432;&nbsp;</div>
+              <div className="cursor-pointer mt-[-2px]">&#9432;&nbsp;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Displays your current tokens in the pool
               </span>
             </div>
-            <div>&nbsp;Your Tokens:&nbsp;</div>
-            <div className="flex flex-row justify-center font-sfmono pt-[0px] lg:pt-[1px]">
-              <div className="text-accent-steel text-[11px] opacity-95">
-                {formatPrecise(updated[0])}
-              </div>
-              <div>/</div>
-              <div className="text-accent-cement text-[11px] opacity-95">
-                {formatPrecise(updated[1])}
+            <div className="flex flex-row justify-center mt-[-2px]">
+              <div>&nbsp;Your Tokens:&nbsp;</div>
+              <div className="flex flex-row justify-center font-sfmono pt-[0px] lg:pt-[1px]">
+                <div className="text-accent-steel text-[11px] opacity-95">
+                  {formatPrecise(updated[0])}
+                </div>
+                <div>/</div>
+                <div className="text-accent-cement text-[11px] opacity-95">
+                  {formatPrecise(updated[1])}
+                </div>
               </div>
             </div>
           </div>
