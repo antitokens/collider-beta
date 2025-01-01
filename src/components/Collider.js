@@ -15,6 +15,7 @@ import {
   emptyMetadata,
   formatCount,
   formatPrecise,
+  generateGradientColor,
   convertToLocaleTime,
 } from "../utils/utils";
 Chart.register(...registerables);
@@ -77,24 +78,49 @@ const Collider = ({
       labels: metadata.eventsOverTime.timestamps,
       datasets: [
         {
-          label: "PRO",
-          data: metadata.eventsOverTime.cummulative.pro,
-          borderColor: "#00CC8E",
-          backgroundColor: "rgba(0, 255, 0, 0.2)",
-          tension: 1,
-          stepped: "middle",
+          label: "Yes",
+          data: metadata.eventsOverTime.cummulative.pro.map((pro, index) => {
+            const total = pro + metadata.eventsOverTime.cummulative.anti[index];
+            return total === 0 ? 0 : (pro / total) * 100;
+          }),
+          segment: {
+            borderColor: (ctx) => {
+              const start = ctx.p0.parsed.y;
+              const end = ctx.p1.parsed.y;
+              const gradient = ctx.chart.ctx.createLinearGradient(
+                ctx.p0.x,
+                ctx.p0.y,
+                ctx.p1.x,
+                ctx.p1.y
+              );
+
+              gradient.addColorStop(
+                0,
+                generateGradientColor(start, 0, 100, [255, 51, 0], [0, 219, 84])
+              );
+              gradient.addColorStop(
+                1,
+                generateGradientColor(end, 0, 100, [255, 51, 0], [0, 219, 84])
+              );
+
+              return gradient;
+            },
+          },
+          backgroundColor: (context) => {
+            const value = context.raw;
+            return generateGradientColor(
+              value,
+              0,
+              100,
+              [255, 51, 0],
+              [0, 219, 84]
+            );
+          },
+          tension: 0.4,
           borderWidth: 2,
           pointRadius: 0,
-        },
-        {
-          label: "ANTI",
-          data: metadata.eventsOverTime.cummulative.anti,
-          borderColor: "#D13800",
-          backgroundColor: "rgba(255, 0, 0, 0.2)",
-          tension: 1,
+          fill: false,
           stepped: "middle",
-          borderWidth: 2,
-          pointRadius: 0,
         },
       ],
       plugins: [
@@ -133,28 +159,9 @@ const Collider = ({
           },
           tooltip: {
             callbacks: {
-              label: function (context) {
-                const datasetIndex = context.datasetIndex;
-                const dataIndex = context.dataIndex;
-                const proValue =
-                  metadata.eventsOverTime.cummulative.pro[dataIndex];
-                const antiValue =
-                  metadata.eventsOverTime.cummulative.anti[dataIndex];
-                const total = proValue + antiValue;
-
-                if (datasetIndex === 0) {
-                  return [
-                    total > 0
-                      ? `PRO  ${Math.round((proValue / total) * 100)}%`
-                      : "PRO -",
-                  ];
-                } else {
-                  return [
-                    total > 0
-                      ? `ANTI ${Math.round((antiValue / total) * 100)}%`
-                      : "ANTI -",
-                  ];
-                }
+              label: (context) => {
+                const value = context.raw;
+                return ` ${value.toFixed(0)}%`;
               },
             },
             bodyFont: {
@@ -185,36 +192,27 @@ const Collider = ({
               color: "rgba(255, 255, 255, 0.1)",
             },
             ticks: {
-              stepSize: 20,
+              callback: function (value) {
+                return value === 0 ? "NO" : value === 100 ? "YES" : value + "%";
+              },
+              stepSize: 10,
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
               },
-              color: "#d3d3d399",
-              callback: function (context) {
-                const datasetIndex = context.datasetIndex;
-                const dataIndex = context.dataIndex;
-                const proValue =
-                  metadata.eventsOverTime.cummulative.pro[dataIndex];
-                const antiValue =
-                  metadata.eventsOverTime.cummulative.anti[dataIndex];
-                const total = proValue + antiValue;
-
-                if (datasetIndex === 0) {
-                  return [
-                    total > 0 ? `${Math.round((proValue / total) * 100)}%` : "",
-                  ];
-                } else {
-                  return [
-                    total > 0
-                      ? `${Math.round((antiValue / total) * 100)}%`
-                      : "",
-                  ];
-                }
+              color: function (context) {
+                const value = context.tick.value;
+                return generateGradientColor(
+                  value,
+                  0,
+                  100,
+                  [255, 51, 0],
+                  [0, 219, 84]
+                );
               },
             },
-            suggestedMin: 0,
-            suggestedMax: 100,
+            min: 0,
+            max: 100,
           },
         },
       },
@@ -839,15 +837,7 @@ const Collider = ({
       <div className="mb-4 bg-dark-card p-4 rounded w-full">
         {predictionHistoryChartData && (
           <div className="flex flex-col items-end gap-1">
-            <div className="flex gap-2 mt-4 font-sfmono opacity-75">
-              <div className="relative group">
-                <div className="cursor-pointer">&#9432;</div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  {`Displays the `}
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4 font-sfmono opacity-75 hidden">
+            <div className="flex gap-1 mt-4 font-sfmono opacity-75">
               <div
                 className={
                   predictionHistoryTimeframe === "1H"
@@ -907,6 +897,16 @@ const Collider = ({
                 onClick={() => handleTimeframeChange("ALL")}
               >
                 <span className="text-xs">ALL</span>
+              </div>
+              <div className="font-grotesk">
+                <div className="relative group">
+                  <div className="cursor-pointer text-xs text-gray-400">
+                    &nbsp;&#9432;
+                  </div>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    {`Displays the global expectation of the outcome over time`}
+                  </span>
+                </div>
               </div>
             </div>
             <Line
