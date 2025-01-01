@@ -12,8 +12,10 @@ import {
   toast,
   emptyConfig,
   emptyBags,
+  emptyMetadata,
   formatCount,
   formatPrecise,
+  generateGradientColor,
   convertToLocaleTime,
 } from "../utils/utils";
 Chart.register(...registerables);
@@ -35,6 +37,7 @@ const Collider = ({
   config = emptyConfig,
   isMobile = false,
   bags = emptyBags,
+  metadata = emptyMetadata,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -44,6 +47,8 @@ const Collider = ({
   const [userDistribution, setUserDistribution] = useState(null);
   const [pastDistribution, setPastDistribution] = useState(null);
   const [totalDistribution, setTotalDistribution] = useState(null);
+  const [predictionHistoryChartData, setPredictionHistoryChartData] =
+    useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
   const [dollarBet, setDollarBet] = useState(0);
@@ -51,6 +56,8 @@ const Collider = ({
   const [gain, setGain] = useState(0);
   const [newGain, setNewGain] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
+  const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
+    useState("1D");
   const sliderRef = useRef(null);
 
   useEffect(() => {
@@ -64,6 +71,153 @@ const Collider = ({
       handleSliderInput(percentage);
     }
   }, []);
+
+  useEffect(() => {
+    setPredictionHistoryChartData({
+      type: "line",
+      labels: metadata.eventsOverTime.timestamps,
+      datasets: [
+        {
+          label: "Yes",
+          data: metadata.eventsOverTime.cummulative.pro.map((pro, index) => {
+            const total = pro + metadata.eventsOverTime.cummulative.anti[index];
+            return total === 0 ? 0 : (pro / total) * 100;
+          }),
+          segment: {
+            borderColor: (ctx) => {
+              const start = ctx.p0.parsed.y;
+              const end = ctx.p1.parsed.y;
+              const gradient = ctx.chart.ctx.createLinearGradient(
+                ctx.p0.x,
+                ctx.p0.y,
+                ctx.p1.x,
+                ctx.p1.y
+              );
+
+              gradient.addColorStop(
+                0,
+                generateGradientColor(start, 0, 100, [255, 51, 0], [0, 219, 84])
+              );
+              gradient.addColorStop(
+                1,
+                generateGradientColor(end, 0, 100, [255, 51, 0], [0, 219, 84])
+              );
+
+              return gradient;
+            },
+          },
+          backgroundColor: (context) => {
+            const value = context.raw;
+            return generateGradientColor(
+              value,
+              0,
+              100,
+              [255, 51, 0],
+              [0, 219, 84]
+            );
+          },
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+          stepped: "middle",
+        },
+      ],
+      plugins: [
+        {
+          beforeDatasetDraw(chart) {
+            const {
+              ctx,
+              chartArea: { top, bottom },
+            } = chart;
+            ctx.save();
+
+            chart.getDatasetMeta(0).data.forEach((dataPoint) => {
+              if (dataPoint.active) {
+                ctx.beginPath();
+                ctx.strokeStyle = "gray";
+                ctx.moveTo(dataPoint.x, top);
+                ctx.lineTo(dataPoint.x, bottom);
+                ctx.stroke();
+              }
+            });
+          },
+        },
+      ],
+      options: {
+        responsive: true,
+        interaction: {
+          intersect: false,
+          mode: "index",
+        },
+        plugins: {
+          datalabels: {
+            display: false,
+          },
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const value = context.raw;
+                return ` ${value.toFixed(0)}%`;
+              },
+            },
+            bodyFont: {
+              family: "'SF Mono Round'",
+            },
+            titleFont: {
+              family: "'Space Grotesk'",
+              size: 14,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+            ticks: {
+              font: {
+                family: "'SF Mono Round'",
+                size: 10,
+              },
+              color: "#d3d3d399",
+            },
+          },
+          y: {
+            grid: {
+              display: true,
+              color: "rgba(255, 255, 255, 0.1)",
+            },
+            ticks: {
+              callback: function (value) {
+                return value === 0 ? "NO" : value === 100 ? "YES" : value + "%";
+              },
+              stepSize: 10,
+              font: {
+                family: "'SF Mono Round'",
+                size: 10,
+              },
+              color: function (context) {
+                const value = context.tick.value;
+                return generateGradientColor(
+                  value,
+                  0,
+                  100,
+                  [255, 51, 0],
+                  [0, 219, 84]
+                );
+              },
+            },
+            min: 0,
+            max: 100,
+          },
+        },
+      },
+    });
+  }, [metadata]);
 
   useEffect(() => {
     if (antiData && proData) {
@@ -500,6 +654,11 @@ const Collider = ({
     totalInvest,
   ]);
 
+  const handleTimeframeChange = (timeframe) => {
+    setPredictionHistoryTimeframe(timeframe);
+    // TODO: reload data with a different timeframe
+  };
+
   const updateSplit = (total, percentage) => {
     const pro = (percentage / 100) * total;
     const anti = total - pro;
@@ -674,6 +833,89 @@ const Collider = ({
             </span>
           </div>
         </div>
+      </div>
+      <div className="mb-4 bg-dark-card p-4 rounded w-full">
+        {predictionHistoryChartData && (
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex gap-1 mt-4 font-sfmono opacity-75">
+              <div
+                className={
+                  predictionHistoryTimeframe === "1H"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("1H")}
+              >
+                <span className="text-xs">1H</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "6H"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("6H")}
+              >
+                <span className="text-xs">6H</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "1D"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("1D")}
+              >
+                <span className="text-xs">1D</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "1W"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("1W")}
+              >
+                <span className="text-xs">1W</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "1M"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("1M")}
+              >
+                <span className="text-xs">1M</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "ALL"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("ALL")}
+              >
+                <span className="text-xs">ALL</span>
+              </div>
+              <div className="font-grotesk">
+                <div className="relative group">
+                  <div className="cursor-pointer text-xs text-gray-400">
+                    &nbsp;&#9432;
+                  </div>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    {`Displays the global expectation of the outcome over time`}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <Line
+              data={predictionHistoryChartData}
+              options={predictionHistoryChartData.options}
+              plugins={predictionHistoryChartData.plugins}
+            />
+          </div>
+        )}
       </div>
       {/* Token Input Fields */}
       <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full">
