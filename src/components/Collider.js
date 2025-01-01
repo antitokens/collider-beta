@@ -930,7 +930,7 @@ const Collider = ({
                   </span>
                 </div>
                 <div>&nbsp;Your Pool:&nbsp;</div>
-                <div className="flex flex-row justify-center font-sfmono mt-[1px]">
+                <div className="flex flex-row justify-center font-sfmono mt-[1px] sm:mt-0">
                   <div className="text-accent-secondary text-[11px] opacity-95">
                     {formatCount(proUsage.toFixed(2))}
                   </div>
@@ -951,7 +951,7 @@ const Collider = ({
                 &nbsp;
                 <div className="flex flex-row text-right">
                   <span>&nbsp;P/L:&nbsp;</span>
-                  <span className="text-[11px] text-white font-sfmono pt-[1px]">
+                  <span className="text-[11px] text-white font-sfmono pt-[1px] sm:pt-0">
                     <span className="text-accent-secondary opacity-95">
                       {formatCount(gain.toFixed(2))}%&nbsp;
                     </span>
@@ -983,7 +983,7 @@ const Collider = ({
                 <div className="flex flex-row text-right">
                   <div>
                     &nbsp;P/L:{" "}
-                    <span className="text-[11px] text-white font-sfmono pt-[2px]">
+                    <span className="text-[11px] text-white font-sfmono pt-[2px] sm:pt-[1px]">
                       <span className="text-accent-secondary opacity-95">
                         {gain !== newGain
                           ? formatCount(newGain.toFixed(2))
