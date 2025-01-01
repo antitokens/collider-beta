@@ -38,6 +38,7 @@ const Collider = ({
   isMobile = false,
   bags = emptyBags,
   metadata = emptyMetadata,
+  refresh = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -63,11 +64,9 @@ const Collider = ({
   useEffect(() => {
     if (sliderRef.current) {
       let percentage = 50;
-
       if (totalInvest > 0) {
         percentage = (proTokens / totalInvest) * 100;
       }
-
       handleSliderInput(percentage);
     }
   }, []);
@@ -101,9 +100,28 @@ const Collider = ({
             .filter((value) => value !== null),
           segment: {
             borderColor: (context) => {
+              /*
               const start = context.p0.parsed.y;
               const end = context.p1.parsed.y;
+              */
+              const _start =
+                context.p0DataIndex +
+                metadata.eventsOverTime.cummulative.timestamps.findIndex(
+                  (timestamp) => parseDateToISO(timestamp) >= config.startTime
+                );
+              const _end =
+                context.p1DataIndex +
+                metadata.eventsOverTime.cummulative.timestamps.findIndex(
+                  (timestamp) => parseDateToISO(timestamp) >= config.startTime
+                );
+              const start = metadata.eventsOverTime.cummulative.photon[_start];
+              const end = metadata.eventsOverTime.cummulative.photon[_end];
+              const limits = [
+                Math.min(...metadata.eventsOverTime.cummulative.photon),
+                Math.max(...metadata.eventsOverTime.cummulative.photon),
+              ];
               // Get the actual timestamps from the labels array since it's already filtered
+              /*
               const currentTick = parseDateToISO(
                 metadata.eventsOverTime.cummulative.timestamps[
                   context.p0DataIndex +
@@ -122,13 +140,18 @@ const Collider = ({
                     )
                 ]
               );
+              */
+              const currentTick = parseDateToISO(
+                metadata.eventsOverTime.cummulative.timestamps[_start]
+              );
+              const nextTick = parseDateToISO(
+                metadata.eventsOverTime.cummulative.timestamps[_end]
+              );
               const nowTime = new Date().toISOString();
-
               // Future segments should be grey
               if (currentTick > nowTime && nextTick > nowTime) {
                 return "rgba(128, 128, 128, 0.5)";
               }
-
               // Segment crossing nowTime - gradient from color to grey
               if (currentTick <= nowTime && nextTick > nowTime) {
                 const gradient = context.chart.ctx.createLinearGradient(
@@ -137,23 +160,20 @@ const Collider = ({
                   context.p1.x,
                   context.p1.y
                 );
-
                 gradient.addColorStop(
                   0,
                   generateGradientColor(
                     start,
-                    0,
-                    100,
-                    [255, 51, 0],
-                    [0, 219, 84]
+                    limits[0],
+                    limits[1],
+                    [66, 255, 214], //[255, 51, 0],
+                    [3, 173, 252] //[0, 219, 84],
                   )
                 );
                 gradient.addColorStop(1, "rgba(128, 128, 128, 0.5)");
-
                 return gradient;
               }
-
-              // Past segments (both ticks before nowTime) - use solid color based on value
+              // Past segments (both ticks before nowTime)
               if (currentTick <= nowTime && nextTick <= nowTime) {
                 const gradient = context.chart.ctx.createLinearGradient(
                   context.p0.x,
@@ -165,19 +185,24 @@ const Collider = ({
                   0,
                   generateGradientColor(
                     start,
-                    0,
-                    100,
-                    [255, 51, 0],
-                    [0, 219, 84]
+                    limits[0],
+                    limits[1],
+                    [66, 255, 214], //[255, 51, 0],
+                    [3, 173, 252] //[0, 219, 84],
                   )
                 );
                 gradient.addColorStop(
                   1,
-                  generateGradientColor(end, 0, 100, [255, 51, 0], [0, 219, 84])
+                  generateGradientColor(
+                    end,
+                    limits[0],
+                    limits[1],
+                    [66, 255, 214], //[255, 51, 0],
+                    [3, 173, 252] //[0, 219, 84],
+                  )
                 );
                 return gradient;
               }
-
               // Fallback (shouldn't reach here)
               return "rgba(128, 128, 128, 0.5)";
             },
@@ -187,7 +212,34 @@ const Collider = ({
           pointRadius: 0,
           fill: false,
         },
+        {
+          // Add a hidden dataset for the certainty tooltip
+          label: "Certainty",
+          data: metadata.eventsOverTime.cummulative.timestamps
+            .map((timestamp, index) => {
+              const dateISO = parseDateToISO(timestamp);
+              if (dateISO >= config.startTime && dateISO <= config.endTime) {
+                return (
+                  (metadata.eventsOverTime.cummulative.photon[index] /
+                    (metadata.eventsOverTime.cummulative.photon[index] +
+                      metadata.eventsOverTime.cummulative.baryon[index])) *
+                  100
+                );
+              }
+              return null;
+            })
+            .filter((value) => value !== null),
+          display: false,
+          hidden: false,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          borderWidth: 0,
+          hoverBorderWidth: 0,
+          hoverBackgroundColor: "transparent",
+          hoverBorderColor: "transparent",
+        },
       ],
+      /*
       plugins: [
         {
           beforeDatasetDraw(chart) {
@@ -209,6 +261,7 @@ const Collider = ({
           },
         },
       ],
+      */
       options: {
         responsive: true,
         interaction: {
@@ -241,10 +294,17 @@ const Collider = ({
                 if (currentTick > nowTime) {
                   return ` -`;
                 }
-                return ` ${value.toFixed(0)}%`;
+                return ` ${value.toFixed(0)}% ${
+                  context.datasetIndex === 0 ? "expectation" : "uncertainty"
+                }`;
               },
               labelColor: (context) => {
                 const value = context.raw;
+                console.log(context.datasetIndex);
+                const limits = [
+                  Math.min(...metadata.eventsOverTime.cummulative.photon),
+                  Math.max(...metadata.eventsOverTime.cummulative.photon),
+                ];
                 const currentTick = parseDateToISO(
                   metadata.eventsOverTime.cummulative.timestamps.find(
                     (timestamp) =>
@@ -267,17 +327,17 @@ const Collider = ({
                 return {
                   backgroundColor: generateGradientColor(
                     value,
-                    0,
-                    100,
-                    [255, 51, 0],
-                    [0, 219, 84]
+                    context.datasetIndex === 0 ? 0 : limits[0],
+                    context.datasetIndex === 0 ? 100 : limits[1],
+                    context.datasetIndex === 0 ? [255, 51, 0] : [66, 255, 214],
+                    context.datasetIndex === 0 ? [0, 219, 84] : [3, 173, 252]
                   ),
                   borderColor: generateGradientColor(
                     value,
-                    0,
-                    100,
-                    [255, 51, 0],
-                    [0, 219, 84]
+                    context.datasetIndex === 0 ? 0 : limits[0],
+                    context.datasetIndex === 0 ? 100 : limits[1],
+                    context.datasetIndex === 0 ? [255, 51, 0] : [66, 255, 214],
+                    context.datasetIndex === 0 ? [0, 219, 84] : [3, 173, 252]
                   ),
                 };
               },
@@ -955,16 +1015,16 @@ const Collider = ({
       <div className="mb-4 bg-dark-card p-4 rounded w-full">
         {predictionHistoryChartData && (
           <div className="flex flex-col items-end gap-1">
-            <div className="flex gap-1 mt-4 font-sfmono opacity-75">
+            <div className="flex gap-1 mt-4 font-sfmono">
               <div
                 className={
                   predictionHistoryTimeframe === "1H"
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
                 }
-                onClick={() => handleTimeframeChange("1H")}
+                onClick={() => {}}
               >
-                <span className="text-xs">1H</span>
+                <span className="text-xs opacity-75">1H</span>
               </div>
               <div
                 className={
@@ -972,9 +1032,9 @@ const Collider = ({
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
                 }
-                onClick={() => handleTimeframeChange("6H")}
+                onClick={() => {}}
               >
-                <span className="text-xs">6H</span>
+                <span className="text-xs opacity-75">6H</span>
               </div>
               <div
                 className={
@@ -982,9 +1042,9 @@ const Collider = ({
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
                 }
-                onClick={() => handleTimeframeChange("1D")}
+                onClick={() => {}}
               >
-                <span className="text-xs">1D</span>
+                <span className="text-xs opacity-75">1D</span>
               </div>
               <div
                 className={
@@ -992,9 +1052,9 @@ const Collider = ({
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
                 }
-                onClick={() => handleTimeframeChange("1W")}
+                onClick={() => {}}
               >
-                <span className="text-xs">1W</span>
+                <span className="text-xs opacity-75">1W</span>
               </div>
               <div
                 className={
@@ -1002,9 +1062,9 @@ const Collider = ({
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
                 }
-                onClick={() => handleTimeframeChange("1M")}
+                onClick={() => {}}
               >
-                <span className="text-xs">1M</span>
+                <span className="text-xs opacity-75">1M</span>
               </div>
               <div
                 className={
@@ -1018,7 +1078,7 @@ const Collider = ({
               </div>
               <div className="font-grotesk">
                 <div className="relative group">
-                  <div className="cursor-pointer text-xs text-gray-400">
+                  <div className="cursor-pointer text-xs text-gray-500">
                     &nbsp;&#9432;
                   </div>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
