@@ -201,7 +201,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   true
                 )
               : emptyGaussian;
-          console.log(data.totalDistribution);
+
           setMetadata({
             startTime: data.startTime,
             endTime: data.endTime,
