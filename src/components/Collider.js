@@ -191,8 +191,26 @@ const Collider = ({
                 size: 10,
               },
               color: "#d3d3d399",
-              callback: function (value) {
-                return value + "%";
+              callback: function (context) {
+                const datasetIndex = context.datasetIndex;
+                const dataIndex = context.dataIndex;
+                const proValue =
+                  metadata.eventsOverTime.cummulative.pro[dataIndex];
+                const antiValue =
+                  metadata.eventsOverTime.cummulative.anti[dataIndex];
+                const total = proValue + antiValue;
+
+                if (datasetIndex === 0) {
+                  return [
+                    total > 0 ? `${Math.round((proValue / total) * 100)}%` : "",
+                  ];
+                } else {
+                  return [
+                    total > 0
+                      ? `${Math.round((antiValue / total) * 100)}%`
+                      : "",
+                  ];
+                }
               },
             },
             suggestedMin: 0,
