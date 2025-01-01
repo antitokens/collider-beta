@@ -628,7 +628,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   >
                     {wallet.connected
                       ? ""
-                      : "Connect your wallet to enable predictions"}
+                      : "Connect your wallet to enable reclaims"}
                   </p>
                 </div>
               </div>
