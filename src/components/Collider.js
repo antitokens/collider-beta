@@ -75,6 +75,88 @@ const Collider = ({
     const parseDateToISO = (dateStr) => {
       return new Date(dateStr).toISOString();
     };
+    const getSegmentColor = (context) => {
+      const _start =
+        context.p0DataIndex +
+        metadata.eventsOverTime.cummulative.timestamps.findIndex(
+          (timestamp) => parseDateToISO(timestamp) >= config.startTime
+        );
+      const _end =
+        context.p1DataIndex +
+        metadata.eventsOverTime.cummulative.timestamps.findIndex(
+          (timestamp) => parseDateToISO(timestamp) >= config.startTime
+        );
+      const start = metadata.eventsOverTime.cummulative.photon[_start];
+      const end = metadata.eventsOverTime.cummulative.photon[_end];
+      const limits = [
+        Math.min(...metadata.eventsOverTime.cummulative.photon),
+        Math.max(...metadata.eventsOverTime.cummulative.photon),
+      ];
+      const currentTick = parseDateToISO(
+        metadata.eventsOverTime.cummulative.timestamps[_start]
+      );
+      const nextTick = parseDateToISO(
+        metadata.eventsOverTime.cummulative.timestamps[_end]
+      );
+      const nowTime = new Date().toISOString();
+      // Future segments should be grey
+      if (currentTick > nowTime && nextTick > nowTime) {
+        return "rgba(128, 128, 128, 0.5)";
+      }
+      // Segment crossing nowTime - gradient from color to grey
+      if (currentTick <= nowTime && nextTick > nowTime) {
+        const gradient = context.chart.ctx.createLinearGradient(
+          context.p0.x,
+          context.p0.y,
+          context.p1.x,
+          context.p1.y
+        );
+        gradient.addColorStop(
+          0,
+          generateGradientColor(
+            start,
+            limits[0],
+            limits[1],
+            [66, 255, 214],
+            [3, 173, 252]
+          )
+        );
+        gradient.addColorStop(1, "rgba(128, 128, 128, 0.5)");
+        return gradient;
+      }
+      // Past segments (both ticks before nowTime)
+      if (currentTick <= nowTime && nextTick <= nowTime) {
+        const gradient = context.chart.ctx.createLinearGradient(
+          context.p0.x,
+          context.p0.y,
+          context.p1.x,
+          context.p1.y
+        );
+        gradient.addColorStop(
+          0,
+          generateGradientColor(
+            start,
+            limits[0],
+            limits[1],
+            [66, 255, 214],
+            [3, 173, 252]
+          )
+        );
+        gradient.addColorStop(
+          1,
+          generateGradientColor(
+            end,
+            limits[0],
+            limits[1],
+            [66, 255, 214],
+            [3, 173, 252]
+          )
+        );
+        return gradient;
+      }
+      // Fallback (shouldn't reach here)
+      return "rgba(128, 128, 128, 0.5)";
+    };
     setPredictionHistoryChartData({
       type: "line",
       labels: metadata.eventsOverTime.cummulative.timestamps
@@ -99,118 +181,14 @@ const Collider = ({
             })
             .filter((value) => value !== null),
           segment: {
-            borderColor: (context) => {
-              /*
-              const start = context.p0.parsed.y;
-              const end = context.p1.parsed.y;
-              */
-              const _start =
-                context.p0DataIndex +
-                metadata.eventsOverTime.cummulative.timestamps.findIndex(
-                  (timestamp) => parseDateToISO(timestamp) >= config.startTime
-                );
-              const _end =
-                context.p1DataIndex +
-                metadata.eventsOverTime.cummulative.timestamps.findIndex(
-                  (timestamp) => parseDateToISO(timestamp) >= config.startTime
-                );
-              const start = metadata.eventsOverTime.cummulative.photon[_start];
-              const end = metadata.eventsOverTime.cummulative.photon[_end];
-              const limits = [
-                Math.min(...metadata.eventsOverTime.cummulative.photon),
-                Math.max(...metadata.eventsOverTime.cummulative.photon),
-              ];
-              // Get the actual timestamps from the labels array since it's already filtered
-              /*
-              const currentTick = parseDateToISO(
-                metadata.eventsOverTime.cummulative.timestamps[
-                  context.p0DataIndex +
-                    metadata.eventsOverTime.cummulative.timestamps.findIndex(
-                      (timestamp) =>
-                        parseDateToISO(timestamp) >= config.startTime
-                    )
-                ]
-              );
-              const nextTick = parseDateToISO(
-                metadata.eventsOverTime.cummulative.timestamps[
-                  context.p1DataIndex +
-                    metadata.eventsOverTime.cummulative.timestamps.findIndex(
-                      (timestamp) =>
-                        parseDateToISO(timestamp) >= config.startTime
-                    )
-                ]
-              );
-              */
-              const currentTick = parseDateToISO(
-                metadata.eventsOverTime.cummulative.timestamps[_start]
-              );
-              const nextTick = parseDateToISO(
-                metadata.eventsOverTime.cummulative.timestamps[_end]
-              );
-              const nowTime = new Date().toISOString();
-              // Future segments should be grey
-              if (currentTick > nowTime && nextTick > nowTime) {
-                return "rgba(128, 128, 128, 0.5)";
-              }
-              // Segment crossing nowTime - gradient from color to grey
-              if (currentTick <= nowTime && nextTick > nowTime) {
-                const gradient = context.chart.ctx.createLinearGradient(
-                  context.p0.x,
-                  context.p0.y,
-                  context.p1.x,
-                  context.p1.y
-                );
-                gradient.addColorStop(
-                  0,
-                  generateGradientColor(
-                    start,
-                    limits[0],
-                    limits[1],
-                    [66, 255, 214], //[255, 51, 0],
-                    [3, 173, 252] //[0, 219, 84],
-                  )
-                );
-                gradient.addColorStop(1, "rgba(128, 128, 128, 0.5)");
-                return gradient;
-              }
-              // Past segments (both ticks before nowTime)
-              if (currentTick <= nowTime && nextTick <= nowTime) {
-                const gradient = context.chart.ctx.createLinearGradient(
-                  context.p0.x,
-                  context.p0.y,
-                  context.p1.x,
-                  context.p1.y
-                );
-                gradient.addColorStop(
-                  0,
-                  generateGradientColor(
-                    start,
-                    limits[0],
-                    limits[1],
-                    [66, 255, 214], //[255, 51, 0],
-                    [3, 173, 252] //[0, 219, 84],
-                  )
-                );
-                gradient.addColorStop(
-                  1,
-                  generateGradientColor(
-                    end,
-                    limits[0],
-                    limits[1],
-                    [66, 255, 214], //[255, 51, 0],
-                    [3, 173, 252] //[0, 219, 84],
-                  )
-                );
-                return gradient;
-              }
-              // Fallback (shouldn't reach here)
-              return "rgba(128, 128, 128, 0.5)";
-            },
+            borderCapStyle: 'round',
+            borderColor: getSegmentColor,
           },
           tension: 0,
           borderWidth: 2,
           pointRadius: 0,
-          fill: false,
+          hoverBackgroundColor: "#ffffff55",
+          hoverBorderColor: "#ffffffaa",
         },
         {
           // Add a hidden dataset for the certainty tooltip
@@ -239,29 +217,6 @@ const Collider = ({
           hoverBorderColor: "transparent",
         },
       ],
-      /*
-      plugins: [
-        {
-          beforeDatasetDraw(chart) {
-            const {
-              ctx: context,
-              chartArea: { top, bottom },
-            } = chart;
-            context.save();
-
-            chart.getDatasetMeta(0).data.forEach((dataPoint) => {
-              if (dataPoint.active) {
-                context.beginPath();
-                context.strokeStyle = "gray";
-                context.moveTo(dataPoint.x, top);
-                context.lineTo(dataPoint.x, bottom);
-                context.stroke();
-              }
-            });
-          },
-        },
-      ],
-      */
       options: {
         responsive: true,
         interaction: {
@@ -294,7 +249,7 @@ const Collider = ({
                 if (currentTick > nowTime) {
                   return ` -`;
                 }
-                return ` ${value.toFixed(0)}% ${
+                return ` ${value.toFixed(0).padStart(2)}% ${
                   context.datasetIndex === 0 ? "expectation" : "uncertainty"
                 }`;
               },
