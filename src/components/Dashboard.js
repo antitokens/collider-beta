@@ -273,7 +273,9 @@ const Dashboard = ({
 
     // Prepare line chart data
     setLineChartData({
-      labels: eventsOverTime.timestamps,
+      labels: eventsOverTime.timestamps.map((value) =>
+        value.split(" ").slice(0, 2).join(" ").slice(0, -1)
+      ),
       datasets: [
         {
           label: "Pro",
