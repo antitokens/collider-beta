@@ -309,17 +309,17 @@ const Inverter = ({
       {/* Emission Input */}
       <div className="flex flex-col items-center justify-between bg-dark-card w-full p-4 rounded gap-2">
         <div className="text-lg text-gray-300 mb-2">Reclaim</div>
-        <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full">
-          <div className="flex text-left text-xs">
-            <div className="relative group">
-              <div className="cursor-pointer mt-[-2px]">&#9432;&nbsp;</div>
+        <div className="flex flex-row justify-between items-center text-sm text-gray-500 w-full">
+          <div className="flex items-center text-left text-xs">
+            <div className="relative group flex items-center">
+              <div className="cursor-pointer">&#9432;&nbsp;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Displays your current tokens in the pool
               </span>
             </div>
-            <div className="flex flex-row justify-center mt-[-2px]">
+            <div className="flex items-center">
               <div>&nbsp;Your Tokens:&nbsp;</div>
-              <div className="flex flex-row justify-center font-sfmono pt-[0px] lg:pt-[1px]">
+              <div className="flex items-center font-sfmono pt-[0px] lg:pt-[2px]">
                 <div className="text-accent-steel text-[11px] opacity-95">
                   {formatPrecise(updated[0])}
                 </div>
@@ -330,17 +330,17 @@ const Inverter = ({
               </div>
             </div>
           </div>
-          <div className="flex flex-row text-right text-[12px]">
-            <div>
-              Realised P/L:{" "}
-              <span className="text-[11px] text-white font-sfmono">
+
+          <div className="flex items-center text-[12px]">
+            <div className="flex items-center">
+              Realised P/L:&nbsp;
+              <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[2px]">
                 <span className="text-gray-400">$</span>
                 {formatCount(dollarGain.toFixed(2))}
-              </span>{" "}
+              </span>
             </div>
-            &nbsp;
-            <div className="flex flex-row text-right">
-              <span className="text-[11px] text-gray-400 font-sfmono pt-[1px] sm:mt-0">
+            <div className="flex items-center ml-1 pt-[0px] lg:pt-[2px]">
+              <span className="text-[11px] text-gray-400 font-sfmono">
                 (
                 <span
                   className={`font-sfmono text-${
@@ -353,10 +353,10 @@ const Inverter = ({
                 >
                   {formatCount(gain.toFixed(2))}%
                 </span>
-                )&nbsp;
+                )
               </span>
-              <span className="relative group">
-                <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
+              <span className="relative group flex items-center ml-1 pb-[2px]">
+                <div className="cursor-pointer text-xs">&#9432;</div>
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {`Displays your current realised profit or loss`}
                 </span>
