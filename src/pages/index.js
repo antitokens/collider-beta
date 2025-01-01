@@ -446,6 +446,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   isMobile={isMobile}
                   bags={bags}
                   metadata={metadata}
+                  refresh={refresh}
                 />
               </div>
             ) : (
@@ -618,6 +619,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     isMobile={isMobile}
                     bags={bags}
                     metadata={metadata}
+                    refresh={refresh}
                   />
                   <p
                     className={`mt-1 text-sm font-sfmono ${

@@ -37,6 +37,7 @@ const Inverter = ({
   isMobile = false,
   bags = emptyBags,
   metadata = emptyMetadata,
+  refresh = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
