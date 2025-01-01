@@ -404,7 +404,7 @@ const Dashboard = ({
         ? totalDistribution.short.map((value) =>
             value > 0 ? formatCount(value, false) : ""
           )
-        : colliderDistribution && connected
+        : []
         ? colliderDistribution.short.map((value) =>
             value > 0 ? formatCount(value, false) : ""
           )
@@ -472,7 +472,7 @@ const Dashboard = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? totalDistribution.short[index]
+                  ? formatCount(totalDistribution.short[index], false)
                   : 0;
               },
               font: {

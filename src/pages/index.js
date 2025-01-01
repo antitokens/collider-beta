@@ -196,11 +196,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const totalDistribution =
             data.totalDistribution.u >= 0 && data.totalDistribution.s > 0.5
               ? calculateCollision(
-                  data.collisionsData.antiTokens,
-                  data.collisionsData.proTokens
+                  data.emissionsData.baryonTokens,
+                  data.emissionsData.photonTokens,
+                  true
                 )
               : emptyGaussian;
-
+          console.log(data.totalDistribution);
           setMetadata({
             startTime: data.startTime,
             endTime: data.endTime,
