@@ -73,10 +73,9 @@ const Collider = ({
   }, []);
 
   useEffect(() => {
-    console.log(metadata.eventsOverTime.timestamps);
     setPredictionHistoryChartData({
       type: "line",
-      labels: metadata.eventsOverTime.timestamps,
+      labels: metadata.eventsOverTime.cummulative.timestamps,
       datasets: [
         {
           label: "Yes",
