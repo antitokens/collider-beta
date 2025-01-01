@@ -212,23 +212,23 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             eventsOverTime: data.eventsOverTime,
           });
           setBags({
-            baryon: data.totalDistribution.baryonBags,
-            photon: data.totalDistribution.photonBags,
+            baryon: data.totalDistribution.bags.baryon,
+            photon: data.totalDistribution.bags.photon,
             baryonPool: data.emissionsData.baryonTokens,
             photonPool: data.emissionsData.photonTokens,
-            anti: data.totalDistribution.antiBags,
-            pro: data.totalDistribution.proBags,
+            anti: data.totalDistribution.bags.anti,
+            pro: data.totalDistribution.bags.pro,
             antiPool: data.collisionsData.antiTokens,
             proPool: data.collisionsData.proTokens,
             wallets: data.totalDistribution.wallets,
           });
           const rewardCurrent = calculateScattering(
-            data.totalDistribution.baryonBags,
-            data.totalDistribution.photonBags,
+            data.totalDistribution.bags.baryon,
+            data.totalDistribution.bags.photon,
             data.emissionsData.baryonTokens,
             data.emissionsData.photonTokens,
-            data.totalDistribution.antiBags,
-            data.totalDistribution.proBags,
+            data.totalDistribution.bags.anti,
+            data.totalDistribution.bags.pro,
             data.collisionsData.antiTokens,
             data.collisionsData.proTokens,
             antiData && proData
@@ -445,6 +445,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   }}
                   isMobile={isMobile}
                   bags={bags}
+                  metadata={metadata}
                 />
               </div>
             ) : (
@@ -616,6 +617,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     }}
                     isMobile={isMobile}
                     bags={bags}
+                    metadata={metadata}
                   />
                   <p
                     className={`mt-1 text-sm font-sfmono ${

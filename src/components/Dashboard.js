@@ -177,27 +177,27 @@ const Dashboard = ({
     // Prepare bar chart data
     setBarChartData({
       labels: state
-        ? Object.keys(eventsOverTime.tokenRangesPro)
-        : Object.keys(eventsOverTime.tokenRangesPro), // x-axis labels are common
+        ? Object.keys(eventsOverTime.ranges.pro)
+        : Object.keys(eventsOverTime.ranges.pro), // x-axis labels are common
       datasets: [
         {
           label: "Pro",
-          data: Object.values(eventsOverTime.tokenRangesPro),
+          data: Object.values(eventsOverTime.ranges.pro),
           backgroundColor: "#00bb7a",
         },
         {
           label: "Anti",
-          data: Object.values(eventsOverTime.tokenRangesAnti),
+          data: Object.values(eventsOverTime.ranges.anti),
           backgroundColor: "#c12f00",
         },
         {
           label: "Photon",
-          data: Object.values(eventsOverTime.tokenRangesPhoton),
+          data: Object.values(eventsOverTime.ranges.photon),
           backgroundColor: "rgb(123, 191, 255)",
         },
         {
           label: "Baryon",
-          data: Object.values(eventsOverTime.tokenRangesBaryon),
+          data: Object.values(eventsOverTime.ranges.baryon),
           backgroundColor: "rgb(58, 182, 193)",
         },
       ],
@@ -253,12 +253,12 @@ const Dashboard = ({
                 size: 10,
               },
               callback: function (value) {
-                return eventsOverTime.baryonEvents.every(
+                return eventsOverTime.events.baryon.every(
                   (value) => value === 0
                 ) &&
-                  eventsOverTime.photonEvents.every((value) => value === 0) &&
-                  eventsOverTime.antiEvents.every((value) => value === 0) &&
-                  eventsOverTime.proEvents.every((value) => value === 0)
+                  eventsOverTime.events.photon.every((value) => value === 0) &&
+                  eventsOverTime.events.anti.every((value) => value === 0) &&
+                  eventsOverTime.events.pro.every((value) => value === 0)
                   ? ""
                   : Number.isInteger(value)
                   ? value.toFixed(0)
@@ -273,13 +273,13 @@ const Dashboard = ({
 
     // Prepare line chart data
     setLineChartData({
-      labels: state ? eventsOverTime.timestamps : eventsOverTime.timestamps,
+      labels: eventsOverTime.timestamps,
       datasets: [
         {
           label: "Pro",
-          data: eventsOverTime.proEvents.every((value) => value === 0)
+          data: eventsOverTime.events.pro.every((value) => value === 0)
             ? []
-            : eventsOverTime.proEvents,
+            : eventsOverTime.events.pro,
           borderColor: "#00bb7a",
           backgroundColor: "#00bb7a",
           fill: false,
@@ -287,9 +287,9 @@ const Dashboard = ({
         },
         {
           label: "Anti",
-          data: eventsOverTime.antiEvents.every((value) => value === 0)
+          data: eventsOverTime.events.anti.every((value) => value === 0)
             ? []
-            : eventsOverTime.antiEvents,
+            : eventsOverTime.events.anti,
           borderColor: "#c12f00",
           backgroundColor: "#c12f00",
           fill: false,
@@ -297,9 +297,9 @@ const Dashboard = ({
         },
         {
           label: "Photon",
-          data: eventsOverTime.photonEvents.every((value) => value === 0)
+          data: eventsOverTime.events.photon.every((value) => value === 0)
             ? []
-            : eventsOverTime.photonEvents,
+            : eventsOverTime.events.photon,
           borderColor: "rgb(123, 191, 255)",
           backgroundColor: "rgb(123, 191, 255)",
           fill: false,
@@ -307,9 +307,9 @@ const Dashboard = ({
         },
         {
           label: "Baryon",
-          data: eventsOverTime.baryonEvents.every((value) => value === 0)
+          data: eventsOverTime.events.baryon.every((value) => value === 0)
             ? []
-            : eventsOverTime.baryonEvents,
+            : eventsOverTime.events.baryon,
           borderColor: "rgb(58, 182, 193)",
           backgroundColor: "rgb(58, 182, 193)",
           fill: false,
@@ -383,12 +383,12 @@ const Dashboard = ({
                 size: 10,
               },
               callback: function (value) {
-                return eventsOverTime.baryonEvents.every(
+                return eventsOverTime.events.baryon.every(
                   (value) => value === 0
                 ) &&
-                  eventsOverTime.photonEvents.every((value) => value === 0) &&
-                  eventsOverTime.antiEvents.every((value) => value === 0) &&
-                  eventsOverTime.proEvents.every((value) => value === 0)
+                  eventsOverTime.events.photon.every((value) => value === 0) &&
+                  eventsOverTime.events.anti.every((value) => value === 0) &&
+                  eventsOverTime.events.pro.every((value) => value === 0)
                   ? ""
                   : formatCount(value, true);
               },

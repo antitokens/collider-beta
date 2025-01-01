@@ -12,6 +12,7 @@ import {
   toast,
   emptyConfig,
   emptyBags,
+  emptyMetadata,
   formatCount,
   formatPrecise,
   convertToLocaleTime,
@@ -35,6 +36,7 @@ const Collider = ({
   config = emptyConfig,
   isMobile = false,
   bags = emptyBags,
+  metadata = emptyMetadata,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -44,6 +46,8 @@ const Collider = ({
   const [userDistribution, setUserDistribution] = useState(null);
   const [pastDistribution, setPastDistribution] = useState(null);
   const [totalDistribution, setTotalDistribution] = useState(null);
+  const [predictionHistoryChartData, setPredictionHistoryChartData] =
+    useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
   const [dollarBet, setDollarBet] = useState(0);
@@ -51,6 +55,8 @@ const Collider = ({
   const [gain, setGain] = useState(0);
   const [newGain, setNewGain] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
+  const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
+    useState("1D");
   const sliderRef = useRef(null);
 
   useEffect(() => {
@@ -64,6 +70,138 @@ const Collider = ({
       handleSliderInput(percentage);
     }
   }, []);
+
+  useEffect(() => {
+    setPredictionHistoryChartData({
+      type: "line",
+      labels: metadata.eventsOverTime.timestamps,
+      datasets: [
+        {
+          label: "PRO",
+          data: metadata.eventsOverTime.cummulative.pro,
+          borderColor: "#00CC8E",
+          backgroundColor: "rgba(0, 255, 0, 0.2)",
+          tension: 1,
+          stepped: "middle",
+          borderWidth: 2,
+          pointRadius: 0,
+        },
+        {
+          label: "ANTI",
+          data: metadata.eventsOverTime.cummulative.anti,
+          borderColor: "#D13800",
+          backgroundColor: "rgba(255, 0, 0, 0.2)",
+          tension: 1,
+          stepped: "middle",
+          borderWidth: 2,
+          pointRadius: 0,
+        },
+      ],
+      plugins: [
+        {
+          beforeDatasetDraw(chart) {
+            const {
+              ctx,
+              chartArea: { top, bottom },
+            } = chart;
+            ctx.save();
+
+            chart.getDatasetMeta(0).data.forEach((dataPoint) => {
+              if (dataPoint.active) {
+                ctx.beginPath();
+                ctx.strokeStyle = "gray";
+                ctx.moveTo(dataPoint.x, top);
+                ctx.lineTo(dataPoint.x, bottom);
+                ctx.stroke();
+              }
+            });
+          },
+        },
+      ],
+      options: {
+        responsive: true,
+        interaction: {
+          intersect: false,
+          mode: "index",
+        },
+        plugins: {
+          datalabels: {
+            display: false,
+          },
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const datasetIndex = context.datasetIndex;
+                const dataIndex = context.dataIndex;
+                const proValue =
+                  metadata.eventsOverTime.cummulative.pro[dataIndex];
+                const antiValue =
+                  metadata.eventsOverTime.cummulative.anti[dataIndex];
+                const total = proValue + antiValue;
+
+                if (datasetIndex === 0) {
+                  return [
+                    total > 0
+                      ? `PRO  ${Math.round((proValue / total) * 100)}%`
+                      : "PRO -",
+                  ];
+                } else {
+                  return [
+                    total > 0
+                      ? `ANTI ${Math.round((antiValue / total) * 100)}%`
+                      : "ANTI -",
+                  ];
+                }
+              },
+            },
+            bodyFont: {
+              family: "'SF Mono Round'",
+            },
+            titleFont: {
+              family: "'Space Grotesk'",
+              size: 14,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+            ticks: {
+              font: {
+                family: "'SF Mono Round'",
+                size: 10,
+              },
+              color: "#d3d3d399",
+            },
+          },
+          y: {
+            grid: {
+              display: true,
+              color: "rgba(255, 255, 255, 0.1)",
+            },
+            ticks: {
+              stepSize: 20,
+              font: {
+                family: "'SF Mono Round'",
+                size: 10,
+              },
+              color: "#d3d3d399",
+              callback: function (value) {
+                return value + "%";
+              },
+            },
+            suggestedMin: 0,
+            suggestedMax: 100,
+          },
+        },
+      },
+    });
+  }, [metadata]);
 
   useEffect(() => {
     if (antiData && proData) {
@@ -500,6 +638,11 @@ const Collider = ({
     totalInvest,
   ]);
 
+  const handleTimeframeChange = (timeframe) => {
+    setPredictionHistoryTimeframe(timeframe);
+    // TODO: reload data with a different timeframe
+  };
+
   const updateSplit = (total, percentage) => {
     const pro = (percentage / 100) * total;
     const anti = total - pro;
@@ -674,6 +817,87 @@ const Collider = ({
             </span>
           </div>
         </div>
+      </div>
+      <div className="mb-4 bg-dark-card p-4 rounded w-full">
+        {predictionHistoryChartData && (
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex gap-2 mt-4 font-sfmono opacity-75">
+              <div className="relative group">
+                <div className="cursor-pointer">&#9432;</div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  {`Displays the `}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4 font-sfmono opacity-75 hidden">
+              <div
+                className={
+                  predictionHistoryTimeframe === "1H"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("1H")}
+              >
+                <span className="text-xs">1H</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "6H"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("6H")}
+              >
+                <span className="text-xs">6H</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "1D"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("1D")}
+              >
+                <span className="text-xs">1D</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "1W"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("1W")}
+              >
+                <span className="text-xs">1W</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "1M"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("1M")}
+              >
+                <span className="text-xs">1M</span>
+              </div>
+              <div
+                className={
+                  predictionHistoryTimeframe === "ALL"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => handleTimeframeChange("ALL")}
+              >
+                <span className="text-xs">ALL</span>
+              </div>
+            </div>
+            <Line
+              data={predictionHistoryChartData}
+              options={predictionHistoryChartData.options}
+              plugins={predictionHistoryChartData.plugins}
+            />
+          </div>
+        )}
       </div>
       {/* Token Input Fields */}
       <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full">

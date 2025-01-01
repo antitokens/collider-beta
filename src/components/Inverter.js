@@ -12,6 +12,7 @@ import {
   toast,
   emptyConfig2,
   emptyBags,
+  emptyMetadata,
   formatCount,
   formatPrecise,
   convertToLocaleTime,
@@ -35,6 +36,7 @@ const Inverter = ({
   config = emptyConfig2,
   isMobile = false,
   bags = emptyBags,
+  metadata = emptyMetadata,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);

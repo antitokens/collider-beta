@@ -4,32 +4,29 @@ import "react-toastify/dist/ReactToastify.css";
 import { BadgeCheck, CircleAlert } from "lucide-react";
 import { calculateCollision } from "./colliderAlpha";
 
-// // Metadata init [test]
-const _Seed = Math.random();
-const emissionsSeed = Math.random();
-const collisionsSeed = Math.random();
-const eventsSeed = Math.random();
-
+// Metadata init
 export const metadataInit = {
   startTime: "-",
   endTime: "-",
   colliderDistribution: {
-    u: calculateCollision(50 * Math.random(), 30 * Math.random()).u,
-    s: calculateCollision(20 * Math.random(), 30 * Math.random()).s,
+    u: 0,
+    s: 0,
   },
   totalDistribution: {
-    u: calculateCollision(60 * Math.random(), 30 * Math.random()).u,
-    s: calculateCollision(30 * Math.random(), 30 * Math.random()).s,
-    baryonBags: [],
-    photonBags: [],
-    antibags: [],
-    probags: [],
+    u: 0,
+    s: 0,
+    bags: {
+      pro: [],
+      anti: [],
+      photon: [],
+      baryon: [],
+    },
     wallets: [],
   },
   emissionsData: {
-    total: 1e5 * emissionsSeed,
-    photonTokens: 1e5 * _Seed * emissionsSeed,
-    baryonTokens: 1e5 * (1 - _Seed) ** 2 * emissionsSeed,
+    total: 0,
+    photonTokens: 0,
+    baryonTokens: 0,
   },
   collisionsData: {
     total: 1e9,
@@ -37,137 +34,46 @@ export const metadataInit = {
     antiTokens: 0,
   },
   eventsOverTime: {
-    timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
-    proEvents: [
-      51210286 * eventsSeed,
-      10303372 * eventsSeed,
-      40281190 * eventsSeed,
-      74538504 * eventsSeed,
-      12174106 * eventsSeed,
-    ],
-    antiEvents: [
-      16543217 * (1 - eventsSeed),
-      66582982 * (1 - eventsSeed),
-      14596107 * (1 - eventsSeed),
-      27472813 * (1 - eventsSeed),
-      25271918 * (1 - eventsSeed),
-    ],
-    photonEvents: [
-      1643217 * (1 - eventsSeed),
-      6658982 * (1 - eventsSeed),
-      1459617 * (1 - eventsSeed),
-      2772813 * (1 - eventsSeed),
-      2571918 * (1 - eventsSeed),
-    ],
-    baryonEvents: [
-      1654217 * (1 - eventsSeed),
-      6682982 * (1 - eventsSeed),
-      1459607 * (1 - eventsSeed),
-      2472813 * (1 - eventsSeed),
-      2527118 * (1 - eventsSeed),
-    ],
-    tokenRangesPro: {
-      "0-100k": Math.floor(45 * Math.random()),
-      "100k-1m": Math.floor(35 * Math.random()),
-      "1-10m": Math.floor(20 * Math.random()),
+    timestamps: ["", "", "", "", ""],
+    events: {
+      pro: [],
+      anti: [],
+      photon: [],
+      baryon: [],
     },
-    tokenRangesAnti: {
-      "0-100k": Math.floor(30 * Math.random()),
-      "100k-1m": Math.floor(40 * Math.random()),
-      "1-10m": Math.floor(30 * Math.random()),
+    ranges: {
+      pro: {
+        "0-100k": 0,
+        "100k-1m": 0,
+        "1-10m": 0,
+      },
+      anti: {
+        "0-100k": 0,
+        "100k-1m": 0,
+        "1-10m": 0,
+      },
+      photon: {
+        "0-100k": 0,
+        "100k-1m": 0,
+        "1-10m": 0,
+      },
+      baryon: {
+        "0-100k": 0,
+        "100k-1m": 0,
+        "1-10m": 0,
+      },
     },
-    tokenRangesPhoton: {
-      "0-100k": Math.floor(25 * Math.random()),
-      "100k-1m": Math.floor(55 * Math.random()),
-      "1-10m": Math.floor(35 * Math.random()),
-    },
-    tokenRangesBaryon: {
-      "0-100k": Math.floor(35 * Math.random()),
-      "100k-1m": Math.floor(40 * Math.random()),
-      "1-10m": Math.floor(65 * Math.random()),
+    cummulative: {
+      pro: [],
+      anti: [],
+      photon: [],
+      baryon: [],
     },
   },
 };
 
-// Metadata placeholder [test]
-export const metaPlaceholder = {
-  startTime: "-",
-  endTime: "-",
-  colliderDistribution: {
-    u: 50 * Math.random(),
-    s: 30 * Math.random(),
-  },
-  totalDistribution: {
-    u: 60 * Math.random(),
-    s: 20 * Math.random(),
-    baryonBags: [],
-    photonBags: [],
-    antibags: [],
-    probags: [],
-    wallets: [],
-  },
-  emissionsData: {
-    total: 1e5 * emissionsSeed,
-    photonTokens: 1e5 * _Seed * emissionsSeed,
-    baryonTokens: 1e5 * (1 - _Seed) ** 2 * emissionsSeed,
-  },
-  collisionsData: {
-    total: 1e9 * collisionsSeed,
-    proTokens: 1e9 * (1 - _Seed) ** 2 * collisionsSeed,
-    antiTokens: 1e9 * _Seed * collisionsSeed,
-  },
-  eventsOverTime: {
-    timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
-    proEvents: [
-      51210286 * eventsSeed,
-      10303372 * eventsSeed,
-      40281190 * eventsSeed,
-      74538504 * eventsSeed,
-      12174106 * eventsSeed,
-    ],
-    antiEvents: [
-      16543217 * (1 - eventsSeed),
-      66582982 * (1 - eventsSeed),
-      14596107 * (1 - eventsSeed),
-      27472813 * (1 - eventsSeed),
-      25271918 * (1 - eventsSeed),
-    ],
-    photonEvents: [
-      1643217 * (1 - eventsSeed),
-      6658982 * (1 - eventsSeed),
-      1459617 * (1 - eventsSeed),
-      2772813 * (1 - eventsSeed),
-      2571918 * (1 - eventsSeed),
-    ],
-    baryonEvents: [
-      1654217 * (1 - eventsSeed),
-      6682982 * (1 - eventsSeed),
-      1459607 * (1 - eventsSeed),
-      2472813 * (1 - eventsSeed),
-      2527118 * (1 - eventsSeed),
-    ],
-    tokenRangesPro: {
-      "0-100k": Math.floor(45 * Math.random()),
-      "100k-1m": Math.floor(35 * Math.random()),
-      "1-10m": Math.floor(20 * Math.random()),
-    },
-    tokenRangesAnti: {
-      "0-100k": Math.floor(30 * Math.random()),
-      "100k-1m": Math.floor(40 * Math.random()),
-      "1-10m": Math.floor(30 * Math.random()),
-    },
-    tokenRangesPhoton: {
-      "0-100k": Math.floor(25 * Math.random()),
-      "100k-1m": Math.floor(55 * Math.random()),
-      "1-10m": Math.floor(35 * Math.random()),
-    },
-    tokenRangesBaryon: {
-      "0-100k": Math.floor(35 * Math.random()),
-      "100k-1m": Math.floor(40 * Math.random()),
-      "1-10m": Math.floor(65 * Math.random()),
-    },
-  },
-};
+// Metadata placeholder
+export const metaPlaceholder = metadataInit;
 
 export const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
