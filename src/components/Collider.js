@@ -226,10 +226,44 @@ const Collider = ({
             callbacks: {
               label: (context) => {
                 const value = context.raw;
+                const currentTick = parseDateToISO(
+                  metadata.eventsOverTime.cummulative.timestamps.find(
+                    (timestamp) =>
+                      timestamp
+                        .split(" ")
+                        .slice(0, 2)
+                        .join(" ")
+                        .slice(0, -1) ===
+                      context.chart.data.labels[context.dataIndex]
+                  )
+                );
+                const nowTime = new Date().toISOString();
+                if (currentTick > nowTime) {
+                  return ` -`;
+                }
                 return ` ${value.toFixed(0)}%`;
               },
               labelColor: (context) => {
                 const value = context.raw;
+                const currentTick = parseDateToISO(
+                  metadata.eventsOverTime.cummulative.timestamps.find(
+                    (timestamp) =>
+                      timestamp
+                        .split(" ")
+                        .slice(0, 2)
+                        .join(" ")
+                        .slice(0, -1) ===
+                      context.chart.data.labels[context.dataIndex]
+                  )
+                );
+                const nowTime = new Date().toISOString();
+                // Future segments should be grey
+                if (currentTick > nowTime) {
+                  return {
+                    backgroundColor: "#94949477",
+                    borderColor: "#94949477",
+                  };
+                }
                 return {
                   backgroundColor: generateGradientColor(
                     value,
