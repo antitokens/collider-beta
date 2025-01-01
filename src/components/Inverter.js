@@ -318,7 +318,7 @@ const Inverter = ({
               </span>
             </div>
             <div>&nbsp;Your Tokens:&nbsp;</div>
-            <div className="flex flex-row justify-center font-sfmono pt-[1px] sm:pt-0">
+            <div className="flex flex-row justify-center font-sfmono pt-[2px]">
               <div className="text-accent-steel text-[11px] opacity-95">
                 {formatPrecise(updated[0])}
               </div>

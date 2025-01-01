@@ -930,7 +930,7 @@ const Collider = ({
                   </span>
                 </div>
                 <div>&nbsp;Your Pool:&nbsp;</div>
-                <div className="flex flex-row justify-center font-sfmono lg:pt-[2px] mt-[-1px]">
+                <div className="flex flex-row justify-center font-sfmono pt-[2px]">
                   <div className="text-accent-secondary text-[11px] opacity-95">
                     {formatCount(proUsage.toFixed(2))}
                   </div>
