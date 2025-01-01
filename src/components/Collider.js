@@ -116,7 +116,7 @@ const Collider = ({
               [0, 219, 84]
             );
           },
-          tension: 0.4,
+          tension: 0.25,
           borderWidth: 2,
           pointRadius: 0,
           fill: false,
@@ -815,7 +815,7 @@ const Collider = ({
             </span>
           </div>
           <div className="text-[12px] text-gray-500 text-right">
-            Token Ratio:{" "}
+            {isMobile ? "Ratio:" : "Token Ratio:"}{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {config.antiLive > 0 && config.proLive > 0
                 ? (config.proLive / config.antiLive).toFixed(3)
@@ -968,7 +968,9 @@ const Collider = ({
               </div>
             </div>
             <div className="flex flex-row justify-between text-[12px] text-gray-500">
-              <div className="text-sm">Add More Tokens to Pool</div>
+              <div className="text-sm">
+                {isMobile ? "Add Tokens" : "Add Tokens to Pool"}
+              </div>
               <div className="flex flex-row text-right">
                 <div>
                   Current Bet:{" "}

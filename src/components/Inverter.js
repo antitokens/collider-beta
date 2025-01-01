@@ -318,7 +318,7 @@ const Inverter = ({
               </span>
             </div>
             <div>&nbsp;Your Tokens:&nbsp;</div>
-            <div className="flex flex-row justify-center font-sfmono mb-[2px]">
+            <div className="flex flex-row justify-center font-sfmono pt-[1px]">
               <div className="text-accent-steel text-[11px] opacity-95">
                 {formatPrecise(updated[0])}
               </div>
@@ -328,7 +328,7 @@ const Inverter = ({
               </div>
             </div>
           </div>
-          <div className="flex flex-row text-right text-[12px] -mt-[2px]">
+          <div className="flex flex-row text-right text-[12px]">
             <div>
               Realised P/L:{" "}
               <span className="text-[11px] text-white font-sfmono">
@@ -364,7 +364,7 @@ const Inverter = ({
         </div>
         <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full -mt-2">
           <div className="flex text-left text-md">
-            <div>Claim Tokens from Pool</div>
+            <div>{isMobile ? "Claim Tokens" : "Claim Tokens from Pool"}</div>
           </div>
           <div className="flex flex-row text-right text-[12px]">
             <div>
