@@ -14,28 +14,28 @@ export const calculateScattering = (
   flag = false
 ) => {
   // Calculate absolute overlap with truth
-  const overlap = baryonBags.map((baryon, i) => {
+  const overlapAbsolute = baryonBags.map((baryon, i) => {
     const photon = photonBags[i];
     return (
       Math.exp(
         -Math.pow(Math.log(2e9 - baryon), 2) /
-          (2 * Math.pow(photon <= 0 ? 1 : Math.log(photon), 2))
+          (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
       ) /
-      (flag ? Math.sqrt(2 * Math.PI) * (photon <= 0 ? 1 : Math.log(photon)) : 1)
+      (flag ? Math.sqrt(2 * Math.PI) * (photon <= 1 (baryon <= 1 ? 1 : 1 + Math.log(baryon))? 1 : 1 + Math.log(photon)) : 1)
     );
   });
 
   // Calculate normalised overlap with truth (inverse-log-normalised)
-  const overlapShifted = baryonBags
+  const overlapNormalised = baryonBags
     .map((baryon, i) => {
       const photon = photonBags[i];
       return (
         Math.exp(
-          -Math.pow(Math.log(2e9) - (baryon <= 0 ? 0 : Math.log(baryon)), 2) /
-            (2 * Math.pow(photon <= 0 ? 1 : Math.log(photon), 2))
+          -Math.pow(Math.log(2e9) - (baryon <= 1 ? 1 : 1 + Math.log(baryon)), 2) /
+            (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
         ) /
         (flag
-          ? Math.sqrt(2 * Math.PI) * (photon <= 0 ? 1 : Math.log(photon))
+          ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon))
           : 1)
       );
     })
@@ -44,11 +44,11 @@ export const calculateScattering = (
         ? 0
         : value === 1
         ? 1
-        : 1 / Math.abs(value <= 0 ? 1 : Math.log(value))
+        : 1 / Math.abs(value <= 1 ? 1 : 1 + Math.log(value))
     );
 
   // Calculate forward distribution
-  const forward = calculateDistribution(overlap, [], [], antiBags, proBags);
+  const forward = calculateDistribution(overlapNormalised, [], [], antiBags, proBags);
 
   // Calculate returns
   const scatter = {
@@ -59,8 +59,8 @@ export const calculateScattering = (
   };
 
   const returns = [
-    distributeValuesInBins(scatter.anti.resampled, forward.index),
-    distributeValuesInBins(scatter.pro.resampled, forward.index),
+    distributeValuesInBins(scatter.anti.resampled, forward.indices),
+    distributeValuesInBins(scatter.pro.resampled, forward.indices),
     [],
     [],
   ];
@@ -93,7 +93,7 @@ export const calculateScattering = (
     ),
     wallets: wallets,
   };
-  return { overlap: overlapShifted, invert, change };
+  return { overlap: overlapNormalised, invert, change };
 };
 
 export const implementScattering = (
@@ -107,13 +107,15 @@ export const implementScattering = (
   proPool,
   prices,
   wallets,
+  truth = [],
   flag = false
 ) => {
   // Calculate absolute overlap with truth
-  const overlap = baryonBags.map((baryon, i) => {
+  const overlapAbsolute = baryonBags.map((baryon, i) => {
     const photon = photonBags[i];
+    const sign = truth[0] > truth[1] && antiBags[i] > proBags[i] ? 1 : truth[0] < truth[1] && antiBags[i] > proBags[i] ? -1 : truth[0] > truth[1] && antiBags[i] < proBags[i] ? -1 : truth[0] < truth[1] && antiBags[i] < proBags[i] ? 1 : 1;
     return (
-      Math.exp(
+      sign * Math.exp(
         -Math.pow(Math.log(2e9 - baryon), 2) /
           (2 * Math.pow(Math.log(photon), 2))
       ) / (flag ? Math.sqrt(2 * Math.PI) * Math.log(photon) : 1)
@@ -121,22 +123,23 @@ export const implementScattering = (
   });
 
   // Calculate normalised overlap with truth (inverse-log-normalised)
-  const overlapShifted = baryonBags
+  const overlapNormalised = baryonBags
     .map((baryon, i) => {
       const photon = photonBags[i];
+      const sign = truth[0] > truth[1] && antiBags[i] > proBags[i] ? 1 : truth[0] < truth[1] && antiBags[i] > proBags[i] ? -1 : truth[0] > truth[1] && antiBags[i] < proBags[i] ? -1 : truth[0] < truth[1] && antiBags[i] < proBags[i] ? 1 : 1;
       return (
-        Math.exp(
-          -Math.pow(Math.log(2e9) - Math.log(baryon), 2) /
-            (2 * Math.pow(Math.log(photon), 2))
-        ) / (flag ? Math.sqrt(2 * Math.PI) * photon : 1)
+        sign * Math.exp(
+          -Math.pow(Math.log(2e9) - (baryon <= 1 ? 1 : 1 + Math.log(baryon)), 2) /
+            (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
+        ) / (flag ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon)) : 1)
       );
     })
     .map((value) =>
-      value === 0 ? 0 : value === 1 ? 1 : 1 / Math.abs(Math.log(value))
+      value === 0 ? 0 : value === 1 ? 1 : 1 / Math.abs(value <= 1 ? 1 : 1 + Math.log(value))
     );
 
   // Calculate forward distribution
-  const forward = calculateDistribution(overlap, [], [], antiBags, proBags);
+  const forward = calculateDistribution(overlapNormalised, [], [], antiBags, proBags);
 
   // Calculate returns
   const scatter = {
@@ -147,8 +150,8 @@ export const implementScattering = (
   };
 
   const returns = [
-    distributeValuesInBins(scatter.anti.resampled, forward.index),
-    distributeValuesInBins(scatter.pro.resampled, forward.index),
+    distributeValuesInBins(scatter.anti.resampled, forward.indices),
+    distributeValuesInBins(scatter.pro.resampled, forward.indices),
     [],
     [],
   ];
@@ -186,7 +189,7 @@ export const implementScattering = (
     ),
     wallets: wallets,
   };
-  return { overlap: overlapShifted, invert, change };
+  return { overlap: overlapNormalised, invert, change };
 };
 
 // Distribute indexed values over bins
@@ -227,7 +230,7 @@ function calculateDistribution(
   const totalValues = values.length;
   const distribution = bins.map((count) => count / totalValues);
 
-  // Calculate piecewise sums for each bin separately
+  // Calculate piecewise sums of all tokens in each bin separately
   const valueSums = valueInBins.map((binArray) => {
     return binArray.reduce(
       (binTotals, fourArray) => {
@@ -245,27 +248,27 @@ function calculateDistribution(
   return {
     distribution: bins,
     normalised: distribution,
-    index: itemsInBins,
-    value: valueSums,
+    indices: itemsInBins,
+    values: valueSums,
   };
 }
 
-// Distribute values across bins
-function distributeCountOverBins(bins, totalCount) {
+// Distribute values across bins based on another distribution
+function distributeCountOverBins(distribution, totalCount) {
   // Find indices of non-zero bins
-  const nonZeroBinIndices = bins
+  const nonZeroBinIndices = distribution
     .map((value, index) => ({ value, index }))
     .filter((item) => item.value > 0)
     .map((item) => item.index);
 
   // Initialise result array with zeros
-  const resampled = new Array(bins.length).fill(0);
+  const resampled = new Array(distribution.length).fill(0);
   // Calculate values for non-zero bins before normalisation
   const totalBinValues = nonZeroBinIndices.length + 1;
   const unnormalised = nonZeroBinIndices.map(
     (index) => (index + 1) / totalBinValues
   );
-  // Calculate sum of unnormalised values
+  // Calculate sum of unnormalised values distribution
   const totalUnnormalised = unnormalised.reduce((sum, val) => sum + val, 0);
   // Normalise and assign only to non-zero bin positions
   nonZeroBinIndices.forEach((binIndex, i) => {
