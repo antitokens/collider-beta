@@ -57,7 +57,6 @@ export const calculateScattering = (
     baryon: [],
     photon: [],
   };
-
   const returns = [
     distributeValuesInBins(scatter.anti.resampled, forward.index),
     distributeValuesInBins(scatter.pro.resampled, forward.index),
@@ -145,7 +144,6 @@ export const implementScattering = (
     baryon: [],
     photon: [],
   };
-
   const returns = [
     distributeValuesInBins(scatter.anti.resampled, forward.index),
     distributeValuesInBins(scatter.pro.resampled, forward.index),
