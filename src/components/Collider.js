@@ -181,7 +181,7 @@ const Collider = ({
             })
             .filter((value) => value !== null),
           segment: {
-            borderCapStyle: 'round',
+            borderCapStyle: "round",
             borderColor: getSegmentColor,
           },
           tension: 0,
@@ -255,7 +255,6 @@ const Collider = ({
               },
               labelColor: (context) => {
                 const value = context.raw;
-                console.log(context.datasetIndex);
                 const limits = [
                   Math.min(...metadata.eventsOverTime.cummulative.photon),
                   Math.max(...metadata.eventsOverTime.cummulative.photon),

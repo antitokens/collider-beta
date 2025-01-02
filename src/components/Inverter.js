@@ -72,7 +72,7 @@ const Inverter = ({
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [0, 0],
-              bags.wallets
+              bags.wallets,
               truth
             )
           : undefined;
@@ -125,18 +125,8 @@ const Inverter = ({
       setProTokens(iG * userDistribution.pro);
       setLineChartData({
         type: "line",
-        labels: userDistribution.short.map((value) =>
-          value ? formatPrecise(value) : ""
-        ),
-        datasets: [
-          {
-            label: "Inverter",
-            data: userDistribution.curve.map((item) => item.value),
-            borderColor: "#ffffff",
-            backgroundColor: "#ffffff", // Match the legend marker color
-            pointStyle: "line",
-          },
-        ],
+        labels: [],
+        datasets: [],
         options: {
           responsive: true,
           maintainAspectRatio: false,

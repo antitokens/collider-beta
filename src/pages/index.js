@@ -284,7 +284,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         console.error("Error fetching token data:", error);
       }
     };
-
+    setTruth([1, 0]);
     fetchTokenData();
   }, []);
 
