@@ -134,6 +134,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [dynamics, setDynamics] = useState([]);
+  const [truth, setTruth] = useState([]);
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
@@ -283,7 +284,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         console.error("Error fetching token data:", error);
       }
     };
-
+    setTruth([1, 0]);
     fetchTokenData();
   }, []);
 
@@ -620,6 +621,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     bags={bags}
                     metadata={metadata}
                     refresh={refresh}
+                    truth={truth}
                   />
                   <p
                     className={`mt-1 text-sm font-sfmono ${

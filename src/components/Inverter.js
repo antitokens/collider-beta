@@ -38,6 +38,7 @@ const Inverter = ({
   bags = emptyBags,
   metadata = emptyMetadata,
   refresh = false,
+  truth = [],
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -71,7 +72,8 @@ const Inverter = ({
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [0, 0],
-              bags.wallets
+              bags.wallets,
+              truth
             )
           : undefined;
 
@@ -100,7 +102,7 @@ const Inverter = ({
         }
       }
     }
-  }, [antiData, proData, bags]);
+  }, [antiData, proData, bags, truth]);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
@@ -117,24 +119,14 @@ const Inverter = ({
     // Set Graphs
     if (userDistribution) {
       // Trial
-      const F_ = antiBalance > proBalance ? -1 : 1;
-      const G_ = antiBalance > proBalance ? 1 : -1;
-      setAntiTokens(F_ < G_ ? userDistribution.u : userDistribution.s);
-      setProTokens(F_ < G_ ? userDistribution.s : userDistribution.u);
+      const iF = 1;
+      const iG = 1;
+      setAntiTokens(iF * userDistribution.anti);
+      setProTokens(iG * userDistribution.pro);
       setLineChartData({
         type: "line",
-        labels: userDistribution.short.map((value) =>
-          value ? formatPrecise(value) : ""
-        ),
-        datasets: [
-          {
-            label: "Inverter",
-            data: userDistribution.curve.map((item) => item.value),
-            borderColor: "#ffffff",
-            backgroundColor: "#ffffff", // Match the legend marker color
-            pointStyle: "line",
-          },
-        ],
+        labels: [],
+        datasets: [],
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -289,18 +281,8 @@ const Inverter = ({
       setUserDistribution(distribution);
     } else {
       setUserDistribution({
-        u: 0,
-        s: 0,
-        range: [0, 1],
-        distribution: [
-          { x: 0, value: 0 },
-          { x: 1, value: 0 },
-        ],
-        short: [0, 1],
-        curve: [
-          { x: 0, value: 0 },
-          { x: 1, value: 0 },
-        ],
+        anti: 0,
+        pro: 0,
       });
     }
   }, [baryonTokens, photonTokens]);
