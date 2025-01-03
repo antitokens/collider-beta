@@ -205,8 +205,8 @@ export const implementScattering = (
   };
 
   const returns = [
-    distributeValuesInBins(scatter.anti.resampled, forward.indices),
-    distributeValuesInBins(scatter.pro.resampled, forward.indices),
+    distributeValuesInBins(scatter.anti.resampled, forward.indices, antiBags),
+    distributeValuesInBins(scatter.pro.resampled, forward.indices, proBags),
     [],
     [],
   ];
