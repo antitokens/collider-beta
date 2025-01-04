@@ -28,7 +28,6 @@ const DashboardInverter = ({
   const [lineChartData, setLineChartData] = useState(null);
   const [netDistribution, setNetDistribution] = useState(null);
   const [winnerDistribution, setWinnerDistribution] = useState(null);
-
   useEffect(() => {
     // Prepare pie chart data for events
     setPieChartDataEmissions({

@@ -396,7 +396,7 @@ const DashboardCollider = ({
         },
       },
     });
-
+    
     setNetDistribution({
       type: "line",
       labels: totalDistribution

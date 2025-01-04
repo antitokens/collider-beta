@@ -138,7 +138,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [currentPredictionData, setCurrentPredictionData] =
     useState(emptyMetadata);
   const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
-  const [metadata, setMetadata] = useState(metadataInit);
+  const [balances, setBalances] = useState(metadataInit);
+  const [claims, setClaims] = useState(metadataInit);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
@@ -193,14 +194,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
   useEffect(() => {
     setDead(
-      new Date() < new Date(metadata.startTime) &&
-        new Date() < new Date(metadata.endTime)
+      new Date() < new Date(balances.startTime) &&
+        new Date() < new Date(balances.endTime)
     );
     setInactive(
-      new Date() < new Date(metadata.startTime) ||
-        new Date() > new Date(metadata.endTime)
+      new Date() < new Date(balances.startTime) ||
+        new Date() > new Date(balances.endTime)
     );
-  }, [metadata]);
+  }, [balances]);
 
   useEffect(() => {
     if (refresh) {
@@ -211,11 +212,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const data = JSON.parse(blob.message);
           // Calculate distributions using API data
           const colliderDistribution =
-            baryonBalance >= 0 && photonBalance > 0.5
+            baryonBalance >= 0 && photonBalance >= 0
               ? calculateCollision(baryonBalance, photonBalance, true)
               : emptyGaussian;
           const totalDistribution =
-            data.totalDistribution.u >= 0 && data.totalDistribution.s > 0.5
+            data.totalDistribution.u >= 0 && data.totalDistribution.s >= 0
               ? calculateCollision(
                   data.emissionsData.baryonTokens,
                   data.emissionsData.photonTokens,
@@ -223,7 +224,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 )
               : emptyGaussian;
 
-          setMetadata({
+          setBalances({
             startTime: data.startTime,
             endTime: data.endTime,
             colliderDistribution: colliderDistribution,
@@ -272,11 +273,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const data = JSON.parse(blob.message);
           // Calculate distributions using API data
           const colliderDistribution =
-            baryonBalance >= 0 && photonBalance > 0.5
+            baryonBalance >= 0 && photonBalance >= 0
               ? calculateCollision(baryonBalance, photonBalance, true)
               : emptyGaussian;
           const totalDistribution =
-            data.totalDistribution.u >= 0 && data.totalDistribution.s > 0.5
+            data.totalDistribution.u >= 0 && data.totalDistribution.s >= 0
               ? calculateCollision(
                   data.emissionsData.baryonTokens,
                   data.emissionsData.photonTokens,
@@ -284,7 +285,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 )
               : emptyGaussian;
 
-          setMetadata({
+          setClaims({
             startTime: data.startTime,
             endTime: data.endTime,
             colliderDistribution: colliderDistribution,
@@ -304,21 +305,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             proPool: data.collisionsData.proTokens,
             wallets: data.totalDistribution.wallets,
           });
-          const rewardCurrent = calculateScattering(
-            data.totalDistribution.bags.baryon,
-            data.totalDistribution.bags.photon,
-            data.emissionsData.baryonTokens,
-            data.emissionsData.photonTokens,
-            data.totalDistribution.bags.anti,
-            data.totalDistribution.bags.pro,
-            data.collisionsData.antiTokens,
-            data.collisionsData.proTokens,
-            antiData && proData
-              ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-              : [1, 1],
-            data.totalDistribution.wallets
-          );
-          setDynamics(rewardCurrent ? rewardCurrent.overlap : []);
         } catch (err) {
           console.error("Error fetching metadata:", err);
           setMetaError(err);
@@ -529,14 +515,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   antiData={antiData}
                   proData={proData}
                   config={{
-                    startTime: metadata.startTime || "-",
-                    endTime: metadata.endTime || "-",
-                    antiLive: metadata.collisionsData.antiTokens || 0,
-                    proLive: metadata.collisionsData.proTokens || 0,
+                    startTime: balances.startTime || "-",
+                    endTime: balances.endTime || "-",
+                    antiLive: balances.collisionsData.antiTokens || 0,
+                    proLive: balances.collisionsData.proTokens || 0,
                   }}
                   isMobile={isMobile}
                   bags={bags}
-                  metadata={metadata}
+                  metadata={balances}
                   refresh={refresh}
                   inactive={inactive || dead}
                 />
@@ -592,14 +578,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                             <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                               {isMobile
                                 ? `Reclaim opening date & time: ${
-                                    metadata.endTime
+                                    balances.endTime
                                       ? isMobile
                                         ? convertToLocaleTime(
-                                            metadata.startTime,
+                                            balances.startTime,
                                             isMobile
                                           ).split(",")[0]
                                         : convertToLocaleTime(
-                                            metadata.startTime,
+                                            balances.startTime,
                                             isMobile
                                           )
                                       : "-"
@@ -610,20 +596,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         </span>{" "}
                         &nbsp;Open:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.endTime
+                          {balances.endTime
                             ? isMobile
                               ? convertToLocaleTime(
-                                  metadata.endTime,
+                                  balances.endTime,
                                   isMobile
                                 ).split(",")[0]
-                              : convertToLocaleTime(metadata.endTime, isMobile)
+                              : convertToLocaleTime(balances.endTime, isMobile)
                             : "-"}
                         </span>{" "}
                       </div>
                       <div className="text-[12px] text-gray-500 text-right">
                         Close:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.endTime
+                          {balances.endTime
                             ? isMobile
                               ? "Never"
                               : "Never"
@@ -636,7 +622,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                             <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                               {isMobile
                                 ? `Reclaim closing date & time: ${
-                                    metadata.endTime
+                                    balances.endTime
                                       ? !isMobile
                                         ? "Never"
                                         : "Never"
@@ -659,20 +645,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         </span>{" "}
                         &nbsp;Total Pool:{" "}
                         <span className="font-sfmono text-accent-steel text-[11px] text-opacity-80">
-                          {formatCount(metadata.emissionsData.photonTokens)}
+                          {formatCount(balances.emissionsData.photonTokens)}
                         </span>
                         {"/"}
                         <span className="font-sfmono text-accent-cement text-[11px] text-opacity-90">
-                          {formatCount(metadata.emissionsData.baryonTokens)}
+                          {formatCount(balances.emissionsData.baryonTokens)}
                         </span>
                       </div>
                       <div className="text-[12px] text-gray-500 text-right">
                         Token Ratio:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.emissionsData.baryonTokens > 0
+                          {balances.emissionsData.baryonTokens > 0
                             ? (
-                                metadata.emissionsData.photonTokens /
-                                metadata.emissionsData.baryonTokens
+                                balances.emissionsData.photonTokens /
+                                balances.emissionsData.baryonTokens
                               ).toFixed(3)
                             : "0.000"}
                         </span>{" "}
@@ -703,14 +689,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     antiData={antiData}
                     proData={proData}
                     config={{
-                      startTime: metadata.endTime || "-",
+                      startTime: claims.endTime || "-",
                       endTime: "-",
-                      baryonLive: metadata.emissionsData.baryonTokens || 0,
-                      photonLive: metadata.emissionsData.photonTokens || 0,
+                      baryonLive: claims.emissionsData.baryonTokens || 0,
+                      photonLive: claims.emissionsData.photonTokens || 0,
                     }}
                     isMobile={isMobile}
                     bags={bags}
-                    metadata={metadata}
+                    metadata={claims}
                     refresh={refresh}
                     inactive={!inactive || dead}
                     truth={truth}
@@ -740,11 +726,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             >
               {!isMetaLoading ? (
                 <DashboardCollider
-                  emissionsData={metadata.emissionsData}
-                  collisionsData={metadata.collisionsData}
-                  eventsOverTime={metadata.eventsOverTime}
-                  colliderDistribution={metadata.colliderDistribution}
-                  totalDistribution={metadata.totalDistribution}
+                  emissionsData={balances.emissionsData}
+                  collisionsData={balances.collisionsData}
+                  eventsOverTime={balances.eventsOverTime}
+                  colliderDistribution={balances.colliderDistribution}
+                  totalDistribution={balances.totalDistribution}
                   onRefresh={onRefresh}
                   connected={wallet.connected}
                   dynamics={dynamics}
@@ -774,11 +760,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             >
               {!isMetaLoading ? (
                 <DashboardInverter
-                  emissionsData={metadata.emissionsData}
-                  collisionsData={metadata.collisionsData}
-                  eventsOverTime={metadata.eventsOverTime}
-                  colliderDistribution={metadata.colliderDistribution}
-                  totalDistribution={metadata.totalDistribution}
+                  emissionsData={claims.emissionsData}
+                  collisionsData={claims.collisionsData}
+                  eventsOverTime={claims.eventsOverTime}
+                  colliderDistribution={balances.colliderDistribution}
+                  totalDistribution={balances.totalDistribution}
                   onRefresh={onRefresh}
                   connected={wallet.connected}
                   dynamics={dynamics}

@@ -30,8 +30,10 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
 
   for (let x of range) {
     const value =
-      Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
-      (norm ? Math.sqrt(2 * Math.PI) * s : 1);
+      s > 0
+        ? Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
+          (norm ? Math.sqrt(2 * Math.PI) * s : 1)
+        : 1 / 2;
     distribution.push({ x, value });
   }
 
@@ -44,8 +46,10 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
 
   for (let x of short) {
     const value =
-      Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
-      (norm ? Math.sqrt(2 * Math.PI) * s : 1);
+      s > 0
+        ? Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
+          (norm ? Math.sqrt(2 * Math.PI) * s : 1)
+        : 1 / 2;
     curve.push({ x, value });
   }
 

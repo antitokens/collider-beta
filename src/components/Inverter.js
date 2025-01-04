@@ -84,18 +84,30 @@ const Inverter = ({
       if (proData && antiData && myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
-        setChange([
-          rewardCurrent.change.photon[myBag],
-          rewardCurrent.change.baryon[myBag],
-          rewardCurrent.change.gain[myBag],
-        ]);
-        setUpdatedBalances([
-          rewardCurrent.invert.photon[myBag],
-          rewardCurrent.invert.baryon[myBag],
-        ]);
-        setInvest(originalPosition);
-        setDollarGain(rewardCurrent.change.gain[myBag]);
-        setGain((rewardCurrent.change.gain[myBag] / originalPosition) * 100);
+        setChange(
+          truth.length > 0
+            ? [
+                rewardCurrent.change.photon[myBag],
+                rewardCurrent.change.baryon[myBag],
+                rewardCurrent.change.gain[myBag],
+              ]
+            : []
+        );
+        setUpdatedBalances(
+          truth.length > 0
+            ? [
+                rewardCurrent.invert.photon[myBag],
+                rewardCurrent.invert.baryon[myBag],
+              ]
+            : [photonBalance, baryonBalance]
+        );
+        setInvest(truth.length > 0 ? originalPosition : 0);
+        setDollarGain(truth.length > 0 ? rewardCurrent.change.gain[myBag] : 0);
+        setGain(
+          truth.length > 0
+            ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
+            : 0
+        );
       }
     }
   }, [antiData, proData, bags, truth]);

@@ -86,13 +86,13 @@ const Collider = ({
         ctx.moveTo(xPosition, yAxis.top);
         ctx.lineTo(xPosition, yAxis.bottom);
         ctx.lineWidth = 1;
-        ctx.strokeStyle = index === 0 ? "#4bff2b88" : "#ff402b88";
+        ctx.strokeStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
         ctx.stroke();
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillStyle = index === 0 ? "#4bff2b88" : "#ff402b88";
+        ctx.fillStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
         ctx.font = "10px 'SF Mono Round'";
-        ctx.translate(xPosition + 5, yAxis.top + 30);
+        ctx.translate(xPosition + 5, yAxis.top + 35);
         ctx.rotate(-Math.PI / 2);
         ctx.fillText(labels[index], 0, 0);
         ctx.restore();
@@ -138,13 +138,17 @@ const Collider = ({
         metadata.eventsOverTime.cumulative.timestamps[_end]
       );
       const nowTime = new Date().toISOString();
-      // Past segments should be grey
+      // Past segments should be null
       if (nextTick <= config.startTime) {
-        return "rgba(128, 128, 128, 0.5)";
+        return "rgba(255, 0, 0, 0.25)";
       }
       // Future segments should be grey
       if (currentTick > nowTime && nextTick > nowTime) {
         return "rgba(128, 128, 128, 0.5)";
+      }
+      // Far future segments should be null
+      if (currentTick > config.endTime) {
+        return "rgba(128, 0, 0, 0.0)";
       }
       // Segment crossing nowTime - gradient from color to grey
       if (currentTick <= nowTime && nextTick > nowTime) {

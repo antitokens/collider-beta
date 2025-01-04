@@ -11,6 +11,10 @@ export const metadataInit = {
   colliderDistribution: {
     u: 0,
     s: 0,
+    range: [],
+    distribution: [],
+    short: [],
+    curve: [],
   },
   totalDistribution: {
     u: 0,
@@ -306,6 +310,9 @@ export const generateGradientColor = (
 ) => {
   if (min === 0 && max === 0) {
     return `rgba(0, 0, 0, 0)`;
+  }
+  if (min === max) {
+    return `rgba(128, 128, 128, 1)`;
   }
   const intensity = (value - min) / (max - min); // Normalize value between 0 and 1
   const [r1, g1, b1] = startColor; // Start RGB color
