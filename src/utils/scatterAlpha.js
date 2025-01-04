@@ -356,7 +356,11 @@ function distributeValuesInBins(valueSums, indicesInBins, orderBy) {
       const binIndices = indicesInBins[binIndex];
       const orderValues = binIndices.map((i) => orderBy[i]);
       const total = orderValues.reduce((a, b) => a + b, 0);
-      return orderValues.map((v) => (v / total) * sums);
+      if (total > 0) {
+        return orderValues.map((v) => (v / total) * sums);
+      } else {
+        return Array(count).fill(sums / count);
+      }
     }
     return Array(count).fill(sums / count);
   });

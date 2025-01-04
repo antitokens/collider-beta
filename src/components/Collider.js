@@ -41,6 +41,7 @@ const Collider = ({
   refresh = false,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [inactive, setInactive] = useState(true);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
@@ -78,25 +79,25 @@ const Collider = ({
     const getSegmentColor = (context) => {
       const _start =
         context.p0DataIndex +
-        metadata.eventsOverTime.cummulative.timestamps.findIndex(
+        metadata.eventsOverTime.cumulative.timestamps.findIndex(
           (timestamp) => parseDateToISO(timestamp) >= config.startTime
         );
       const _end =
         context.p1DataIndex +
-        metadata.eventsOverTime.cummulative.timestamps.findIndex(
+        metadata.eventsOverTime.cumulative.timestamps.findIndex(
           (timestamp) => parseDateToISO(timestamp) >= config.startTime
         );
-      const start = metadata.eventsOverTime.cummulative.photon[_start];
-      const end = metadata.eventsOverTime.cummulative.photon[_end];
+      const start = metadata.eventsOverTime.cumulative.photon[_start];
+      const end = metadata.eventsOverTime.cumulative.photon[_end];
       const limits = [
-        Math.min(...metadata.eventsOverTime.cummulative.photon),
-        Math.max(...metadata.eventsOverTime.cummulative.photon),
+        Math.min(...metadata.eventsOverTime.cumulative.photon),
+        Math.max(...metadata.eventsOverTime.cumulative.photon),
       ];
       const currentTick = parseDateToISO(
-        metadata.eventsOverTime.cummulative.timestamps[_start]
+        metadata.eventsOverTime.cumulative.timestamps[_start]
       );
       const nextTick = parseDateToISO(
-        metadata.eventsOverTime.cummulative.timestamps[_end]
+        metadata.eventsOverTime.cumulative.timestamps[_end]
       );
       const nowTime = new Date().toISOString();
       // Future segments should be grey
@@ -159,7 +160,7 @@ const Collider = ({
     };
     setPredictionHistoryChartData({
       type: "line",
-      labels: metadata.eventsOverTime.cummulative.timestamps
+      labels: metadata.eventsOverTime.cumulative.timestamps
         .filter((timestamp) => {
           const dateISO = parseDateToISO(timestamp);
           return dateISO >= config.startTime && dateISO <= config.endTime;
@@ -168,12 +169,12 @@ const Collider = ({
       datasets: [
         {
           label: "Yes",
-          data: metadata.eventsOverTime.cummulative.timestamps
+          data: metadata.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp);
               if (dateISO >= config.startTime && dateISO <= config.endTime) {
-                const pro = metadata.eventsOverTime.cummulative.pro[index];
-                const anti = metadata.eventsOverTime.cummulative.anti[index];
+                const pro = metadata.eventsOverTime.cumulative.pro[index];
+                const anti = metadata.eventsOverTime.cumulative.anti[index];
                 const total = pro + anti;
                 return total === 0 ? 0 : (pro / total) * 100;
               }
@@ -193,14 +194,14 @@ const Collider = ({
         {
           // Add a hidden dataset for the certainty tooltip
           label: "Certainty",
-          data: metadata.eventsOverTime.cummulative.timestamps
+          data: metadata.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp);
               if (dateISO >= config.startTime && dateISO <= config.endTime) {
                 return (
-                  (metadata.eventsOverTime.cummulative.photon[index] /
-                    (metadata.eventsOverTime.cummulative.photon[index] +
-                      metadata.eventsOverTime.cummulative.baryon[index])) *
+                  (metadata.eventsOverTime.cumulative.photon[index] /
+                    (metadata.eventsOverTime.cumulative.photon[index] +
+                      metadata.eventsOverTime.cumulative.baryon[index])) *
                   100
                 );
               }
@@ -235,7 +236,7 @@ const Collider = ({
               label: (context) => {
                 const value = context.raw;
                 const currentTick = parseDateToISO(
-                  metadata.eventsOverTime.cummulative.timestamps.find(
+                  metadata.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
                       timestamp
                         .split(" ")
@@ -256,11 +257,11 @@ const Collider = ({
               labelColor: (context) => {
                 const value = context.raw;
                 const limits = [
-                  Math.min(...metadata.eventsOverTime.cummulative.photon),
-                  Math.max(...metadata.eventsOverTime.cummulative.photon),
+                  Math.min(...metadata.eventsOverTime.cumulative.photon),
+                  Math.max(...metadata.eventsOverTime.cumulative.photon),
                 ];
                 const currentTick = parseDateToISO(
-                  metadata.eventsOverTime.cummulative.timestamps.find(
+                  metadata.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
                       timestamp
                         .split(" ")
@@ -350,6 +351,13 @@ const Collider = ({
       },
     });
   }, [metadata, config]);
+
+  useEffect(() => {
+    setInactive(
+      new Date() < new Date(config.startTime) ||
+        new Date() > new Date(config.endTime)
+    );
+  }, [config]);
 
   useEffect(() => {
     if (antiData && proData) {
@@ -966,7 +974,9 @@ const Collider = ({
           </div>
         </div>
       </div>
-      <div className="mb-4 bg-dark-card p-4 rounded w-full">
+      <div
+        className={inactive ? "hidden" : "mb-4 bg-dark-card p-4 rounded w-full"}
+      >
         {predictionHistoryChartData && (
           <div className="flex flex-col items-end gap-1">
             <div className="flex gap-1 mt-4 font-sfmono">
@@ -1144,10 +1154,7 @@ const Collider = ({
             value={Math.abs(totalInvest) || ""}
             onChange={handleTotalInvestChange}
             onWheel={(e) => e.target.blur()}
-            disabled={
-              new Date() < new Date(config.startTime) ||
-              new Date() > new Date(config.endTime)
-            }
+            disabled={inactive}
             placeholder="0"
             className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
           />
@@ -1161,10 +1168,7 @@ const Collider = ({
             max="100"
             value={splitPercentage}
             onChange={handlePercentageChange}
-            disabled={
-              new Date() < new Date(config.startTime) ||
-              new Date() > new Date(config.endTime)
-            }
+            disabled={inactive}
           />
           <div className="flex flex-row items-center justify-between text-[14px]">
             <span className="text-accent-secondary font-sfmono">
@@ -1182,7 +1186,7 @@ const Collider = ({
                 htmlFor="proTokens"
                 className="text-accent-secondary font-medium text-sm"
               >
-                $PRO
+                ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PRO
               </label>
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <input
@@ -1196,13 +1200,10 @@ const Collider = ({
                 onMouseDown={(e) => setProTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-sm"
-                disabled={
-                  new Date() < new Date(config.startTime) ||
-                  new Date() > new Date(config.endTime)
-                }
+                disabled={inactive}
               />
             </div>
-            <div className="text-xs">
+            <div className={inactive ? "hidden" : "text-xs"}>
               <img
                 src={`${BASE_URL}/assets/pro.png`}
                 alt="pro-logo"
@@ -1231,20 +1232,17 @@ const Collider = ({
                 onMouseDown={(e) => setAntiTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-xs sm:text-sm text-right"
-                disabled={
-                  new Date() < new Date(config.startTime) ||
-                  new Date() > new Date(config.endTime)
-                }
+                disabled={inactive}
               />
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <label
                 htmlFor="antiTokens"
                 className="text-accent-orange font-medium text-sm"
               >
-                $ANTI
+                ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}ANTI
               </label>
             </div>
-            <div className="text-xs">
+            <div className={inactive ? "hidden" : "text-xs"}>
               <img
                 src={`${BASE_URL}/assets/anti.png`}
                 alt="anti-logo"
@@ -1282,7 +1280,7 @@ const Collider = ({
                   htmlFor="photonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  $PHOTON
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PHOTON
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
@@ -1300,7 +1298,11 @@ const Collider = ({
                   readOnly
                 />
               </div>
-              <div className="text-sm flex flex-row items-center">
+              <div
+                className={
+                  inactive ? "hidden" : "text-sm flex flex-row items-center"
+                }
+              >
                 <img
                   src={`${BASE_URL}/assets/photon.png`}
                   alt="photon-logo"
@@ -1339,10 +1341,14 @@ const Collider = ({
                   htmlFor="baryonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  $BARYON
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON
                 </label>
               </div>
-              <div className="text-sm flex flex-row items-center">
+              <div
+                className={
+                  inactive ? "hidden" : "text-sm flex flex-row items-center"
+                }
+              >
                 <img
                   src={`${BASE_URL}/assets/baryon.png`}
                   alt="baryon-logo"
@@ -1372,7 +1378,7 @@ const Collider = ({
                   </span>
                 </div>
               </div>
-              <div style={{ height: "400px" }}>
+              <div className={inactive ? "hidden" : "h-[400px]"}>
                 <Line data={lineChartData} options={lineChartData.options} />
               </div>
             </>
@@ -1383,17 +1389,11 @@ const Collider = ({
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={
-          disabled ||
-          loading ||
-          new Date() < new Date(config.startTime) ||
-          new Date() > new Date(config.endTime)
-        }
+        disabled={disabled || loading || inactive}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
           loading ||
-          new Date() < new Date(config.startTime) ||
-          new Date() > new Date(config.endTime) ||
+          inactive ||
           (antiTokens === 0 && proTokens === 0) ||
           (Math.abs(antiTokens - proTokens) < 1 &&
             Math.abs(antiTokens - proTokens) !== 0) ||
@@ -1402,8 +1402,7 @@ const Collider = ({
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {new Date() < new Date(config.startTime) ||
-        new Date() > new Date(config.endTime)
+        {inactive
           ? "Closed"
           : (Math.abs(antiTokens - proTokens) < 1 &&
               Math.abs(antiTokens - proTokens) !== 0) ||

@@ -123,8 +123,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
-  const [antiData, setAntiData] = useState(null);
-  const [proData, setProData] = useState(null);
+  const [antiData, setAntiData] = useState({
+    priceUsd: 1.0,
+    marketCap: 1e9,
+  });
+  const [proData, setProData] = useState({
+    priceUsd: 1.0,
+    marketCap: 1e9,
+  });
   const [showAnimation, setShowAnimation] = useState(false);
   const [currentPredictionData, setCurrentPredictionData] =
     useState(emptyMetadata);
@@ -284,7 +290,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         console.error("Error fetching token data:", error);
       }
     };
-    setTruth([1, 0]);
+    setTruth([1, 0]); // [ANTI, PRO]
     fetchTokenData();
   }, []);
 

@@ -63,7 +63,7 @@ export const metadataInit = {
         "1-10m": 0,
       },
     },
-    cummulative: {
+    cumulative: {
       timestamps: [],
       pro: [],
       anti: [],
@@ -304,6 +304,9 @@ export const generateGradientColor = (
   startColor,
   endColor
 ) => {
+  if (min === 0 && max === 0) {
+    return `rgba(0, 0, 0, 0)`;
+  }
   const intensity = (value - min) / (max - min); // Normalize value between 0 and 1
   const [r1, g1, b1] = startColor; // Start RGB color
   const [r2, g2, b2] = endColor; // End RGB color
