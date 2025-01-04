@@ -471,7 +471,7 @@ const DashboardInverter = ({
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
                   ? formatCount(totalDistribution.short[index], false)
-                  : 0;
+                  : null;
               },
               font: {
                 family: "'SF Mono Round'",

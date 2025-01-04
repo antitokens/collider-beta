@@ -1,17 +1,17 @@
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
 
-export const recordPrediction = async (walletAddress, voteData) => {
+export const recordPrediction = async (walletAddress, predict) => {
   const response = await fetch(`${API_URL}/predict`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       wallet: walletAddress,
-      antiTokens: voteData.antiTokens,
-      proTokens: voteData.proTokens,
-      baryonTokens: voteData.baryonTokens,
-      photonTokens: voteData.photonTokens,
-      signature: voteData.signature,
-      timestamp: voteData.timestamp,
+      antiTokens: predict.antiTokens,
+      proTokens: predict.proTokens,
+      baryonTokens: predict.baryonTokens,
+      photonTokens: predict.photonTokens,
+      signature: predict.signature,
+      timestamp: predict.timestamp,
     }),
   });
 
@@ -27,18 +27,19 @@ export const recordPrediction = async (walletAddress, voteData) => {
   }
 };
 
-export const recordClaim = async (walletAddress, claimData) => {
-  const response = await fetch(`${API_URL}/claim`, {
+export const recordClaim = async (walletAddress, claim) => {
+  console.log(claim);
+  const response = await fetch(`${API_URL}/reclaim`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       wallet: walletAddress,
-      antiTokens: claimData.antiTokens,
-      proTokens: claimData.proTokens,
-      baryonTokens: claimData.baryonTokens,
-      photonTokens: claimData.photonTokens,
-      signature: claimData.signature,
-      timestamp: claimData.timestamp,
+      antiTokens: claim.antiTokens,
+      proTokens: claim.proTokens,
+      baryonTokens: claim.baryonTokens,
+      photonTokens: claim.photonTokens,
+      signature: claim.signature,
+      timestamp: claim.timestamp,
     }),
   });
 

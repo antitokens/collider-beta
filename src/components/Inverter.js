@@ -15,7 +15,6 @@ import {
   emptyMetadata,
   formatCount,
   formatPrecise,
-  convertToLocaleTime,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -33,11 +32,8 @@ const Inverter = ({
   clearFields,
   antiData,
   proData,
-  config = emptyConfig2,
   isMobile = false,
   bags = emptyBags,
-  metadata = emptyMetadata,
-  refresh = false,
   inactive = true,
   truth = [],
 }) => {
@@ -104,7 +100,7 @@ const Inverter = ({
         setInvest(truth.length > 0 ? originalPosition : 0);
         setDollarGain(truth.length > 0 ? rewardCurrent.change.gain[myBag] : 0);
         setGain(
-          truth.length > 0
+          truth.length > 0 && originalPosition > 0
             ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
             : 0
         );
@@ -223,18 +219,11 @@ const Inverter = ({
 
     try {
       setLoading(true);
-
       // Validate input
       if (baryonTokens <= 0 && photonTokens <= 0) {
         toast.error("You must claim with at least some tokens!");
         return;
       }
-
-      if (photonTokens < 0.5 && photonTokens !== 0) {
-        toast.error("Photon value must be larger than 1/2, unless exactly 0!");
-        return;
-      }
-
       if (
         baryonTokens > updatedBalances[1] ||
         photonTokens > updatedBalances[0]
@@ -248,8 +237,8 @@ const Inverter = ({
         ${baryonTokens.toFixed(2)} $BARYON,
         ${photonTokens.toFixed(2)} $PHOTON,
         for
-        ${baryonTokens.toFixed(2)} $ANTI,
-        ${photonTokens.toFixed(2)} $PRO
+        ${antiTokens.toFixed(2)} $ANTI,
+        ${proTokens.toFixed(2)} $PRO
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
@@ -258,25 +247,25 @@ const Inverter = ({
       const timestamp = new Date().toISOString();
       // Record the claim
       await recordClaim(wallet.publicKey.toString(), {
-        antiTokens: antiBalance + antiTokens,
-        proTokens: proBalance + proTokens,
-        baryonTokens: 0,
-        photonTokens: 0,
+        antiTokens: antiTokens,
+        proTokens: proTokens,
+        baryonTokens: baryonTokens,
+        photonTokens: photonTokens,
         signature,
         timestamp,
       });
       // Create claim data object
-      const claimData = {
-        antiTokens: antiBalance + antiTokens,
-        proTokens: proBalance + proTokens,
-        baryonTokens: 0,
-        photonTokens: 0,
+      const claim = {
+        antiTokens: antiTokens,
+        proTokens: proTokens,
+        baryonTokens: baryonTokens,
+        photonTokens: photonTokens,
         signature,
         timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
       };
       // Emit the updated data
-      onClaimSubmitted(true, claimData);
+      onClaimSubmitted(true, claim);
       toast.success("Your claim has been recorded!");
     } catch (error) {
       console.error("CLAIM_SUBMISSION_FAILED:", error);
@@ -441,7 +430,7 @@ const Inverter = ({
               <input
                 id="photonTokens"
                 type="number"
-                min="0.5"
+                min="0"
                 max={photonBalance}
                 value={Math.abs(photonTokens) || ""}
                 disabled={inactive}
@@ -636,9 +625,8 @@ const Inverter = ({
         disabled={
           disabled ||
           loading ||
-          (baryonTokens === 0 && photonTokens === 0) ||
           inactive ||
-          (photonTokens < 0.5 && photonTokens !== 0)
+          (baryonTokens <= 0 && photonTokens <= 0)
         }
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled || loading || inactive
@@ -648,7 +636,7 @@ const Inverter = ({
       >
         {inactive
           ? "Closed"
-          : photonTokens < 0.5 && photonTokens !== 0
+          : baryonTokens > 0 || photonTokens > 0
           ? "Reclaim"
           : loading
           ? "Reclaiming..."

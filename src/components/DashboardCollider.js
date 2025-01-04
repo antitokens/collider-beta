@@ -396,7 +396,7 @@ const DashboardCollider = ({
         },
       },
     });
-    
+
     setNetDistribution({
       type: "line",
       labels: totalDistribution
@@ -472,7 +472,7 @@ const DashboardCollider = ({
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
                   ? formatCount(totalDistribution.short[index], false)
-                  : 0;
+                  : null;
               },
               font: {
                 family: "'SF Mono Round'",

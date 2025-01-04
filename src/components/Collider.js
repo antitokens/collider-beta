@@ -37,8 +37,8 @@ const Collider = ({
   config = emptyConfig,
   isMobile = false,
   bags = emptyBags,
-  metadata = emptyMetadata,
-  refresh = false,
+  balances = emptyMetadata,
+  claims = emptyMetadata,
   inactive = true,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -117,25 +117,25 @@ const Collider = ({
     const getSegmentColor = (context) => {
       const _start =
         context.p0DataIndex +
-        metadata.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
           parseDateToISO(timestamp)
         );
       const _end =
         context.p1DataIndex +
-        metadata.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
           parseDateToISO(timestamp)
         );
-      const start = metadata.eventsOverTime.cumulative.photon[_start];
-      const end = metadata.eventsOverTime.cumulative.photon[_end];
+      const start = balances.eventsOverTime.cumulative.photon[_start];
+      const end = balances.eventsOverTime.cumulative.photon[_end];
       const limits = [
-        Math.min(...metadata.eventsOverTime.cumulative.photon),
-        Math.max(...metadata.eventsOverTime.cumulative.photon),
+        Math.min(...balances.eventsOverTime.cumulative.photon),
+        Math.max(...balances.eventsOverTime.cumulative.photon),
       ];
       const currentTick = parseDateToISO(
-        metadata.eventsOverTime.cumulative.timestamps[_start]
+        balances.eventsOverTime.cumulative.timestamps[_start]
       );
       const nextTick = parseDateToISO(
-        metadata.eventsOverTime.cumulative.timestamps[_end]
+        balances.eventsOverTime.cumulative.timestamps[_end]
       );
       const nowTime = new Date().toISOString();
       // Past segments should be null
@@ -206,7 +206,7 @@ const Collider = ({
     };
     setPredictionHistoryChartData({
       type: "line",
-      labels: metadata.eventsOverTime.cumulative.timestamps
+      labels: balances.eventsOverTime.cumulative.timestamps
         .filter((timestamp) => {
           const dateISO = parseDateToISO(timestamp);
           return dateISO;
@@ -215,12 +215,12 @@ const Collider = ({
       datasets: [
         {
           label: "Yes",
-          data: metadata.eventsOverTime.cumulative.timestamps
+          data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp);
               if (dateISO) {
-                const pro = metadata.eventsOverTime.cumulative.pro[index];
-                const anti = metadata.eventsOverTime.cumulative.anti[index];
+                const pro = balances.eventsOverTime.cumulative.pro[index];
+                const anti = balances.eventsOverTime.cumulative.anti[index];
                 const total = pro + anti;
                 return total === 0 ? 0 : (pro / total) * 100;
               }
@@ -240,14 +240,14 @@ const Collider = ({
         {
           // Add a hidden dataset for the certainty tooltip
           label: "Certainty",
-          data: metadata.eventsOverTime.cumulative.timestamps
+          data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp);
               if (dateISO) {
                 return (
-                  (metadata.eventsOverTime.cumulative.photon[index] /
-                    (metadata.eventsOverTime.cumulative.photon[index] +
-                      metadata.eventsOverTime.cumulative.baryon[index])) *
+                  (balances.eventsOverTime.cumulative.photon[index] /
+                    (balances.eventsOverTime.cumulative.photon[index] +
+                      balances.eventsOverTime.cumulative.baryon[index])) *
                   100
                 );
               }
@@ -293,7 +293,7 @@ const Collider = ({
               label: (context) => {
                 const value = context.raw;
                 const currentTick = parseDateToISO(
-                  metadata.eventsOverTime.cumulative.timestamps.find(
+                  balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
                       timestamp
                         .split(" ")
@@ -314,11 +314,11 @@ const Collider = ({
               labelColor: (context) => {
                 const value = context.raw;
                 const limits = [
-                  Math.min(...metadata.eventsOverTime.cumulative.photon),
-                  Math.max(...metadata.eventsOverTime.cumulative.photon),
+                  Math.min(...balances.eventsOverTime.cumulative.photon),
+                  Math.max(...balances.eventsOverTime.cumulative.photon),
                 ];
                 const currentTick = parseDateToISO(
-                  metadata.eventsOverTime.cumulative.timestamps.find(
+                  balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
                       timestamp
                         .split(" ")
@@ -407,7 +407,7 @@ const Collider = ({
         },
       },
     });
-  }, [metadata, config]);
+  }, [balances, config]);
 
   useEffect(() => {
     if (antiData && proData) {
@@ -462,7 +462,10 @@ const Collider = ({
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         setGain(
-          (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) * 100
+          originalPosition > 0
+            ? (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) *
+                100
+            : 0
         );
       }
     }
@@ -507,7 +510,9 @@ const Collider = ({
 
       if (myBag >= 0) {
         setNewGain(
-          (Math.abs(rewardUpdated.change.gain[myBag]) / dollarStake) * 100
+          dollarStake > 0
+            ? (Math.abs(rewardUpdated.change.gain[myBag]) / dollarStake) * 100
+            : 0
         );
       }
 
@@ -787,7 +792,7 @@ const Collider = ({
         timestamp,
       });
       // Create prediction data object
-      const predictionData = {
+      const prediction = {
         antiTokens: antiTokens + antiUsage,
         proTokens: proTokens + proUsage,
         baryonTokens: baryonTokens,
@@ -797,7 +802,7 @@ const Collider = ({
         wallet: wallet.publicKey.toString(),
       };
       setGain(newGain);
-      onPredictionSubmitted(true, predictionData);
+      onPredictionSubmitted(true, prediction);
       toast.success("Your prediction has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
