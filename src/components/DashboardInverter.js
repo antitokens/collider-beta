@@ -10,14 +10,13 @@ import {
 
 Chart.register(ChartDataLabels, ...registerables);
 
-const Dashboard = ({
+const DashboardInverter = ({
   emissionsData,
   collisionsData,
   eventsOverTime,
   colliderDistribution = null,
   totalDistribution = null,
   onRefresh,
-  state = false,
   connected = false,
   dynamics = [],
   holders = [],
@@ -176,9 +175,7 @@ const Dashboard = ({
 
     // Prepare bar chart data
     setBarChartData({
-      labels: state
-        ? Object.keys(eventsOverTime.ranges.pro)
-        : Object.keys(eventsOverTime.ranges.pro), // x-axis labels are common
+      labels: Object.keys(eventsOverTime.ranges.pro), // x-axis labels are common
       datasets: [
         {
           label: "Pro",
@@ -637,7 +634,6 @@ const Dashboard = ({
       },
     });
   }, [
-    state,
     emissionsData,
     collisionsData,
     eventsOverTime,
@@ -678,11 +674,11 @@ const Dashboard = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-black border-x border-b border-gray-800 rounded-b-lg">
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Token Emissions</div>
+            <div>{"Emission Burns"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of BARYON & PHOTON emissions in the pool`}
+                {`Displays the distribution of BARYON & PHOTON burns in the pool`}
               </span>
             </div>
           </div>
@@ -695,11 +691,11 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Token Collisions</div>
+            <div>{"Collision Reclaims"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of PRO & ANTI collisions in the pool`}
+                {`Displays the distribution of PRO & ANTI reclaims in the pool`}
               </span>
             </div>
           </div>
@@ -716,7 +712,7 @@ const Dashboard = ({
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the sizes of PRO & ANTI collisions, and PHOTON & BARYON emissions in the pool`}
+                {`Displays the sizes of PRO & ANTI reclaims, and PHOTON & BARYON burns from the pool`}
               </span>
             </div>
           </div>
@@ -732,7 +728,7 @@ const Dashboard = ({
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the count of PRO & ANTI collisions, and PHOTON & BARYON emissions over time`}
+                {`Displays the count of PRO & ANTI reclaims, and PHOTON & BARYON burns over time`}
               </span>
             </div>
           </div>
@@ -744,7 +740,7 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Global Prediction</div>
+            <div>Final Predictions</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
@@ -760,11 +756,11 @@ const Dashboard = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>Rankings</div>
+            <div>{"Gainers"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the rankings based on maximum potential profits`}
+                {`Displays the final gains`}
               </span>
             </div>
           </div>
@@ -782,4 +778,4 @@ const Dashboard = ({
   );
 };
 
-export default Dashboard;
+export default DashboardInverter;

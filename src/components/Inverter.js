@@ -38,10 +38,10 @@ const Inverter = ({
   bags = emptyBags,
   metadata = emptyMetadata,
   refresh = false,
+  inactive = true,
   truth = [],
 }) => {
   const [loading, setLoading] = useState(false);
-  const [inactive, setInactive] = useState(true);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
@@ -290,10 +290,6 @@ const Inverter = ({
     }
   }, [baryonTokens, photonTokens, gain, updatedBalances]);
 
-  useEffect(() => {
-    setInactive(new Date() < new Date(config.startTime));
-  }, [config]);
-
   return (
     <div className="flex flex-col items-center justify-center w-full">
       {/* Emission Input */}
@@ -436,9 +432,7 @@ const Inverter = ({
                 min="0.5"
                 max={photonBalance}
                 value={Math.abs(photonTokens) || ""}
-                disabled={
-                  config.startTime === "-" ? true : inactive ? true : false
-                }
+                disabled={inactive}
                 onChange={(e) =>
                   setPhotonTokens(Math.abs(Number(e.target.value)))
                 }
@@ -470,9 +464,7 @@ const Inverter = ({
                 type="number"
                 min="0"
                 max={baryonBalance}
-                disabled={
-                  config.startTime === "-" ? true : inactive ? true : false
-                }
+                disabled={inactive}
                 value={Math.abs(baryonTokens) || ""}
                 onChange={(e) =>
                   setBaryonTokens(Math.abs(Number(e.target.value)))

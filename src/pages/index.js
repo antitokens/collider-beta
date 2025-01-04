@@ -18,7 +18,8 @@ import { calculateScattering } from "../utils/scatterAlpha";
 import Navbar from "../components/TopNavbar";
 import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
-import Dashboard from "../components/Dashboard";
+import DashboardCollider from "../components/DashboardCollider";
+import DashboardInverter from "../components/DashboardInverter";
 import BuyTokenModal from "../components/BuyTokenModal";
 import {
   ANTI_TOKEN_MINT,
@@ -36,7 +37,7 @@ import {
   convertToLocaleTime,
   formatCount,
 } from "../utils/utils";
-import { getKVBalance, getMetadata } from "../utils/api";
+import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { ToastContainer } from "react-toastify";
@@ -113,6 +114,8 @@ const Home = ({ BASE_URL }) => {
 const LandingPage = ({ BASE_URL, setTrigger }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
+  const [inactive, setInactive] = useState(true);
+  const [dead, setDead] = useState(true);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
   const [antiUsage, setAntiUsage] = useState(0);
@@ -189,11 +192,22 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [metaError]);
 
   useEffect(() => {
+    setDead(
+      new Date() < new Date(metadata.startTime) &&
+        new Date() < new Date(metadata.endTime)
+    );
+    setInactive(
+      new Date() < new Date(metadata.startTime) ||
+        new Date() > new Date(metadata.endTime)
+    );
+  }, [metadata]);
+
+  useEffect(() => {
     if (refresh) {
-      const fetchData = async () => {
+      const fetchBalances = async () => {
         try {
           setIsMetaLoading(true);
-          const blob = await getMetadata();
+          const blob = await getBalances();
           const data = JSON.parse(blob.message);
           // Calculate distributions using API data
           const colliderDistribution =
@@ -251,10 +265,80 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setIsMetaLoading(false);
         }
       };
-      fetchData();
+      const fetchClaims = async () => {
+        try {
+          setIsMetaLoading(true);
+          const blob = await getClaims();
+          const data = JSON.parse(blob.message);
+          // Calculate distributions using API data
+          const colliderDistribution =
+            baryonBalance >= 0 && photonBalance > 0.5
+              ? calculateCollision(baryonBalance, photonBalance, true)
+              : emptyGaussian;
+          const totalDistribution =
+            data.totalDistribution.u >= 0 && data.totalDistribution.s > 0.5
+              ? calculateCollision(
+                  data.emissionsData.baryonTokens,
+                  data.emissionsData.photonTokens,
+                  true
+                )
+              : emptyGaussian;
+
+          setMetadata({
+            startTime: data.startTime,
+            endTime: data.endTime,
+            colliderDistribution: colliderDistribution,
+            totalDistribution: totalDistribution,
+            emissionsData: data.emissionsData,
+            collisionsData: data.collisionsData,
+            eventsOverTime: data.eventsOverTime,
+          });
+          setBags({
+            baryon: data.totalDistribution.bags.baryon,
+            photon: data.totalDistribution.bags.photon,
+            baryonPool: data.emissionsData.baryonTokens,
+            photonPool: data.emissionsData.photonTokens,
+            anti: data.totalDistribution.bags.anti,
+            pro: data.totalDistribution.bags.pro,
+            antiPool: data.collisionsData.antiTokens,
+            proPool: data.collisionsData.proTokens,
+            wallets: data.totalDistribution.wallets,
+          });
+          const rewardCurrent = calculateScattering(
+            data.totalDistribution.bags.baryon,
+            data.totalDistribution.bags.photon,
+            data.emissionsData.baryonTokens,
+            data.emissionsData.photonTokens,
+            data.totalDistribution.bags.anti,
+            data.totalDistribution.bags.pro,
+            data.collisionsData.antiTokens,
+            data.collisionsData.proTokens,
+            antiData && proData
+              ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+              : [1, 1],
+            data.totalDistribution.wallets
+          );
+          setDynamics(rewardCurrent ? rewardCurrent.overlap : []);
+        } catch (err) {
+          console.error("Error fetching metadata:", err);
+          setMetaError(err);
+        } finally {
+          setIsMetaLoading(false);
+        }
+      };
+      if (!inactive && !dead) fetchBalances();
+      if (inactive && !dead) fetchClaims();
       setRefresh(false);
     }
-  }, [refresh, baryonBalance, photonBalance, antiData, proData]);
+  }, [
+    refresh,
+    baryonBalance,
+    photonBalance,
+    antiData,
+    proData,
+    inactive,
+    dead,
+  ]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -300,7 +384,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      const _balance = await getKVBalance(wallet.publicKey);
+      const _balance = await getBalance(wallet.publicKey);
       const balance = JSON.parse(_balance.message);
       setAntiBalance(antiBalanceResult - balance.anti);
       setProBalance(proBalanceResult - balance.pro);
@@ -454,6 +538,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   bags={bags}
                   metadata={metadata}
                   refresh={refresh}
+                  inactive={inactive || dead}
                 />
               </div>
             ) : (
@@ -507,7 +592,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                             <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                               {isMobile
                                 ? `Reclaim opening date & time: ${
-                                    metadata.endTime !== "-"
+                                    metadata.endTime
                                       ? isMobile
                                         ? convertToLocaleTime(
                                             metadata.startTime,
@@ -525,7 +610,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         </span>{" "}
                         &nbsp;Open:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.endTime !== "-"
+                          {metadata.endTime
                             ? isMobile
                               ? convertToLocaleTime(
                                   metadata.endTime,
@@ -538,7 +623,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       <div className="text-[12px] text-gray-500 text-right">
                         Close:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.endTime !== "-"
+                          {metadata.endTime
                             ? isMobile
                               ? "Never"
                               : "Never"
@@ -551,7 +636,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                             <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                               {isMobile
                                 ? `Reclaim closing date & time: ${
-                                    metadata.endTime !== "-"
+                                    metadata.endTime
                                       ? !isMobile
                                         ? "Never"
                                         : "Never"
@@ -627,6 +712,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     bags={bags}
                     metadata={metadata}
                     refresh={refresh}
+                    inactive={!inactive || dead}
                     truth={truth}
                   />
                   <p
@@ -644,40 +730,74 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               </div>
             )}
           </div>
-
-          <div
-            className={`xl:col-span-3 mx-2 md:mx-0 ${
-              isMetaLoading || isMobile
-                ? "flex justify-center items-center min-h-[600px]"
-                : ""
-            }`}
-          >
-            {!isMetaLoading ? (
-              <Dashboard
-                emissionsData={metadata.emissionsData}
-                collisionsData={metadata.collisionsData}
-                eventsOverTime={metadata.eventsOverTime}
-                colliderDistribution={metadata.colliderDistribution}
-                totalDistribution={metadata.totalDistribution}
-                onRefresh={onRefresh}
-                state={showCollider}
-                connected={wallet.connected}
-                dynamics={dynamics}
-                holders={bags.wallets}
-                isMobile={isMobile}
-              />
-            ) : (
-              <div className="flex justify-center items-center w-full">
-                <BinaryOrbit
-                  size={isMobile ? 300 : 300}
-                  orbitRadius={isMobile ? 80 : 80}
-                  particleRadius={isMobile ? 20 : 20}
-                  padding={10}
-                  invert={false}
+          {showCollider && (
+            <div
+              className={`xl:col-span-3 mx-2 md:mx-0 ${
+                isMetaLoading || isMobile
+                  ? "flex justify-center items-center min-h-[600px]"
+                  : ""
+              }`}
+            >
+              {!isMetaLoading ? (
+                <DashboardCollider
+                  emissionsData={metadata.emissionsData}
+                  collisionsData={metadata.collisionsData}
+                  eventsOverTime={metadata.eventsOverTime}
+                  colliderDistribution={metadata.colliderDistribution}
+                  totalDistribution={metadata.totalDistribution}
+                  onRefresh={onRefresh}
+                  connected={wallet.connected}
+                  dynamics={dynamics}
+                  holders={bags.wallets}
+                  isMobile={isMobile}
                 />
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="flex justify-center items-center w-full">
+                  <BinaryOrbit
+                    size={isMobile ? 300 : 300}
+                    orbitRadius={isMobile ? 80 : 80}
+                    particleRadius={isMobile ? 20 : 20}
+                    padding={10}
+                    invert={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          {!showCollider && (
+            <div
+              className={`xl:col-span-3 mx-2 md:mx-0 ${
+                isMetaLoading || isMobile
+                  ? "flex justify-center items-center min-h-[600px]"
+                  : ""
+              }`}
+            >
+              {!isMetaLoading ? (
+                <DashboardInverter
+                  emissionsData={metadata.emissionsData}
+                  collisionsData={metadata.collisionsData}
+                  eventsOverTime={metadata.eventsOverTime}
+                  colliderDistribution={metadata.colliderDistribution}
+                  totalDistribution={metadata.totalDistribution}
+                  onRefresh={onRefresh}
+                  connected={wallet.connected}
+                  dynamics={dynamics}
+                  holders={bags.wallets}
+                  isMobile={isMobile}
+                />
+              ) : (
+                <div className="flex justify-center items-center w-full">
+                  <BinaryOrbit
+                    size={isMobile ? 300 : 300}
+                    orbitRadius={isMobile ? 80 : 80}
+                    particleRadius={isMobile ? 20 : 20}
+                    padding={10}
+                    invert={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">

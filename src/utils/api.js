@@ -54,18 +54,36 @@ export const recordClaim = async (walletAddress, claimData) => {
   }
 };
 
-// Get token balances from KV
-export const getKVBalance = async (walletAddress) => {
-  const response = await fetch(`${API_URL}/balances/${walletAddress}`);
+// Get token balances from KV for a wallet
+export const getBalance = async (walletAddress) => {
+  const response = await fetch(`${API_URL}/balance/${walletAddress}`);
   if (!response.ok) {
     throw new Error("FAILED_TO_GET_BALANCES");
   }
   return response.json();
 };
 
-// Get global data from API
-export const getMetadata = async () => {
-  const response = await fetch(`${API_URL}/metadata`);
+// Get token claims from KV for a wallet
+export const getClaim = async (walletAddress) => {
+  const response = await fetch(`${API_URL}/claim/${walletAddress}`);
+  if (!response.ok) {
+    throw new Error("FAILED_TO_GET_CLAIMS");
+  }
+  return response.json();
+};
+
+// Get global balances data from API
+export const getBalances = async () => {
+  const response = await fetch(`${API_URL}/balances`);
+  if (!response.ok) {
+    throw new Error(`HTTP_ERROR: ${response.status}`);
+  }
+  return response.json();
+};
+
+// Get global claims data from API
+export const getClaims = async () => {
+  const response = await fetch(`${API_URL}/claims`);
   if (!response.ok) {
     throw new Error(`HTTP_ERROR: ${response.status}`);
   }

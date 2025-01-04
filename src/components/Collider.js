@@ -39,9 +39,9 @@ const Collider = ({
   bags = emptyBags,
   metadata = emptyMetadata,
   refresh = false,
+  inactive = true,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [inactive, setInactive] = useState(true);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
@@ -61,6 +61,44 @@ const Collider = ({
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
     useState("1D");
   const sliderRef = useRef(null);
+  const verticalLinesPlugin = {
+    id: "verticalLines",
+    beforeDatasetsDraw: (chart, _, pluginOptions) => {
+      const { markerDates, labels } = pluginOptions;
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      const yAxis = chart.scales.y;
+      markerDates.forEach((date, index) => {
+        const dateStr = new Date(date)
+          .toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+          .split(" ")
+          .slice(0, 2)
+          .join(" ")
+          .slice(0, -1);
+        const xPosition = xAxis.getPixelForValue(dateStr);
+        if (!xPosition) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(xPosition, yAxis.top);
+        ctx.lineTo(xPosition, yAxis.bottom);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = index === 0 ? "#4bff2b88" : "#ff402b88";
+        ctx.stroke();
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = index === 0 ? "#4bff2b88" : "#ff402b88";
+        ctx.font = "10px 'SF Mono Round'";
+        ctx.translate(xPosition + 5, yAxis.top + 30);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(labels[index], 0, 0);
+        ctx.restore();
+      });
+    },
+  };
 
   useEffect(() => {
     if (sliderRef.current) {
@@ -79,13 +117,13 @@ const Collider = ({
     const getSegmentColor = (context) => {
       const _start =
         context.p0DataIndex +
-        metadata.eventsOverTime.cumulative.timestamps.findIndex(
-          (timestamp) => parseDateToISO(timestamp) >= config.startTime
+        metadata.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+          parseDateToISO(timestamp)
         );
       const _end =
         context.p1DataIndex +
-        metadata.eventsOverTime.cumulative.timestamps.findIndex(
-          (timestamp) => parseDateToISO(timestamp) >= config.startTime
+        metadata.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+          parseDateToISO(timestamp)
         );
       const start = metadata.eventsOverTime.cumulative.photon[_start];
       const end = metadata.eventsOverTime.cumulative.photon[_end];
@@ -100,6 +138,10 @@ const Collider = ({
         metadata.eventsOverTime.cumulative.timestamps[_end]
       );
       const nowTime = new Date().toISOString();
+      // Past segments should be grey
+      if (nextTick <= config.startTime) {
+        return "rgba(128, 128, 128, 0.5)";
+      }
       // Future segments should be grey
       if (currentTick > nowTime && nextTick > nowTime) {
         return "rgba(128, 128, 128, 0.5)";
@@ -163,7 +205,7 @@ const Collider = ({
       labels: metadata.eventsOverTime.cumulative.timestamps
         .filter((timestamp) => {
           const dateISO = parseDateToISO(timestamp);
-          return dateISO >= config.startTime && dateISO <= config.endTime;
+          return dateISO;
         })
         .map((value) => value.split(" ").slice(0, 2).join(" ").slice(0, -1)),
       datasets: [
@@ -172,7 +214,7 @@ const Collider = ({
           data: metadata.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp);
-              if (dateISO >= config.startTime && dateISO <= config.endTime) {
+              if (dateISO) {
                 const pro = metadata.eventsOverTime.cumulative.pro[index];
                 const anti = metadata.eventsOverTime.cumulative.anti[index];
                 const total = pro + anti;
@@ -197,7 +239,7 @@ const Collider = ({
           data: metadata.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp);
-              if (dateISO >= config.startTime && dateISO <= config.endTime) {
+              if (dateISO) {
                 return (
                   (metadata.eventsOverTime.cumulative.photon[index] /
                     (metadata.eventsOverTime.cumulative.photon[index] +
@@ -218,6 +260,7 @@ const Collider = ({
           hoverBorderColor: "transparent",
         },
       ],
+      plugins: [verticalLinesPlugin],
       options: {
         responsive: true,
         interaction: {
@@ -225,6 +268,16 @@ const Collider = ({
           mode: "index",
         },
         plugins: {
+          verticalLines:
+            config.startTime === "-" || config.endTime === "-"
+              ? { markerDates: [], labels: [] }
+              : {
+                  markerDates: [config.startTime, config.endTime],
+                  labels:
+                    config.startTime === "-" || config.endTime === "-"
+                      ? []
+                      : ["OPEN", "CLOSE"],
+                },
           datalabels: {
             display: false,
           },
@@ -351,13 +404,6 @@ const Collider = ({
       },
     });
   }, [metadata, config]);
-
-  useEffect(() => {
-    setInactive(
-      new Date() < new Date(config.startTime) ||
-        new Date() > new Date(config.endTime)
-    );
-  }, [config]);
 
   useEffect(() => {
     if (antiData && proData) {
