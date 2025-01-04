@@ -16,7 +16,7 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
     : Math.abs(anti - pro) === anti + pro
     ? 0
     : Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
-    ? (anti + pro) * Math.abs(anti - pro)
+    ? (anti + pro) * 1.0
     : Math.abs(anti - pro) === 0
     ? anti + pro
     : (anti + pro) / Math.abs(anti - pro);

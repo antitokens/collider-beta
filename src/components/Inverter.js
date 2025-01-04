@@ -224,11 +224,30 @@ const Inverter = ({
         toast.error("You must claim with at least some tokens!");
         return;
       }
+
+      if (
+        baryonTokens !== updatedBalances[1] ||
+        photonTokens !== updatedBalances[0]
+      ) {
+        toast.error("You can only claim maximum available balance!");
+        return;
+      }
+
       if (
         baryonTokens > updatedBalances[1] ||
         photonTokens > updatedBalances[0]
       ) {
         toast.error("You cannot claim with more tokens than you have!");
+        return;
+      }
+
+      if (photonTokens < 1 && photonTokens !== 0) {
+        toast.error("Photons must be larger than 1, or exactly 0!");
+        return;
+      }
+
+      if (baryonTokens < 1 && baryonTokens !== 0) {
+        toast.error("Baryons must be larger than 1, or exactly 0!");
         return;
       }
 
@@ -430,8 +449,8 @@ const Inverter = ({
               <input
                 id="photonTokens"
                 type="number"
-                min="0"
-                max={photonBalance}
+                min={updatedBalances[0]}
+                max={updatedBalances[0]}
                 value={Math.abs(photonTokens) || ""}
                 disabled={inactive}
                 onChange={(e) =>
@@ -442,59 +461,96 @@ const Inverter = ({
                 className="font-sfmono bg-black text-white text-xs sm:text-sm w-full"
               />
             </div>
-            <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
-              <img
-                src={`${BASE_URL}/assets/photon.png`}
-                alt="photon-logo"
-                className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
-              />
-              BAL:&nbsp;
-              <span className="font-sfmono text-gray-400">
-                {Number(updatedBalances[0])
-                  .toFixed(2)
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-              </span>
+            <div className="flex flex-row justify-between items-center w-full">
+              <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
+                <img
+                  src={`${BASE_URL}/assets/photon.png`}
+                  alt="photon-logo"
+                  className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
+                />
+                BAL:&nbsp;
+                <span className="font-sfmono text-gray-400">
+                  {Number(updatedBalances[0])
+                    .toFixed(2)
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                </span>
+              </div>
+              <div className="flex flex-row justify-between gap-1">
+                <div
+                  className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
+                  onClick={() => setPhotonTokens(Number(updatedBalances[0]))}
+                >
+                  MAX
+                </div>
+                <div className="relative group">
+                  <div className="cursor-pointer text-[10px] text-gray-400">
+                    &#9432;&nbsp;
+                  </div>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -translate-x-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    Only maximum balance can be reclaimed
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="flex flex-col items-end w-full ml-2">
-            <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
-              <input
-                id="baryonTokens"
-                type="number"
-                min="0"
-                max={baryonBalance}
-                disabled={inactive}
-                value={Math.abs(baryonTokens) || ""}
-                onChange={(e) =>
-                  setBaryonTokens(Math.abs(Number(e.target.value)))
-                }
-                onFocus={(e) => e.target.select()}
-                placeholder="0"
-                className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full text-right"
-              />
-              <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
-              <label
-                htmlFor="baryonTokens"
-                className="text-gray-300 font-medium text-xs sm:text-sm"
-              >
-                ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON
-              </label>
-            </div>
-            <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
-              <img
-                src={`${BASE_URL}/assets/baryon.png`}
-                alt="baryon-logo"
-                className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
-              />
-              BAL:&nbsp;
-              <span className="font-sfmono text-gray-400">
-                {Number(updatedBalances[1])
-                  .toFixed(2)
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-              </span>
+          <div className="flex flex-row items-center w-full">
+            <div className="flex flex-col items-end w-full ml-2">
+              <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
+                <input
+                  id="baryonTokens"
+                  type="number"
+                  min={updatedBalances[1]}
+                  max={updatedBalances[1]}
+                  disabled={inactive}
+                  value={Math.abs(baryonTokens) || ""}
+                  onChange={(e) =>
+                    setBaryonTokens(Math.abs(Number(e.target.value)))
+                  }
+                  onFocus={(e) => e.target.select()}
+                  placeholder="0"
+                  className="w-full font-sfmono bg-black text-white text-xs sm:text-sm w-full text-right"
+                />
+                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
+                <label
+                  htmlFor="baryonTokens"
+                  className="text-gray-300 font-medium text-xs sm:text-sm"
+                >
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON
+                </label>
+              </div>
+              <div className="flex flex-row justify-between items-center w-full">
+                <div className="flex flex-row justify-between gap-1">
+                  <div
+                    className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
+                    onClick={() => setBaryonTokens(Number(updatedBalances[1]))}
+                  >
+                    MAX
+                  </div>
+                  <div className="relative group">
+                    <div className="cursor-pointer text-[10px] text-gray-400">
+                      &#9432;&nbsp;
+                    </div>
+                    <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -translate-x-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                      Only maximum balance can be reclaimed
+                    </span>
+                  </div>
+                </div>
+                <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
+                  <img
+                    src={`${BASE_URL}/assets/baryon.png`}
+                    alt="baryon-logo"
+                    className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
+                  />
+                  BAL:&nbsp;
+                  <span className="font-sfmono text-gray-400">
+                    {Number(updatedBalances[1])
+                      .toFixed(2)
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -629,7 +685,12 @@ const Inverter = ({
           (baryonTokens <= 0 && photonTokens <= 0)
         }
         className={`w-full mt-4 py-3 rounded-full transition-all ${
-          disabled || loading || inactive
+          disabled ||
+          loading ||
+          inactive ||
+          (photonTokens < 1 && photonTokens !== 0) ||
+          baryonTokens !== updatedBalances[1] ||
+          photonTokens !== updatedBalances[0]
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}

@@ -151,14 +151,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setRefresh(state);
   };
 
-  const handlePredictionSubmitted = (state, eventData) => {
+  const handlePredictionSubmitted = (state, event) => {
     if (state) {
       // Store the submitted event data
-      setCurrentPredictionData(eventData);
+      setCurrentPredictionData(event);
       setRefresh(true);
     } else {
       // Handle error case
-      console.error("Prediction submission failed:", eventData.error);
+      console.error("Prediction submission failed:", event.error);
     }
     setDataUpdated(state);
     setTrigger(state);
@@ -168,14 +168,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTimeout(() => setShowAnimation(state), 100);
   };
 
-  const handleClaimSubmitted = (state, claimData) => {
+  const handleClaimSubmitted = (state, claim) => {
     if (state) {
-      setCurrentClaimData(claimData);
+      setCurrentClaimData(claim);
       setRefresh(true);
       setTruth([]);
     } else {
       // Handle error case
-      console.error("Prediction submission failed:", claimData.error);
+      console.error("Reclaim submission failed:", claim.error);
     }
     setDataUpdated(state);
     setTrigger(state);
@@ -276,20 +276,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setMetaError(err);
         } finally {
           setIsMetaLoading(false);
+          setRefresh(false);
         }
       };
-      if (!inactive) fetchBalancesWithClaims();
-      setRefresh(false);
+      fetchBalancesWithClaims();
     }
-  }, [
-    refresh,
-    baryonBalance,
-    photonBalance,
-    antiData,
-    proData,
-    inactive,
-    dead,
-  ]);
+  }, [refresh, baryonBalance, photonBalance, antiData, proData, dead]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -349,8 +341,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       setProUsage(balance.pro - claim.pro);
       setBaryonBalance(balance.baryon - claim.baryon);
       setPhotonBalance(balance.photon - claim.photon);
-      setDataUpdated(false);
-      setRefresh(true);
     };
 
     if (wallet.publicKey || dataUpdated) checkBalance();
@@ -440,7 +430,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
-                    onClick={() => setShowCollider(false)}
+                    onClick={() => {
+                      setShowCollider(false),
+                        setDataUpdated(false),
+                        setRefresh(false);
+                    }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
                       <div className="mr-1">Switch to Inverter</div>
@@ -509,7 +503,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
-                    onClick={() => setShowCollider(true)}
+                    onClick={() => {
+                      setShowCollider(true),
+                        setDataUpdated(false),
+                        setRefresh(false);
+                    }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
                       <div className="mr-1">Switch to Collider</div>
@@ -635,10 +633,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       <div className="text-[12px] text-gray-500 text-right">
                         Token Ratio:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {balances.emissionsData.baryonTokens > 0
+                          {balances.emissionsData.baryonTokens -
+                            claims.emissionsData.baryonTokens >
+                          0
                             ? (
-                                balances.emissionsData.photonTokens /
-                                balances.emissionsData.baryonTokens
+                                (balances.emissionsData.photonTokens -
+                                  claims.emissionsData.photonTokens) /
+                                (balances.emissionsData.baryonTokens -
+                                  claims.emissionsData.baryonTokens)
                               ).toFixed(3)
                             : "0.000"}
                         </span>{" "}

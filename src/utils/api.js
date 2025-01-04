@@ -28,7 +28,6 @@ export const recordPrediction = async (walletAddress, predict) => {
 };
 
 export const recordClaim = async (walletAddress, claim) => {
-  console.log(claim);
   const response = await fetch(`${API_URL}/reclaim`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
