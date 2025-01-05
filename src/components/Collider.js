@@ -959,7 +959,7 @@ const Collider = ({
           <span className="relative group">
             <span className="cursor-pointer text-sm text-gray-400">
               &#9432;
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Truth is measured in terms of Market Capitalisations`}
               </span>
             </span>
@@ -1311,7 +1311,7 @@ const Collider = ({
                 onClick={() => copyText(process.env.NEXT_PUBLIC_PRO_TOKEN_MINT)}
               >
                 {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PRO`}
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-0 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-0 lg:-translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
                   {`Click to copy CA`}
                 </span>
               </label>
