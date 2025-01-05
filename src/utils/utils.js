@@ -364,3 +364,8 @@ export const shortenTick = (tick, useHourly) => {
     ? tick.split(" ").slice(0, 2).join(" ").slice(0, -1)
     : tick.split(" ").slice(-2).join(" ");
 };
+
+export const defaultToken = {
+  priceUsd: 1.0,
+  marketCap: 1e9,
+};

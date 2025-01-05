@@ -19,6 +19,7 @@ import {
   convertToLocaleTime,
   parseDateToISO,
   shortenTick,
+  defaultToken,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -36,8 +37,8 @@ const Collider = ({
   BASE_URL,
   onPredictionSubmitted,
   clearFields,
-  antiData,
-  proData,
+  antiData = defaultToken,
+  proData = defaultToken,
   config = emptyConfig,
   isMobile = false,
   bags = emptyBags,
@@ -487,7 +488,7 @@ const Collider = ({
               bags.proPool,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                : [1, 1],
+                : [0, 0],
               bags.wallets
             )
           : undefined;

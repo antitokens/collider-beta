@@ -36,6 +36,7 @@ import {
   emptyBags,
   convertToLocaleTime,
   formatCount,
+  defaultToken,
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
@@ -128,14 +129,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
-  const [antiData, setAntiData] = useState({
-    priceUsd: 1.0,
-    marketCap: 1e9,
-  });
-  const [proData, setProData] = useState({
-    priceUsd: 1.0,
-    marketCap: 1e9,
-  });
+  const [antiData, setAntiData] = useState(defaultToken);
+  const [proData, setProData] = useState(defaultToken);
   const [showAnimation, setShowAnimation] = useState(false);
   const [currentPredictionData, setCurrentPredictionData] =
     useState(emptyMetadata);
@@ -146,7 +141,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [dynamics, setDynamics] = useState([]);
-  const [truth, setTruth] = useState([]);
+  const [truth, setTruth] = useState([1, 0]);
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
@@ -319,7 +314,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         console.error("Error fetching token data:", error);
       }
     };
-    setTruth([]); // [ANTI, PRO]
     fetchTokenData();
   }, []);
 

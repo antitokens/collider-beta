@@ -13,6 +13,7 @@ import {
   emptyBags,
   formatCount,
   formatPrecise,
+  defaultToken,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -30,8 +31,8 @@ const Inverter = ({
   BASE_URL,
   onClaimSubmitted,
   clearFields,
-  antiData,
-  proData,
+  antiData = defaultToken,
+  proData = defaultToken,
   isMobile = false,
   bags = emptyBags,
   inactive = true,
