@@ -347,13 +347,13 @@ export const parseDateToISO = (dateStr, useHourly) => {
     const date = new Date(year, monthIndex, day, hour24);
     // Convert to ISO string
     const localDate = new Date(
-      date.getTime() - local.getTimezoneOffset() * 60000
+      date.getTime() + local.getTimezoneOffset() * 60000
     );
     return localDate.toISOString();
   }
   // For non-hourly format, convert UTC to local time before creating ISO string
   const date = new Date(dateStr);
-  const localDate = new Date(date.getTime() - local.getTimezoneOffset() * 60000);
+  const localDate = new Date(date.getTime() + local.getTimezoneOffset() * 60000);
   return localDate.toISOString();
 };
 
