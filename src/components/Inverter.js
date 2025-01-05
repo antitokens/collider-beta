@@ -473,7 +473,11 @@ const Inverter = ({
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                 </span>
               </div>
-              <div className="flex flex-row justify-between gap-1">
+              <div
+                className={`flex flex-row justify-between gap-1 ${
+                  inactive ? "hidden" : ""
+                }`}
+              >
                 <div
                   className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
                   onClick={() => setPhotonTokens(Number(updatedBalances[0]))}
@@ -516,7 +520,11 @@ const Inverter = ({
                   ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON
                 </label>
               </div>
-              <div className="flex flex-row justify-between items-center w-full">
+              <div
+                className={`flex flex-row justify-between items-center w-full ${
+                  inactive ? "hidden" : ""
+                }`}
+              >
                 <div className="flex flex-row justify-between gap-1">
                   <div
                     className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
