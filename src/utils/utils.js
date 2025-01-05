@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { BadgeCheck, CircleAlert } from "lucide-react";
+import { debounce } from "lodash";
+import "react-toastify/dist/ReactToastify.css";
 
 /* Global Constants */
 
@@ -365,7 +366,7 @@ export const shortenTick = (tick, useHourly) => {
     : tick.split(" ").slice(-2).join(" ");
 };
 
-export const copyText = async (text) => {
+export const copyText = debounce(async (text) => {
   try {
     await navigator.clipboard.writeText(text);
     toast.success("CA Copied to clipboard!");
@@ -373,7 +374,7 @@ export const copyText = async (text) => {
     console.error("Failed to copy text: ", err);
     toast.error("Failed to copy");
   }
-};
+}, 300);
 
 export const defaultToken = {
   priceUsd: 1.0,
