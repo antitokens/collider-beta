@@ -365,6 +365,16 @@ export const shortenTick = (tick, useHourly) => {
     : tick.split(" ").slice(-2).join(" ");
 };
 
+export const copyText = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success("CA Copied to clipboard!");
+  } catch (err) {
+    console.error("Failed to copy text: ", err);
+    toast.error("Failed to copy");
+  }
+};
+
 export const defaultToken = {
   priceUsd: 1.0,
   marketCap: 1e9,
