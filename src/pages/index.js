@@ -27,7 +27,6 @@ import {
   getTokenBalance,
 } from "../utils/solana";
 import {
-  toastContainerConfig,
   toast,
   useIsMobile,
   emptyMetadata,
@@ -41,8 +40,6 @@ import {
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 /* Main Page */
 
@@ -795,7 +792,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           />
         </div>
       )}
-      <ToastContainer {...toastContainerConfig} />
     </>
   );
 };
