@@ -736,7 +736,7 @@ const DashboardCollider = ({
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the count of PRO & ANTI collisions, and PHOTON & BARYON emissions over time`}
+                {`Displays the count of PRO & ANTI collisions, and PHOTON & BARYON emissions over time (UTC)`}
               </span>
             </div>
           </div>

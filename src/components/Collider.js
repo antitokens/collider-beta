@@ -75,7 +75,7 @@ const Collider = ({
       const local = new Date();
       markerDates.forEach((date, index) => {
         const localDate = new Date(
-          new Date(date).getTime()
+          new Date(date).getTime() + local.getTimezoneOffset() * 60000
         );
         const _date_ = useHourly
           ? localDate.toLocaleDateString("en-US", {
@@ -1114,7 +1114,7 @@ const Collider = ({
                     &nbsp;&#9432;
                   </div>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    {`Displays the global expectation of the outcome over time`}
+                    {`Displays the global expectation of the outcome over time (UTC)`}
                   </span>
                 </div>
               </div>
