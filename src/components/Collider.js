@@ -951,9 +951,19 @@ const Collider = ({
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
       <div className="bg-dark-card p-4 rounded w-full mb-4">
-        <h2 className="text-2xl text-white text-center font-medium mb-2">
-          Will BTC hit $1m in 2025?
-        </h2>
+        <div className="flex flex-row items-center mb-2">
+          <div className="text-2xl text-white text-center font-medium">
+            &nbsp;Will SOL overtake ETH in 2025?&nbsp;
+          </div>
+          <span className="relative group">
+            <span className="cursor-pointer text-sm text-gray-400">
+              &#9432;
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                {`Truth is measured in terms of Market Capitalisations`}
+              </span>
+            </span>
+          </span>
+        </div>
         <div className="flex flex-row justify-between">
           <div className="text-[12px] text-gray-500 text-left">
             <span className="relative group">

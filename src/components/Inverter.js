@@ -480,7 +480,7 @@ const Inverter = ({
                 }`}
               >
                 <div
-                  className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
+                  className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer animate-pulse duration-1000"
                   onClick={() => setPhotonTokens(Number(updatedBalances[0]))}
                 >
                   MAX
@@ -528,7 +528,7 @@ const Inverter = ({
               >
                 <div className="flex flex-row justify-between gap-1">
                   <div
-                    className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
+                    className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer animate-pulse duration-1000"
                     onClick={() => setBaryonTokens(Number(updatedBalances[1]))}
                   >
                     MAX
