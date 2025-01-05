@@ -12,7 +12,7 @@ export const calculateInversion = (baryon, photon, sign) => {
               : 1.0 * baryon
             : 0
           : 0
-        : 0
+        : 0.5 * baryon
       : 0.5 * photon;
 
   // Step 2: Calculate pro
@@ -26,7 +26,7 @@ export const calculateInversion = (baryon, photon, sign) => {
               : 1.0 * baryon
             : 0
           : 0
-        : 0
+        : 0.5 * baryon
       : 0.5 * photon;
 
   return { anti, pro };
