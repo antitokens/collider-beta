@@ -81,7 +81,7 @@ const Collider = ({
       ctx.textBaseline = "middle";
       // Position calculation
       // This puts the label near the end of x-axis, slightly above it
-      const x = xAxis.right - 50; // Shift left from the end
+      const x = xAxis.right - 30; // Shift left from the end
       const y = xAxis.top - 5; // Shift up from the axis
       // Draw the label
       ctx.fillText("Time (UTC)", x, y);

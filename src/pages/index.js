@@ -300,24 +300,26 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         const proData = await proResponse.json();
 
         // Update state for $ANTI and $PRO
-        if (antiData.pairs && antiData.pairs[0]) {
-          setAntiData({
-            priceUsd: parseFloat(antiData.pairs[0].priceUsd).toFixed(5),
-            marketCap: antiData.pairs[0].fdv,
-          });
-        }
+        if (!process.env.NEXT_PUBLIC_TEST_TOKENS) {
+          if (antiData.pairs && antiData.pairs[0]) {
+            setAntiData({
+              priceUsd: parseFloat(antiData.pairs[0].priceUsd).toFixed(5),
+              marketCap: antiData.pairs[0].fdv,
+            });
+          }
 
-        if (proData.pairs && proData.pairs[0]) {
-          setProData({
-            priceUsd: parseFloat(proData.pairs[0].priceUsd).toFixed(5),
-            marketCap: proData.pairs[0].fdv,
-          });
+          if (proData.pairs && proData.pairs[0]) {
+            setProData({
+              priceUsd: parseFloat(proData.pairs[0].priceUsd).toFixed(5),
+              marketCap: proData.pairs[0].fdv,
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching token data:", error);
       }
     };
-    setTruth([1, 0]); // [ANTI, PRO]
+    setTruth([]); // [ANTI, PRO]
     fetchTokenData();
   }, []);
 
