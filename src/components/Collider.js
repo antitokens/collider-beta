@@ -72,21 +72,25 @@ const Collider = ({
       const ctx = chart.ctx;
       const xAxis = chart.scales.x;
       const yAxis = chart.scales.y;
+      const local = new Date();
       markerDates.forEach((date, index) => {
-        const _dateStr = useHourly
-          ? new Date(date).toLocaleDateString("en-US", {
+        const localDate = new Date(
+          new Date(date).getTime() + local.getTimezoneOffset() * 60000
+        );
+        const _date_ = useHourly
+          ? localDate.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",
               hour: "numeric",
               hour12: true,
             })
-          : new Date(date).toLocaleDateString("en-US", {
+          : localDate.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",
             });
-        const dateStr = shortenTick(_dateStr, useHourly);
+        const dateStr = shortenTick(_date_, useHourly);
         const xPosition = xAxis.getPixelForValue(dateStr);
         if (!xPosition) return;
         ctx.save();
