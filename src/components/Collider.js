@@ -20,6 +20,7 @@ import {
   parseDateToISO,
   shortenTick,
   defaultToken,
+  copyText,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -1306,9 +1307,13 @@ const Collider = ({
             <div className="flex items-center bg-black px-3 py-2 rounded gap-2 w-full">
               <label
                 htmlFor="proTokens"
-                className="text-accent-secondary font-medium text-sm"
+                className="text-accent-secondary font-medium text-sm relative group"
+                onClick={() => copyText(process.env.NEXT_PUBLIC_PRO_TOKEN_MINT)}
               >
-                ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PRO
+                {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PRO`}
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-0 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
+                  {`Click to copy CA`}
+                </span>
               </label>
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <input
@@ -1359,9 +1364,15 @@ const Collider = ({
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <label
                 htmlFor="antiTokens"
-                className="text-accent-orange font-medium text-sm"
+                className="text-accent-orange font-medium text-sm relative group"
+                onClick={() =>
+                  copyText(process.env.NEXT_PUBLIC_ANTI_TOKEN_MINT)
+                }
               >
-                ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}ANTI
+                {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}ANTI`}
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
+                  {`Click to copy CA`}
+                </span>
               </label>
             </div>
             <div className={inactive ? "hidden" : "text-xs"}>
@@ -1402,7 +1413,7 @@ const Collider = ({
                   htmlFor="photonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PHOTON
+                  {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PHOTON`}
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
@@ -1463,7 +1474,7 @@ const Collider = ({
                   htmlFor="baryonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON
+                  {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON`}
                 </label>
               </div>
               <div
