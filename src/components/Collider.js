@@ -487,7 +487,7 @@ const Collider = ({
               bags.proPool,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                : [0, 0],
+                : [1, 1],
               bags.wallets
             )
           : undefined;
