@@ -8,6 +8,7 @@ import {
   generateGradientColor,
   shortenTick,
 } from "../utils/utils";
+import plugin from "@tailwindcss/typography";
 
 Chart.register(ChartDataLabels, ...registerables);
 
@@ -32,6 +33,24 @@ const DashboardCollider = ({
   const [lineChartData, setLineChartData] = useState(null);
   const [netDistribution, setNetDistribution] = useState(null);
   const [winnerDistribution, setWinnerDistribution] = useState(null);
+
+  const xAxisLabelPlugin = {
+    id: "xAxisLabel",
+    afterDraw: (chart) => {
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      // Style settings for the label
+      ctx.font = "8px 'SF Mono Round'";
+      ctx.fillStyle = "#666666";
+      ctx.textBaseline = "middle";
+      // Position calculation
+      // This puts the label near the end of x-axis, slightly above it
+      const x = xAxis.right - 50; // Shift left from the end
+      const y = xAxis.top - 5; // Shift up from the axis
+      // Draw the label
+      ctx.fillText("Time (UTC)", x, y);
+    },
+  };
 
   useEffect(() => {
     // Prepare pie chart data for events
@@ -322,6 +341,7 @@ const DashboardCollider = ({
           tension: 0.25,
         },
       ],
+      plugins: [xAxisLabelPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -736,13 +756,17 @@ const DashboardCollider = ({
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the count of PRO & ANTI collisions, and PHOTON & BARYON emissions over time (UTC)`}
+                {`Displays the count of PRO & ANTI collisions, and PHOTON & BARYON emissions over time`}
               </span>
             </div>
           </div>
           {lineChartData && (
             <div style={{ height: "250px" }}>
-              <Line data={lineChartData} options={lineChartData.options} />
+              <Line
+                data={lineChartData}
+                options={lineChartData.options}
+                plugins={lineChartData.plugins}
+              />
             </div>
           )}
         </div>

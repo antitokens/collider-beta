@@ -492,6 +492,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   bags={bags}
                   balances={balances}
                   inactive={inactive || dead}
+                  isMetaLoading={isMetaLoading}
                 />
               </div>
             ) : (

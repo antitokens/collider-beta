@@ -43,8 +43,9 @@ const Collider = ({
   bags = emptyBags,
   balances = emptyMetadata,
   inactive = true,
+  isMetaLoading = true,
 }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(isMetaLoading);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
@@ -64,6 +65,28 @@ const Collider = ({
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
     useState("1D");
   const sliderRef = useRef(null);
+
+  useEffect(() => {
+    setLoading(isMetaLoading);
+  }, [isMetaLoading]);
+
+  const xAxisLabelPlugin = {
+    id: "xAxisLabel",
+    afterDraw: (chart) => {
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      // Style settings for the label
+      ctx.font = "8px 'SF Mono Round'";
+      ctx.fillStyle = "#666666";
+      ctx.textBaseline = "middle";
+      // Position calculation
+      // This puts the label near the end of x-axis, slightly above it
+      const x = xAxis.right - 50; // Shift left from the end
+      const y = xAxis.top - 5; // Shift up from the axis
+      // Draw the label
+      ctx.fillText("Time (UTC)", x, y);
+    },
+  };
 
   const verticalLinesPlugin = {
     id: "verticalLines",
@@ -283,7 +306,7 @@ const Collider = ({
           hoverBorderColor: "transparent",
         },
       ],
-      plugins: [verticalLinesPlugin],
+      plugins: [verticalLinesPlugin, xAxisLabelPlugin],
       options: {
         responsive: true,
         interaction: {
@@ -1046,8 +1069,16 @@ const Collider = ({
         className={inactive ? "hidden" : "mb-4 bg-dark-card p-4 rounded w-full"}
       >
         {predictionHistoryChartData && (
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex gap-1 mt-4 font-sfmono">
+          <div
+            className={`flex flex-col ${
+              loading ? "items-center" : "items-end"
+            } gap-1`}
+          >
+            <div
+              className={`flex gap-1 mt-4 font-sfmono ${
+                loading ? "hidden" : ""
+              }`}
+            >
               <div
                 className={
                   predictionHistoryTimeframe === "1H"
@@ -1114,16 +1145,28 @@ const Collider = ({
                     &nbsp;&#9432;
                   </div>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    {`Displays the global expectation of the outcome over time (UTC)`}
+                    {`Displays the global expectation of the outcome over time`}
                   </span>
                 </div>
               </div>
             </div>
-            <Line
-              data={predictionHistoryChartData}
-              options={predictionHistoryChartData.options}
-              plugins={predictionHistoryChartData.plugins}
-            />
+            {!isMetaLoading ? (
+              <Line
+                data={predictionHistoryChartData}
+                options={predictionHistoryChartData.options}
+                plugins={predictionHistoryChartData.plugins}
+              />
+            ) : (
+              <div className="flex flex-col px-4 py-8">
+                <BinaryOrbit
+                  size={isMobile ? 100 : 100}
+                  orbitRadius={isMobile ? 35 : 35}
+                  particleRadius={isMobile ? 10 : 10}
+                  padding={10}
+                  invert={false}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
