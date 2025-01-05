@@ -1,3 +1,5 @@
+/* Collider v1.0-alpha */
+
 export const calculateCollision = (anti, pro, flag = false, norm = false) => {
   // Step 1: Calculate u (= mean)
   const u = flag

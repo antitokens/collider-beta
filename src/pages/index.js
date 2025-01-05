@@ -14,7 +14,7 @@ import {
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
-import { calculateScattering } from "../utils/scatterAlpha";
+import { calculateEqualisation } from "../utils/equaliserAlpha";
 import Navbar from "../components/TopNavbar";
 import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
@@ -42,6 +42,8 @@ import { calculateCollision } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+/* Main Page */
 
 const Home = ({ BASE_URL }) => {
   const [trigger, setTrigger] = useState(null); // Shared state
@@ -247,11 +249,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             proPool: data.collisionsData.proTokens,
             wallets: data.totalDistribution.wallets,
           });
-          const rewardCurrent = calculateScattering(
+          const rewardCurrent = calculateEqualisation(
             data.totalDistribution.bags.baryon,
             data.totalDistribution.bags.photon,
-            data.emissionsData.baryonTokens,
-            data.emissionsData.photonTokens,
             data.totalDistribution.bags.anti,
             data.totalDistribution.bags.pro,
             data.collisionsData.antiTokens,
@@ -491,7 +491,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   isMobile={isMobile}
                   bags={bags}
                   balances={balances}
-                  claims={claims}
                   inactive={inactive || dead}
                 />
               </div>

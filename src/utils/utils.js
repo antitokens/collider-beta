@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BadgeCheck, CircleAlert } from "lucide-react";
-import { calculateCollision } from "./colliderAlpha";
+
+/* Global Constants */
 
 // Metadata init
 export const metadataInit = {

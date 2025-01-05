@@ -10,6 +10,8 @@ import {
 
 Chart.register(ChartDataLabels, ...registerables);
 
+/* Collider Dashboard */
+
 const DashboardCollider = ({
   emissionsData,
   collisionsData,

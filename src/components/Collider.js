@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { recordPrediction } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
-import { calculateScattering } from "../utils/scatterAlpha";
+import { calculateEqualisation } from "../utils/equaliserAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
@@ -19,6 +19,8 @@ import {
   convertToLocaleTime,
 } from "../utils/utils";
 Chart.register(...registerables);
+
+/* Collider Container */
 
 const Collider = ({
   wallet,
@@ -38,7 +40,6 @@ const Collider = ({
   isMobile = false,
   bags = emptyBags,
   balances = emptyMetadata,
-  claims = emptyMetadata,
   inactive = true,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -438,11 +439,9 @@ const Collider = ({
     if (wallet.publicKey) {
       const rewardCurrent =
         bags !== emptyBags
-          ? calculateScattering(
+          ? calculateEqualisation(
               bags.baryon,
               bags.photon,
-              bags.baryonPool,
-              bags.photonPool,
               bags.anti,
               bags.pro,
               bags.antiPool,
@@ -492,11 +491,9 @@ const Collider = ({
 
       const rewardUpdated =
         bags !== emptyBags
-          ? calculateScattering(
+          ? calculateEqualisation(
               updatedBaryonBags,
               updatedPhotonBags,
-              bags.baryonPool + baryonTokens,
-              bags.photonPool + photonTokens,
               updatedAntiBags,
               updatedProBags,
               bags.antiPool + antiTokens,

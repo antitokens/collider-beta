@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { recordClaim } from "../utils/api";
 import { calculateInversion } from "../utils/inverterAlpha";
-import { implementScattering } from "../utils/scatterAlpha";
+import { implementEqualisation } from "../utils/equaliserAlpha";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "./BinaryOrbit";
@@ -10,13 +10,13 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   toastContainerConfig,
   toast,
-  emptyConfig2,
   emptyBags,
-  emptyMetadata,
   formatCount,
   formatPrecise,
 } from "../utils/utils";
 Chart.register(...registerables);
+
+/* Inverter Container */
 
 const Inverter = ({
   wallet,
@@ -57,11 +57,9 @@ const Inverter = ({
     if (wallet.publicKey) {
       const rewardCurrent =
         bags !== emptyBags
-          ? implementScattering(
+          ? implementEqualisation(
               bags.baryon,
               bags.photon,
-              bags.baryonPool,
-              bags.photonPool,
               bags.anti,
               bags.pro,
               bags.antiPool,

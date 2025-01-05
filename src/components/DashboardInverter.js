@@ -10,6 +10,8 @@ import {
 
 Chart.register(ChartDataLabels, ...registerables);
 
+/* Inverter Dashboard */
+
 const DashboardInverter = ({
   emissionsData,
   collisionsData,

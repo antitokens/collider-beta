@@ -7,6 +7,8 @@ import {
 } from "../utils/solana";
 import { getBalance } from "../utils/api";
 
+/* Token Balances Navbar */
+
 const TokenBalance = (trigger) => {
   const wallet = useWallet();
   const [antiBalance, setAntiBalance] = useState(0);

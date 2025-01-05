@@ -1,3 +1,5 @@
+/* API to web2 Database */
+
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
 
 export const recordPrediction = async (walletAddress, predict) => {

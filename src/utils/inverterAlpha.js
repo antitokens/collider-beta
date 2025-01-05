@@ -1,3 +1,5 @@
+/* Inverter v1.0-alpha */
+
 export const calculateInversion = (baryon, photon, sign) => {
   // Step 1: Calculate anti
   const anti =

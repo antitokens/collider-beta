@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from "react";
 
+/* Binary Orbit Animation */
+
 const BinaryOrbit = ({
   size,
   orbitRadius,
