@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --accent-primary: #c12f00;
+  --accent-secondary: #00bb7a;
+}
+
 @font-face {
   font-family: "Space Grotesk";
   src: url("/fonts/SF-Mono-Round.woff2") format("woff2");
@@ -90,5 +95,53 @@ code {
 }
 
 button.wallet-adapter-button-trigger {
-  @apply bg-accent-primary rounded-md text-sm w-full justify-center md:w-auto font-sfmono;
+  @apply bg-accent-primary rounded-full text-sm w-full justify-center px-4 h-9 font-normal md:w-auto;
+}
+
+input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  outline: none;
+  background: var(--accent-primary);
+  height: 8px;
+  border-radius: 8px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: white;
+  cursor: pointer;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: none;
+  transition: 0.2s ease-in-out;
+}
+
+input[type="range"]::-moz-range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: white;
+  cursor: pointer;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  border: none;
+  transition: 0.2s ease-in-out;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.timeframe-pill {
+  @apply w-8 h-6 flex items-center justify-center text-sm rounded-lg cursor-pointer font-medium;
+}
+
+.timeframe-pill-active {
+  @apply timeframe-pill bg-gray-300 text-black;
 }

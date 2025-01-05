@@ -3,7 +3,9 @@ import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import TokenBalance from "./TokenBalance";
 
-const Navbar = () => {
+/* Navbar */
+
+const Navbar = (trigger) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCommunityDropdownOpen, setIsCommunityDropdownOpen] = useState(false);
@@ -38,7 +40,7 @@ const Navbar = () => {
         {/* Left side: Mobile Menu Button / Logo on Desktop */}
         <div className="justify-self-start">
           <button
-            className="md:hidden text-gray-300 hover:text-accent-primary"
+            className="lg:hidden text-gray-300 hover:text-accent-primary"
             onClick={toggleMobileMenu}
           >
             <svg
@@ -56,7 +58,7 @@ const Navbar = () => {
               />
             </svg>
           </button>
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <Link href="/" passHref legacyBehavior>
               <a className="flex items-center text-3xl md:text-xl lg:text-3xl font-semibold font-ocr bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
                 Antitoken
@@ -71,9 +73,9 @@ const Navbar = () => {
         {/* Center: Logo on Mobile / Navigation on Desktop */}
         <div className="justify-self-start md:justify-self-center md:w-full">
           {/* Mobile Logo */}
-          <div className="md:hidden flex justify-center">
+          <div className="lg:hidden flex justify-center">
             <Link href="/" passHref legacyBehavior>
-              <a className="flex items-center tracking-tighter text-2xl md:text-xl font-semibold font-ocr bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
+              <a className="flex items-center tracking-tighter text-2xl font-semibold font-ocr bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
                 Antitoken
                 <span className="text-xs ml-2 text-white bg-accent-primary px-2 py-0.5 rounded">
                   ALPHA
@@ -82,7 +84,7 @@ const Navbar = () => {
             </Link>
           </div>
           {/* Desktop Navigation */}
-          <div className="hidden md:flex justify-center space-x-8">
+          <div className="hidden lg:flex justify-center space-x-8">
             <a
               href="https://antitoken.pro/"
               target="_blank"
@@ -193,11 +195,10 @@ const Navbar = () => {
         {/* Wallet Button */}
         <div className="justify-self-end relative">
           {/* (Desktop) */}
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             {isMounted && (
-              <div className="flex flex-row items-center">
-                <TokenBalance />
-                &nbsp;&nbsp;
+              <div className="flex flex-row items-center gap-2">
+                <TokenBalance trigger={trigger} />
                 <WalletMultiButton className="wallet-button" />
               </div>
             )}
@@ -207,7 +208,7 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-dark-card/90 border-b border-gray-800/50">
+        <div className="lg:hidden bg-dark-card/90 border-b border-gray-800/50">
           <div className="px-4 py-3 space-y-4">
             <a
               href="https://antitoken.pro/"

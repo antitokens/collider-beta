@@ -1,46 +1,65 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Head from "next/head";
-import Script from "next/script";
 import {
   ConnectionProvider,
   WalletProvider,
   useWallet,
 } from "@solana/wallet-adapter-react";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import {
-  WalletModalProvider,
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
-import {
-  PhantomWalletAdapter,
   SolflareWalletAdapter,
   TorusWalletAdapter,
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
-import VoteOption from "../components/VoteOption";
+import Collider from "../components/Collider";
+import Inverter from "../components/Inverter";
+import { Stars, ParticleCollision } from "../components/CollisionAnimation";
+import { calculateEqualisation } from "../utils/equaliserAlpha";
 import Navbar from "../components/TopNavbar";
+import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
-import Dashboard from "../components/Dashboard";
+import DashboardCollider from "../components/DashboardCollider";
+import DashboardInverter from "../components/DashboardInverter";
 import BuyTokenModal from "../components/BuyTokenModal";
 import {
   ANTI_TOKEN_MINT,
   PRO_TOKEN_MINT,
   getTokenBalance,
 } from "../utils/solana";
-import { calculateDistribution } from "../utils/colliderAlpha";
+import {
+  toastContainerConfig,
+  toast,
+  useIsMobile,
+  emptyMetadata,
+  metadataInit,
+  emptyGaussian,
+  emptyBags,
+  convertToLocaleTime,
+  formatCount,
+  defaultToken,
+} from "../utils/utils";
+import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
+import { calculateCollision } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+/* Main Page */
 
 const Home = ({ BASE_URL }) => {
+  const [trigger, setTrigger] = useState(null); // Shared state
+
   return (
     <>
       <Head>
-        <title>Antitoken | Vote</title>
+        <title>Antitoken | Predict</title>
         <meta
           name="description"
           content="Experience the future of prediction markets with $ANTI and $PRO tokens."
         />
 
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Antitoken Voting Station" />
+        <meta property="og:title" content="Antitoken Predicting Station" />
         <meta
           property="og:description"
           content="Experience the future of prediction markets with $ANTI and $PRO tokens."
@@ -54,7 +73,7 @@ const Home = ({ BASE_URL }) => {
 
         {/* Twitter Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Antitoken Voting Station" />
+        <meta name="twitter:title" content="Antitoken Predicting Station" />
         <meta
           name="twitter:description"
           content="Experience the future of prediction markets with $ANTI and $PRO tokens."
@@ -86,114 +105,248 @@ const Home = ({ BASE_URL }) => {
         />
       </Head>
       <div className="bg-dark text-gray-100 min-h-screen relative overflow-x-hidden font-grotesk">
-        <Stars />
-        <Navbar />
-        <LandingPage BASE_URL={BASE_URL} />
+        <Stars length={16} />
+        <Navbar trigger={trigger} />
+        <LandingPage BASE_URL={BASE_URL} setTrigger={setTrigger} />
         <Footer />
       </div>
     </>
   );
 };
 
-function seededRandom(seed) {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
-
-const Stars = () => {
-  const seed = 42; // Fixed seed value
-  return (
-    <div className="fixed inset-0 pointer-events-none">
-      {Array.from({ length: 16 }).map((_, idx) => {
-        const randomTop = seededRandom(seed + idx) * 100;
-        const randomLeft = seededRandom(seed * idx) * 100;
-        const floatDuration = 8 + (idx % 6); // 8s to 14s
-        return (
-          <div
-            key={idx}
-            className={`star ${idx % 2 === 0 ? "star-red" : "star-green"}`}
-            style={{
-              top: `${randomTop}%`,
-              left: `${randomLeft}%`,
-              animation: `float ${floatDuration}s ease-in-out infinite`,
-            }}
-          ></div>
-        );
-      })}
-    </div>
-  );
-};
-
-const LandingPage = ({ BASE_URL }) => {
-  const { connected, publicKey } = useWallet();
+const LandingPage = ({ BASE_URL, setTrigger }) => {
+  const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
+  const [inactive, setInactive] = useState(false);
+  const [dead, setDead] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
+  const [antiUsage, setAntiUsage] = useState(0);
+  const [proUsage, setProUsage] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
+  const [bags, setBags] = useState(emptyBags);
+  const [showCollider, setShowCollider] = useState(true);
+  const [dataUpdated, setDataUpdated] = useState(false);
+  const [clearFields, setClearFields] = useState(false);
+  const [antiData, setAntiData] = useState(defaultToken);
+  const [proData, setProData] = useState(defaultToken);
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [currentPredictionData, setCurrentPredictionData] =
+    useState(emptyMetadata);
+  const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
+  const [balances, setBalances] = useState(metadataInit);
+  const [claims, setClaims] = useState(metadataInit);
+  const [isMetaLoading, setIsMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState(null);
+  const [refresh, setRefresh] = useState(true);
+  const [dynamics, setDynamics] = useState([]);
+  const [truth, setTruth] = useState([1, 0]);
+  const isMobile = useIsMobile();
 
-  const voterDistribution = calculateDistribution(50, 30);
-  const totalDistribution = calculateDistribution(60, 20);
+  const onRefresh = (state) => {
+    setRefresh(state);
+  };
 
-  const votersSeed = Math.random();
-  const votersData = {
-    total: 10000 * votersSeed,
-    proVoters: 10000 * Math.random() * votersSeed,
-    antiVoters: 10000 * Math.random() * (1 - votersSeed),
+  const handlePredictionSubmitted = (state, event) => {
+    if (state) {
+      // Store the submitted event data
+      setCurrentPredictionData(event);
+      setRefresh(true);
+    } else {
+      // Handle error case
+      console.error("Prediction submission failed:", event.error);
+    }
+    setDataUpdated(state);
+    setTrigger(state);
+    // Trigger field clearing
+    setClearFields(true);
+    setTimeout(() => setClearFields(false), 100);
+    setTimeout(() => setShowAnimation(state), 100);
   };
-  const tokensSeed = Math.random();
-  const tokensData = {
-    total: 999987675,
-    proTokens: 999987675 * Math.random() * tokensSeed,
-    antiTokens: 999987675 * Math.random() * (1 - tokensSeed),
+
+  const handleClaimSubmitted = (state, claim) => {
+    if (state) {
+      setCurrentClaimData(claim);
+      setRefresh(true);
+      setTruth([]);
+    } else {
+      // Handle error case
+      console.error("Reclaim submission failed:", claim.error);
+    }
+    setDataUpdated(state);
+    setTrigger(state);
+    // Trigger field clearing
+    setClearFields(true);
+    setTimeout(() => setClearFields(false), 100);
+    setTimeout(() => setShowAnimation(state), 100);
   };
-  const votesSeed = Math.random();
-  const votesOverTime = {
-    timestamps: ["Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10"],
-    proVotes: [
-      51210286 * Math.random() * votesSeed,
-      10303372 * Math.random() * votesSeed,
-      40281190 * Math.random() * votesSeed,
-      74538504 * Math.random() * votesSeed,
-      12174106 * Math.random() * votesSeed,
-    ],
-    antiVotes: [
-      16543217 * Math.random() * (1 - votesSeed),
-      66582982 * Math.random() * (1 - votesSeed),
-      14596107 * Math.random() * (1 - votesSeed),
-      27472813 * Math.random() * (1 - votesSeed),
-      25271918 * Math.random() * (1 - votesSeed),
-    ],
-    tokenRangesPro: {
-      "0-100k": 76 * Math.random(),
-      "100k-1M": 67 * Math.random(),
-      "1-10M": 57 * Math.random(),
-    },
-    tokenRangesAnti: {
-      "0-100k": 49 * Math.random(),
-      "100k-1M": 59 * Math.random(),
-      "1-10M": 62 * Math.random(),
-    },
-  };
+
+  useEffect(() => {
+    const checkMeta = async () => {
+      toast.error("Error fetching metadata from server!");
+      return;
+    };
+    if (metaError) checkMeta();
+  }, [metaError]);
+
+  useEffect(() => {
+    if (balances !== metadataInit) {
+      setDead(
+        new Date() < new Date(balances.startTime) &&
+          new Date() < new Date(balances.endTime)
+      );
+      setInactive(
+        new Date() < new Date(balances.startTime) ||
+          new Date() > new Date(balances.endTime)
+      );
+    }
+  }, [balances]);
+
+  useEffect(() => {
+    if (refresh && !dead) {
+      const fetchBalancesWithClaims = async () => {
+        try {
+          setIsMetaLoading(true);
+          const blob = await getBalances();
+          const blobClaim = await getClaims();
+          const data = JSON.parse(blob.message);
+          const dataClaim = JSON.parse(blobClaim.message);
+          const colliderDistribution =
+            baryonBalance >= 0 && photonBalance >= 0
+              ? calculateCollision(baryonBalance, photonBalance, true)
+              : emptyGaussian;
+          const totalDistribution =
+            data.totalDistribution.u >= 0 && data.totalDistribution.s >= 0
+              ? calculateCollision(
+                  data.emissionsData.baryonTokens,
+                  data.emissionsData.photonTokens,
+                  true
+                )
+              : emptyGaussian;
+          setBalances({
+            startTime: data.startTime,
+            endTime: data.endTime,
+            colliderDistribution: colliderDistribution,
+            totalDistribution: totalDistribution,
+            emissionsData: data.emissionsData,
+            collisionsData: data.collisionsData,
+            eventsOverTime: data.eventsOverTime,
+          });
+          setBags({
+            baryon: data.totalDistribution.bags.baryon,
+            photon: data.totalDistribution.bags.photon,
+            baryonPool: data.emissionsData.baryonTokens,
+            photonPool: data.emissionsData.photonTokens,
+            anti: data.totalDistribution.bags.anti,
+            pro: data.totalDistribution.bags.pro,
+            antiPool: data.collisionsData.antiTokens,
+            proPool: data.collisionsData.proTokens,
+            wallets: data.totalDistribution.wallets,
+          });
+          const rewardCurrent = calculateEqualisation(
+            data.totalDistribution.bags.baryon,
+            data.totalDistribution.bags.photon,
+            data.totalDistribution.bags.anti,
+            data.totalDistribution.bags.pro,
+            data.collisionsData.antiTokens,
+            data.collisionsData.proTokens,
+            antiData && proData
+              ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+              : [1, 1],
+            data.totalDistribution.wallets
+          );
+          setDynamics(rewardCurrent ? rewardCurrent.overlap : []);
+          setClaims({
+            startTime: dataClaim.startTime,
+            endTime: dataClaim.endTime,
+            colliderDistribution: colliderDistribution,
+            totalDistribution: totalDistribution,
+            emissionsData: dataClaim.emissionsData,
+            collisionsData: dataClaim.collisionsData,
+            eventsOverTime: dataClaim.eventsOverTime,
+          });
+        } catch (err) {
+          console.error("Error fetching metadata:", err);
+          setMetaError(err);
+        } finally {
+          setIsMetaLoading(false);
+          setRefresh(false);
+        }
+      };
+      fetchBalancesWithClaims();
+    }
+  }, [refresh, baryonBalance, photonBalance, antiData, proData, dead]);
+
+  useEffect(() => {
+    const fetchTokenData = async () => {
+      try {
+        // Fetch data for both tokens
+        const [antiResponse, proResponse] = await Promise.all([
+          fetch(
+            `https://api.dexscreener.com/latest/dex/tokens/${process.env.NEXT_PUBLIC_ANTI_TOKEN_MINT}`
+          ),
+          fetch(
+            `https://api.dexscreener.com/latest/dex/tokens/${process.env.NEXT_PUBLIC_PRO_TOKEN_MINT}`
+          ),
+        ]);
+
+        const antiData = await antiResponse.json();
+        const proData = await proResponse.json();
+
+        // Update state for $ANTI and $PRO
+        if (!process.env.NEXT_PUBLIC_TEST_TOKENS) {
+          if (antiData.pairs && antiData.pairs[0]) {
+            setAntiData({
+              priceUsd: parseFloat(antiData.pairs[0].priceUsd).toFixed(5),
+              marketCap: antiData.pairs[0].fdv,
+            });
+          }
+
+          if (proData.pairs && proData.pairs[0]) {
+            setProData({
+              priceUsd: parseFloat(proData.pairs[0].priceUsd).toFixed(5),
+              marketCap: proData.pairs[0].fdv,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching token data:", error);
+      }
+    };
+    fetchTokenData();
+  }, []);
+
+  useEffect(() => {
+    if (claims !== metadataInit) setTruth([]);
+  }, [claims]);
 
   useEffect(() => {
     const checkBalance = async () => {
       const [antiBalanceResult, proBalanceResult] = await Promise.all([
-        getTokenBalance(publicKey, ANTI_TOKEN_MINT),
-        getTokenBalance(publicKey, PRO_TOKEN_MINT),
+        getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
+        getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      setAntiBalance(antiBalanceResult);
-      setProBalance(proBalanceResult);
+      const _balance = await getBalance(wallet.publicKey);
+      const balance = JSON.parse(_balance.message);
+      const _claim = await getClaim(wallet.publicKey);
+      const claim = JSON.parse(_claim.message);
+      setAntiBalance(antiBalanceResult - balance.anti + claim.anti);
+      setProBalance(proBalanceResult - balance.pro + claim.pro);
+      setAntiUsage(balance.anti - claim.anti);
+      setProUsage(balance.pro - claim.pro);
+      setBaryonBalance(balance.baryon - claim.baryon);
+      setPhotonBalance(balance.photon - claim.photon);
     };
 
-    if (publicKey) checkBalance();
-  }, [publicKey]);
+    if (wallet.publicKey || dataUpdated) checkBalance();
+  }, [wallet, dataUpdated]);
 
   return (
     <>
       <section className="min-h-screen pt-16 md:pt-20 flex flex-col items-center relative mt-10 mb-10">
         {/* Hero Section */}
-        <div className="max-w-7xl w-full mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center">
+        <div className="max-w-7xl w-full mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center rounded-md">
           <div className="flex items-center gap-2">
             <div>
               <svg
@@ -212,23 +365,43 @@ const LandingPage = ({ BASE_URL }) => {
               </svg>
             </div>
             <p className="text-left">
-              The voting program is built off-chain for demonstration purposes.
-              No funds will be deducted from your wallet.
+              The prediction program is built off-chain for demonstration
+              purposes. No funds will be deducted from your wallet.
             </p>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[70%,30%] items-center gap-8 max-w-7xl mx-auto px-4">
           {/* Hero Text */}
           <div>
-            <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300/90 font-semibold font-outfit">
-              Vote with{" "}
-              <span className="text-accent-primary font-semibold">$ANTI</span>{" "}
-              and{" "}
-              <span className="text-accent-secondary font-semibold">$PRO</span>{" "}
+            <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300 font-bold font-outfit">
+              PREDICT WITH
+              <br />
+              <span className="text-accent-primary">$ANTI</span> and{" "}
+              <span className="text-accent-secondary">$PRO</span>
             </h1>
             <p className="font-open font-medium text-xl md:text-[1.35rem] text-gray-300 mb-6">
               Experience the future of prediction markets with Antitoken
             </p>
+            <button
+              className="bg-accent-primary hover:opacity-90 text-gray-100 px-8 py-3 rounded-full text-lg font-semibold flex items-center gap-2"
+              onClick={() => setShowBuyTokensModal(true)}
+            >
+              <span>Buy Tokens</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-gray-100 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            </button>
           </div>
 
           {/* Hero Image */}
@@ -242,67 +415,347 @@ const LandingPage = ({ BASE_URL }) => {
           </div>
         </div>
 
-        {/* Voting Section */}
-        <div className="border border-gray-500 rounded-lg p-12 text-center mt-20 px-24 bg-black bg-opacity-50">
-          <h3 className="font-grotesk text-2xl font-medium text-white mb-6">
-            Should Dev launch a token on Base?&nbsp;
-            <button
-              onClick={() =>
-                alert(
-                  "Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote."
-                )
-              }
-              title="Your ANTI:PRO ratio, ANTI + PRO sum, and ANTI - PRO difference determines your vote."
-            >
-              <svg
-                className="w-6 h-6 text-white dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="#ffffff95"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+        {/* Collider Sections Toggle */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto">
+          <div className="lg:col-span-1 xl:col-span-2 mx-2 md:mx-0">
+            {showCollider ? (
+              <div className="text-center mt-20">
+                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
+                  <h2 className="text-xl text-gray-300 text-left font-medium">
+                    Collider
+                  </h2>
+                  <button
+                    className="text-sm text-accent-primary hover:text-gray-300"
+                    onClick={() => {
+                      setShowCollider(false),
+                        setDataUpdated(false),
+                        setRefresh(false);
+                    }}
+                  >
+                    <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
+                      <div className="mr-1">Switch to Inverter</div>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="rotate-90 hover:rotate-180 transition-transform duration-200 ease-in-out"
+                      >
+                        <path
+                          d="M6 2L6 14L2 10"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="square"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M10 14L10 2L14 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="square"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+                <Collider
+                  wallet={wallet}
+                  antiBalance={antiBalance}
+                  proBalance={proBalance}
+                  antiUsage={antiUsage}
+                  proUsage={proUsage}
+                  baryonBalance={baryonBalance}
+                  photonBalance={photonBalance}
+                  disabled={!wallet.connected}
+                  BASE_URL={BASE_URL}
+                  onPredictionSubmitted={handlePredictionSubmitted}
+                  clearFields={clearFields}
+                  antiData={antiData}
+                  proData={proData}
+                  config={{
+                    startTime: balances.startTime || "-",
+                    endTime: balances.endTime || "-",
+                    antiLive:
+                      balances.collisionsData.antiTokens -
+                        claims.collisionsData.antiTokens || 0,
+                    proLive:
+                      balances.collisionsData.proTokens -
+                        claims.collisionsData.proTokens || 0,
+                  }}
+                  isMobile={isMobile}
+                  bags={bags}
+                  balances={balances}
+                  inactive={inactive || dead}
+                  isMetaLoading={isMetaLoading}
                 />
-              </svg>
-            </button>
-          </h3>
-          {/* Voting Options */}
-          <div className="flex justify-center max-w-md mx-auto">
-            <VoteOption
-              wallet={publicKey}
-              antiBalance={antiBalance}
-              proBalance={proBalance}
-              baryonBalance={baryonBalance}
-              photonBalance={photonBalance}
-              disabled={!connected}
-              BASE_URL={BASE_URL}
-            />
+              </div>
+            ) : (
+              <div className="mt-20">
+                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
+                  <h2 className="text-xl text-gray-300 text-left font-medium">
+                    Inverter
+                  </h2>
+                  <button
+                    className="text-sm text-accent-primary hover:text-gray-300"
+                    onClick={() => {
+                      setShowCollider(true),
+                        setDataUpdated(false),
+                        setRefresh(false);
+                    }}
+                  >
+                    <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
+                      <div className="mr-1">Switch to Collider</div>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="rotate-90 hover:rotate-180 transition-transform duration-200 ease-in-out"
+                      >
+                        <path
+                          d="M6 2L6 14L2 10"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="square"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M10 14L10 2L14 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="square"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+                <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
+                  <div className="bg-dark-card p-4 rounded w-full mb-4 flex flex-col justify-center">
+                    <h2 className="text-xl text-gray-300 text-center font-medium mb-2">
+                      Claim your Collider Emissions
+                    </h2>
+                    <div className="flex flex-row justify-between">
+                      <div className="text-[12px] text-gray-500 text-left">
+                        <span className="relative group">
+                          <span className="cursor-pointer">
+                            &#9432;
+                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                              {isMobile
+                                ? `Reclaim opening date & time: ${
+                                    balances.endTime
+                                      ? isMobile
+                                        ? convertToLocaleTime(
+                                            balances.startTime,
+                                            isMobile
+                                          ).split(",")[0]
+                                        : convertToLocaleTime(
+                                            balances.startTime,
+                                            isMobile
+                                          )
+                                      : "-"
+                                  }`
+                                : "Reclaim opening date & time"}
+                            </span>
+                          </span>
+                        </span>{" "}
+                        &nbsp;Open:{" "}
+                        <span className="font-sfmono text-gray-400 text-[11px]">
+                          {balances.endTime
+                            ? isMobile
+                              ? convertToLocaleTime(
+                                  balances.endTime,
+                                  isMobile
+                                ).split(",")[0]
+                              : convertToLocaleTime(balances.endTime, isMobile)
+                            : "-"}
+                        </span>{" "}
+                      </div>
+                      <div className="text-[12px] text-gray-500 text-right">
+                        Close:{" "}
+                        <span className="font-sfmono text-gray-400 text-[11px]">
+                          {balances.endTime
+                            ? isMobile
+                              ? "Never"
+                              : "Never"
+                            : "-"}
+                        </span>{" "}
+                        &nbsp;
+                        <span className="relative group">
+                          <span className="cursor-pointer">
+                            &#9432;
+                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                              {isMobile
+                                ? `Reclaim closing date & time: ${
+                                    balances.endTime
+                                      ? !isMobile
+                                        ? "Never"
+                                        : "Never"
+                                      : "-"
+                                  }`
+                                : "Reclaim closing date & time"}
+                            </span>
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-row justify-between">
+                      <div className="text-[12px] text-gray-500 text-left">
+                        <span className="relative group">
+                          <span className="cursor-pointer">&#9432;</span>
+                          <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                            Total amount of PHOTON & BARYON in the prediction
+                            pool
+                          </span>
+                        </span>{" "}
+                        &nbsp;Total Pool:{" "}
+                        <span className="font-sfmono text-accent-steel text-[11px] text-opacity-80">
+                          {formatCount(
+                            balances.emissionsData.photonTokens -
+                              claims.emissionsData.photonTokens
+                          )}
+                        </span>
+                        {"/"}
+                        <span className="font-sfmono text-accent-cement text-[11px] text-opacity-90">
+                          {formatCount(
+                            balances.emissionsData.baryonTokens -
+                              claims.emissionsData.baryonTokens
+                          )}
+                        </span>
+                      </div>
+                      <div className="text-[12px] text-gray-500 text-right">
+                        Token Ratio:{" "}
+                        <span className="font-sfmono text-gray-400 text-[11px]">
+                          {balances.emissionsData.baryonTokens -
+                            claims.emissionsData.baryonTokens >
+                          0
+                            ? (
+                                (balances.emissionsData.photonTokens -
+                                  claims.emissionsData.photonTokens) /
+                                (balances.emissionsData.baryonTokens -
+                                  claims.emissionsData.baryonTokens)
+                              ).toFixed(3)
+                            : "0.000"}
+                        </span>{" "}
+                        &nbsp;
+                        <span className="relative group">
+                          <span className="cursor-pointer">
+                            &#9432;
+                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                              Ratio PHOTON:BARYON in the prediction pool
+                            </span>
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <Inverter
+                    wallet={wallet}
+                    antiBalance={antiBalance}
+                    proBalance={proBalance}
+                    antiUsage={antiUsage}
+                    proUsage={proUsage}
+                    baryonBalance={baryonBalance}
+                    photonBalance={photonBalance}
+                    disabled={!wallet.connected}
+                    BASE_URL={BASE_URL}
+                    onClaimSubmitted={handleClaimSubmitted}
+                    clearFields={clearFields}
+                    antiData={antiData}
+                    proData={proData}
+                    isMobile={isMobile}
+                    bags={bags}
+                    inactive={!inactive || dead}
+                    truth={truth}
+                  />
+                  <p
+                    className={`mt-1 text-sm font-sfmono ${
+                      wallet.connected
+                        ? "text-gray-300"
+                        : "text-red-500 animate-pulse"
+                    }`}
+                  >
+                    {wallet.connected
+                      ? ""
+                      : "Connect your wallet to enable reclaims"}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Connection Status */}
-          <p
-            className={`mt-0 text-sm ${
-              connected ? "text-gray-300" : "text-red-500 animate-pulse"
-            }`}
-          >
-            {connected ? "" : "Connect your wallet to enable voting"}
-          </p>
-        </div>
-        <div className="mt-12">
-          <Dashboard
-            votersData={votersData}
-            tokensData={tokensData}
-            votesOverTime={votesOverTime}
-            voterDistribution={voterDistribution}
-            totalDistribution={totalDistribution}
-          />
+          {showCollider && (
+            <div
+              className={`xl:col-span-3 mx-2 md:mx-0 ${
+                isMetaLoading || isMobile
+                  ? "flex justify-center items-center min-h-[600px]"
+                  : ""
+              }`}
+            >
+              {!isMetaLoading ? (
+                <DashboardCollider
+                  emissionsData={balances.emissionsData}
+                  collisionsData={balances.collisionsData}
+                  eventsOverTime={balances.eventsOverTime}
+                  colliderDistribution={balances.colliderDistribution}
+                  totalDistribution={balances.totalDistribution}
+                  onRefresh={onRefresh}
+                  connected={wallet.connected}
+                  dynamics={dynamics}
+                  holders={bags.wallets}
+                  isMobile={isMobile}
+                  schedule={[balances.startTime, balances.endTime]}
+                />
+              ) : (
+                <div className="flex justify-center items-center w-full">
+                  <BinaryOrbit
+                    size={isMobile ? 300 : 300}
+                    orbitRadius={isMobile ? 80 : 80}
+                    particleRadius={isMobile ? 20 : 20}
+                    padding={10}
+                    invert={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          {!showCollider && (
+            <div
+              className={`xl:col-span-3 mx-2 md:mx-0 ${
+                isMetaLoading || isMobile
+                  ? "flex justify-center items-center min-h-[600px]"
+                  : ""
+              }`}
+            >
+              {!isMetaLoading ? (
+                <DashboardInverter
+                  emissionsData={claims.emissionsData}
+                  collisionsData={claims.collisionsData}
+                  eventsOverTime={claims.eventsOverTime}
+                  colliderDistribution={balances.colliderDistribution}
+                  totalDistribution={balances.totalDistribution}
+                  onRefresh={onRefresh}
+                  connected={wallet.connected}
+                  dynamics={dynamics}
+                  holders={bags.wallets}
+                  isMobile={isMobile}
+                  schedule={[claims.startTime, claims.endTime]}
+                />
+              ) : (
+                <div className="flex justify-center items-center w-full">
+                  <BinaryOrbit
+                    size={isMobile ? 300 : 300}
+                    orbitRadius={isMobile ? 80 : 80}
+                    particleRadius={isMobile ? 20 : 20}
+                    padding={10}
+                    invert={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">
@@ -312,7 +765,7 @@ const LandingPage = ({ BASE_URL }) => {
             Join the future of prediction markets
           </p>
           <button
-            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-lg text-lg font-semibold"
+            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-full text-lg font-semibold"
             onClick={() => setShowBuyTokensModal(true)}
           >
             Buy Tokens
@@ -323,6 +776,30 @@ const LandingPage = ({ BASE_URL }) => {
         isVisible={showBuyTokensModal}
         setIsVisible={setShowBuyTokensModal}
       />
+      {/* Animation */}
+      {showAnimation && (
+        <div className="w-screen h-screen fixed top-0 left-0 z-50">
+          <ParticleCollision
+            width={0}
+            height={0}
+            incomingSpeed={2}
+            outgoingSpeed={1}
+            curve={1}
+            maxLoops={2}
+            inverse={!showCollider}
+            isMobile={isMobile}
+            metadata={
+              showCollider
+                ? JSON.stringify(currentPredictionData)
+                : JSON.stringify(currentClaimData)
+            }
+            onComplete={() => {
+              setShowAnimation(false);
+            }}
+          />
+        </div>
+      )}
+      <ToastContainer {...toastContainerConfig} />
     </>
   );
 };

@@ -1,13 +1,27 @@
-export const calculateDistribution = (anti, pro) => {
-  if (anti === 0 && pro === 0) {
-    throw new Error("BOTH_ANTI_AND_PRO_CANNOT_BE_ZERO");
-  }
+/* Collider v1.0-alpha */
 
+export const calculateCollision = (anti, pro, flag = false, norm = false) => {
   // Step 1: Calculate u (= mean)
-  const u = Math.max(anti / (anti + pro), pro / (anti + pro));
+  const u = flag
+    ? anti
+    : anti + pro >= 0 && anti + pro < 1
+    ? 0
+    : Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
+    ? Math.abs(anti - pro)
+    : Math.abs(anti - pro);
 
   // Step 2: Calculate s (= standard deviation)
-  const s = (anti + pro) / Math.abs(anti - pro);
+  const s = flag
+    ? pro
+    : anti + pro >= 0 && anti + pro < 1
+    ? 0
+    : Math.abs(anti - pro) === anti + pro
+    ? 0
+    : Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
+    ? (anti + pro) * 1.0
+    : Math.abs(anti - pro) === 0
+    ? anti + pro
+    : (anti + pro) / Math.abs(anti - pro);
 
   // Step 3: Generate a normal distribution in -5s to 5s range
   const distribution = [];
@@ -18,23 +32,26 @@ export const calculateDistribution = (anti, pro) => {
 
   for (let x of range) {
     const value =
-      anti === pro
-        ? 0
-        : Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
-          (Math.sqrt(2 * Math.PI) * s);
+      s > 0
+        ? Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
+          (norm ? Math.sqrt(2 * Math.PI) * s : 1)
+        : 1 / 2;
     distribution.push({ x, value });
   }
 
-  // Step 4: Generate a normal distribution within the range [0, 1]
+  // Step 4: Generate a normal distribution within range > 0
   const curve = [];
-  const short = Array.from({ length: 100 }, (_, i) => i / 99); // Generate 100 points evenly spaced between 0 and 1
+  const short = Array.from(
+    { length: 100 },
+    (_, i) => u - 5 * s + (i / 99) * 10 * s
+  ).filter((value) => value >= 0);
 
   for (let x of short) {
     const value =
-      anti === pro
-        ? 0
-        : Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
-          (Math.sqrt(2 * Math.PI) * s);
+      s > 0
+        ? Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
+          (norm ? Math.sqrt(2 * Math.PI) * s : 1)
+        : 1 / 2;
     curve.push({ x, value });
   }
 

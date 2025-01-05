@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+/* Footer */
+
 const Footer = () => {
   return (
     <footer className="border-t border-gray-800/50 backdrop-blur-xl bg-dark-card/95 w-full">
