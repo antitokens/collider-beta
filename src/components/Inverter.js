@@ -66,7 +66,7 @@ const Inverter = ({
               bags.proPool,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                : [0, 0],
+                : [1, 1],
               bags.wallets,
               truth
             )
@@ -75,6 +75,7 @@ const Inverter = ({
       myBag = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
+
       if (proData && antiData && myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
