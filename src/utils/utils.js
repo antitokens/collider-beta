@@ -334,16 +334,26 @@ export const parseDateToISO = (dateStr, useHourly) => {
       .slice(1);
     const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-11)
     const [hours, period] = time.split(/\s+/);
+    const hour12 = hours % 12 || 12;
+    // Reconstruct date in local timezone
     const hour24 =
-      period === "PM" && hours !== "12"
-        ? parseInt(hours) + 12
-        : period === "AM" && hours === "12"
+      period === "PM" && hour12 !== 12
+        ? hour12 + 12
+        : period === "AM" && hour12 === 12
         ? 0
-        : parseInt(hours);
-    const date = new Date(parseInt(year), monthIndex, parseInt(day), hour24);
-    return date.toISOString();
+        : hour12;
+    // Create new date with local components
+    const date = new Date(year, monthIndex, day, hour24);
+    // Convert to ISO string
+    const localDate = new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    );
+    return localDate.toISOString();
   }
-  return new Date(dateStr).toISOString();
+  // For non-hourly format, convert UTC to local time before creating ISO string
+  const date = new Date(dateStr);
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString();
 };
 
 export const shortenTick = (tick, useHourly) => {

@@ -74,7 +74,7 @@ const Collider = ({
       const yAxis = chart.scales.y;
       markerDates.forEach((date, index) => {
         const _dateStr = useHourly
-          ? new Date(date).toLocaleTimeString("en-US", {
+          ? new Date(date).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",
