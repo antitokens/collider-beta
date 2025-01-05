@@ -75,7 +75,7 @@ const Collider = ({
       const local = new Date();
       markerDates.forEach((date, index) => {
         const localDate = new Date(
-          new Date(date).getTime() + local.getTimezoneOffset() * 60000
+          new Date(date).getTime()
         );
         const _date_ = useHourly
           ? localDate.toLocaleDateString("en-US", {
