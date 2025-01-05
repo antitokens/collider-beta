@@ -14,11 +14,12 @@ import {
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
-import { calculateScattering } from "../utils/scatterAlpha";
+import { calculateEqualisation } from "../utils/equaliserAlpha";
 import Navbar from "../components/TopNavbar";
 import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
-import Dashboard from "../components/Dashboard";
+import DashboardCollider from "../components/DashboardCollider";
+import DashboardInverter from "../components/DashboardInverter";
 import BuyTokenModal from "../components/BuyTokenModal";
 import {
   ANTI_TOKEN_MINT,
@@ -36,11 +37,13 @@ import {
   convertToLocaleTime,
   formatCount,
 } from "../utils/utils";
-import { getKVBalance, getMetadata } from "../utils/api";
+import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+/* Main Page */
 
 const Home = ({ BASE_URL }) => {
   const [trigger, setTrigger] = useState(null); // Shared state
@@ -113,6 +116,8 @@ const Home = ({ BASE_URL }) => {
 const LandingPage = ({ BASE_URL, setTrigger }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
+  const [inactive, setInactive] = useState(false);
+  const [dead, setDead] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
   const [antiUsage, setAntiUsage] = useState(0);
@@ -123,13 +128,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
-  const [antiData, setAntiData] = useState(null);
-  const [proData, setProData] = useState(null);
+  const [antiData, setAntiData] = useState({
+    priceUsd: 1.0,
+    marketCap: 1e9,
+  });
+  const [proData, setProData] = useState({
+    priceUsd: 1.0,
+    marketCap: 1e9,
+  });
   const [showAnimation, setShowAnimation] = useState(false);
   const [currentPredictionData, setCurrentPredictionData] =
     useState(emptyMetadata);
   const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
-  const [metadata, setMetadata] = useState(metadataInit);
+  const [balances, setBalances] = useState(metadataInit);
+  const [claims, setClaims] = useState(metadataInit);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
@@ -141,14 +153,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setRefresh(state);
   };
 
-  const handlePredictionSubmitted = (state, eventData) => {
+  const handlePredictionSubmitted = (state, event) => {
     if (state) {
       // Store the submitted event data
-      setCurrentPredictionData(eventData);
+      setCurrentPredictionData(event);
       setRefresh(true);
     } else {
       // Handle error case
-      console.error("Prediction submission failed:", eventData.error);
+      console.error("Prediction submission failed:", event.error);
     }
     setDataUpdated(state);
     setTrigger(state);
@@ -158,13 +170,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTimeout(() => setShowAnimation(state), 100);
   };
 
-  const handleClaimSubmitted = (state, claimData) => {
+  const handleClaimSubmitted = (state, claim) => {
     if (state) {
-      setCurrentClaimData(claimData);
+      setCurrentClaimData(claim);
       setRefresh(true);
+      setTruth([]);
     } else {
       // Handle error case
-      console.error("Prediction submission failed:", claimData.error);
+      console.error("Reclaim submission failed:", claim.error);
     }
     setDataUpdated(state);
     setTrigger(state);
@@ -183,27 +196,40 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [metaError]);
 
   useEffect(() => {
-    if (refresh) {
-      const fetchData = async () => {
+    if (balances !== metadataInit) {
+      setDead(
+        new Date() < new Date(balances.startTime) &&
+          new Date() < new Date(balances.endTime)
+      );
+      setInactive(
+        new Date() < new Date(balances.startTime) ||
+          new Date() > new Date(balances.endTime)
+      );
+    }
+  }, [balances]);
+
+  useEffect(() => {
+    if (refresh && !dead) {
+      const fetchBalancesWithClaims = async () => {
         try {
           setIsMetaLoading(true);
-          const blob = await getMetadata();
+          const blob = await getBalances();
+          const blobClaim = await getClaims();
           const data = JSON.parse(blob.message);
-          // Calculate distributions using API data
+          const dataClaim = JSON.parse(blobClaim.message);
           const colliderDistribution =
-            baryonBalance >= 0 && photonBalance > 0.5
+            baryonBalance >= 0 && photonBalance >= 0
               ? calculateCollision(baryonBalance, photonBalance, true)
               : emptyGaussian;
           const totalDistribution =
-            data.totalDistribution.u >= 0 && data.totalDistribution.s > 0.5
+            data.totalDistribution.u >= 0 && data.totalDistribution.s >= 0
               ? calculateCollision(
                   data.emissionsData.baryonTokens,
                   data.emissionsData.photonTokens,
                   true
                 )
               : emptyGaussian;
-
-          setMetadata({
+          setBalances({
             startTime: data.startTime,
             endTime: data.endTime,
             colliderDistribution: colliderDistribution,
@@ -223,11 +249,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             proPool: data.collisionsData.proTokens,
             wallets: data.totalDistribution.wallets,
           });
-          const rewardCurrent = calculateScattering(
+          const rewardCurrent = calculateEqualisation(
             data.totalDistribution.bags.baryon,
             data.totalDistribution.bags.photon,
-            data.emissionsData.baryonTokens,
-            data.emissionsData.photonTokens,
             data.totalDistribution.bags.anti,
             data.totalDistribution.bags.pro,
             data.collisionsData.antiTokens,
@@ -238,17 +262,26 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             data.totalDistribution.wallets
           );
           setDynamics(rewardCurrent ? rewardCurrent.overlap : []);
+          setClaims({
+            startTime: dataClaim.startTime,
+            endTime: dataClaim.endTime,
+            colliderDistribution: colliderDistribution,
+            totalDistribution: totalDistribution,
+            emissionsData: dataClaim.emissionsData,
+            collisionsData: dataClaim.collisionsData,
+            eventsOverTime: dataClaim.eventsOverTime,
+          });
         } catch (err) {
           console.error("Error fetching metadata:", err);
           setMetaError(err);
         } finally {
           setIsMetaLoading(false);
+          setRefresh(false);
         }
       };
-      fetchData();
-      setRefresh(false);
+      fetchBalancesWithClaims();
     }
-  }, [refresh, baryonBalance, photonBalance, antiData, proData]);
+  }, [refresh, baryonBalance, photonBalance, antiData, proData, dead]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -284,9 +317,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         console.error("Error fetching token data:", error);
       }
     };
-    setTruth([1, 0]);
+    setTruth([1, 0]); // [ANTI, PRO]
     fetchTokenData();
   }, []);
+
+  useEffect(() => {
+    if (claims !== metadataInit) setTruth([]);
+  }, [claims]);
 
   useEffect(() => {
     const checkBalance = async () => {
@@ -294,20 +331,19 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      const _balance = await getKVBalance(wallet.publicKey);
+      const _balance = await getBalance(wallet.publicKey);
       const balance = JSON.parse(_balance.message);
-      setAntiBalance(antiBalanceResult - balance.anti);
-      setProBalance(proBalanceResult - balance.pro);
-      setAntiUsage(balance.anti);
-      setProUsage(balance.pro);
-      setBaryonBalance(balance.baryon);
-      setPhotonBalance(balance.photon);
-      setDataUpdated(false);
-      setRefresh(true);
+      const _claim = await getClaim(wallet.publicKey);
+      const claim = JSON.parse(_claim.message);
+      setAntiBalance(antiBalanceResult - balance.anti + claim.anti);
+      setProBalance(proBalanceResult - balance.pro + claim.pro);
+      setAntiUsage(balance.anti - claim.anti);
+      setProUsage(balance.pro - claim.pro);
+      setBaryonBalance(balance.baryon - claim.baryon);
+      setPhotonBalance(balance.photon - claim.photon);
     };
 
-    if (wallet.publicKey) checkBalance();
-    if (dataUpdated) checkBalance();
+    if (wallet.publicKey || dataUpdated) checkBalance();
   }, [wallet, dataUpdated]);
 
   return (
@@ -394,7 +430,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
-                    onClick={() => setShowCollider(false)}
+                    onClick={() => {
+                      setShowCollider(false),
+                        setDataUpdated(false),
+                        setRefresh(false);
+                    }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
                       <div className="mr-1">Switch to Inverter</div>
@@ -439,15 +479,19 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   antiData={antiData}
                   proData={proData}
                   config={{
-                    startTime: metadata.startTime || "-",
-                    endTime: metadata.endTime || "-",
-                    antiLive: metadata.collisionsData.antiTokens || 0,
-                    proLive: metadata.collisionsData.proTokens || 0,
+                    startTime: balances.startTime || "-",
+                    endTime: balances.endTime || "-",
+                    antiLive:
+                      balances.collisionsData.antiTokens -
+                        claims.collisionsData.antiTokens || 0,
+                    proLive:
+                      balances.collisionsData.proTokens -
+                        claims.collisionsData.proTokens || 0,
                   }}
                   isMobile={isMobile}
                   bags={bags}
-                  metadata={metadata}
-                  refresh={refresh}
+                  balances={balances}
+                  inactive={inactive || dead}
                 />
               </div>
             ) : (
@@ -458,7 +502,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
-                    onClick={() => setShowCollider(true)}
+                    onClick={() => {
+                      setShowCollider(true),
+                        setDataUpdated(false),
+                        setRefresh(false);
+                    }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
                       <div className="mr-1">Switch to Collider</div>
@@ -501,14 +549,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                             <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                               {isMobile
                                 ? `Reclaim opening date & time: ${
-                                    metadata.endTime !== "-"
+                                    balances.endTime
                                       ? isMobile
                                         ? convertToLocaleTime(
-                                            metadata.startTime,
+                                            balances.startTime,
                                             isMobile
                                           ).split(",")[0]
                                         : convertToLocaleTime(
-                                            metadata.startTime,
+                                            balances.startTime,
                                             isMobile
                                           )
                                       : "-"
@@ -519,20 +567,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         </span>{" "}
                         &nbsp;Open:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.endTime !== "-"
+                          {balances.endTime
                             ? isMobile
                               ? convertToLocaleTime(
-                                  metadata.endTime,
+                                  balances.endTime,
                                   isMobile
                                 ).split(",")[0]
-                              : convertToLocaleTime(metadata.endTime, isMobile)
+                              : convertToLocaleTime(balances.endTime, isMobile)
                             : "-"}
                         </span>{" "}
                       </div>
                       <div className="text-[12px] text-gray-500 text-right">
                         Close:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.endTime !== "-"
+                          {balances.endTime
                             ? isMobile
                               ? "Never"
                               : "Never"
@@ -545,7 +593,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                             <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                               {isMobile
                                 ? `Reclaim closing date & time: ${
-                                    metadata.endTime !== "-"
+                                    balances.endTime
                                       ? !isMobile
                                         ? "Never"
                                         : "Never"
@@ -568,20 +616,30 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         </span>{" "}
                         &nbsp;Total Pool:{" "}
                         <span className="font-sfmono text-accent-steel text-[11px] text-opacity-80">
-                          {formatCount(metadata.emissionsData.photonTokens)}
+                          {formatCount(
+                            balances.emissionsData.photonTokens -
+                              claims.emissionsData.photonTokens
+                          )}
                         </span>
                         {"/"}
                         <span className="font-sfmono text-accent-cement text-[11px] text-opacity-90">
-                          {formatCount(metadata.emissionsData.baryonTokens)}
+                          {formatCount(
+                            balances.emissionsData.baryonTokens -
+                              claims.emissionsData.baryonTokens
+                          )}
                         </span>
                       </div>
                       <div className="text-[12px] text-gray-500 text-right">
                         Token Ratio:{" "}
                         <span className="font-sfmono text-gray-400 text-[11px]">
-                          {metadata.emissionsData.baryonTokens > 0
+                          {balances.emissionsData.baryonTokens -
+                            claims.emissionsData.baryonTokens >
+                          0
                             ? (
-                                metadata.emissionsData.photonTokens /
-                                metadata.emissionsData.baryonTokens
+                                (balances.emissionsData.photonTokens -
+                                  claims.emissionsData.photonTokens) /
+                                (balances.emissionsData.baryonTokens -
+                                  claims.emissionsData.baryonTokens)
                               ).toFixed(3)
                             : "0.000"}
                         </span>{" "}
@@ -611,16 +669,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     clearFields={clearFields}
                     antiData={antiData}
                     proData={proData}
-                    config={{
-                      startTime: metadata.endTime || "-",
-                      endTime: "-",
-                      baryonLive: metadata.emissionsData.baryonTokens || 0,
-                      photonLive: metadata.emissionsData.photonTokens || 0,
-                    }}
                     isMobile={isMobile}
                     bags={bags}
-                    metadata={metadata}
-                    refresh={refresh}
+                    inactive={!inactive || dead}
                     truth={truth}
                   />
                   <p
@@ -638,40 +689,74 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               </div>
             )}
           </div>
-
-          <div
-            className={`xl:col-span-3 mx-2 md:mx-0 ${
-              isMetaLoading || isMobile
-                ? "flex justify-center items-center min-h-[600px]"
-                : ""
-            }`}
-          >
-            {!isMetaLoading ? (
-              <Dashboard
-                emissionsData={metadata.emissionsData}
-                collisionsData={metadata.collisionsData}
-                eventsOverTime={metadata.eventsOverTime}
-                colliderDistribution={metadata.colliderDistribution}
-                totalDistribution={metadata.totalDistribution}
-                onRefresh={onRefresh}
-                state={showCollider}
-                connected={wallet.connected}
-                dynamics={dynamics}
-                holders={bags.wallets}
-                isMobile={isMobile}
-              />
-            ) : (
-              <div className="flex justify-center items-center w-full">
-                <BinaryOrbit
-                  size={isMobile ? 300 : 300}
-                  orbitRadius={isMobile ? 80 : 80}
-                  particleRadius={isMobile ? 20 : 20}
-                  padding={10}
-                  invert={false}
+          {showCollider && (
+            <div
+              className={`xl:col-span-3 mx-2 md:mx-0 ${
+                isMetaLoading || isMobile
+                  ? "flex justify-center items-center min-h-[600px]"
+                  : ""
+              }`}
+            >
+              {!isMetaLoading ? (
+                <DashboardCollider
+                  emissionsData={balances.emissionsData}
+                  collisionsData={balances.collisionsData}
+                  eventsOverTime={balances.eventsOverTime}
+                  colliderDistribution={balances.colliderDistribution}
+                  totalDistribution={balances.totalDistribution}
+                  onRefresh={onRefresh}
+                  connected={wallet.connected}
+                  dynamics={dynamics}
+                  holders={bags.wallets}
+                  isMobile={isMobile}
                 />
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="flex justify-center items-center w-full">
+                  <BinaryOrbit
+                    size={isMobile ? 300 : 300}
+                    orbitRadius={isMobile ? 80 : 80}
+                    particleRadius={isMobile ? 20 : 20}
+                    padding={10}
+                    invert={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          {!showCollider && (
+            <div
+              className={`xl:col-span-3 mx-2 md:mx-0 ${
+                isMetaLoading || isMobile
+                  ? "flex justify-center items-center min-h-[600px]"
+                  : ""
+              }`}
+            >
+              {!isMetaLoading ? (
+                <DashboardInverter
+                  emissionsData={claims.emissionsData}
+                  collisionsData={claims.collisionsData}
+                  eventsOverTime={claims.eventsOverTime}
+                  colliderDistribution={balances.colliderDistribution}
+                  totalDistribution={balances.totalDistribution}
+                  onRefresh={onRefresh}
+                  connected={wallet.connected}
+                  dynamics={dynamics}
+                  holders={bags.wallets}
+                  isMobile={isMobile}
+                />
+              ) : (
+                <div className="flex justify-center items-center w-full">
+                  <BinaryOrbit
+                    size={isMobile ? 300 : 300}
+                    orbitRadius={isMobile ? 80 : 80}
+                    particleRadius={isMobile ? 20 : 20}
+                    padding={10}
+                    invert={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">

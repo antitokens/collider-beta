@@ -8,6 +8,8 @@ import {
   _metadata,
 } from "../utils/utils";
 
+/* Collision Animation */
+
 export const ParticleCollision = ({
   width = 800,
   height = 600,

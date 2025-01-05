@@ -3,6 +3,8 @@ import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import TokenBalance from "./TokenBalance";
 
+/* Navbar */
+
 const Navbar = (trigger) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

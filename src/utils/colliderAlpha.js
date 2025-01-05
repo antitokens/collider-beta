@@ -1,3 +1,5 @@
+/* Collider v1.0-alpha */
+
 export const calculateCollision = (anti, pro, flag = false, norm = false) => {
   // Step 1: Calculate u (= mean)
   const u = flag
@@ -16,7 +18,7 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
     : Math.abs(anti - pro) === anti + pro
     ? 0
     : Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
-    ? (anti + pro) * Math.abs(anti - pro)
+    ? (anti + pro) * 1.0
     : Math.abs(anti - pro) === 0
     ? anti + pro
     : (anti + pro) / Math.abs(anti - pro);
@@ -30,8 +32,10 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
 
   for (let x of range) {
     const value =
-      Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
-      (norm ? Math.sqrt(2 * Math.PI) * s : 1);
+      s > 0
+        ? Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
+          (norm ? Math.sqrt(2 * Math.PI) * s : 1)
+        : 1 / 2;
     distribution.push({ x, value });
   }
 
@@ -44,8 +48,10 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
 
   for (let x of short) {
     const value =
-      Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
-      (norm ? Math.sqrt(2 * Math.PI) * s : 1);
+      s > 0
+        ? Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
+          (norm ? Math.sqrt(2 * Math.PI) * s : 1)
+        : 1 / 2;
     curve.push({ x, value });
   }
 

@@ -1,5 +1,7 @@
 import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 
+/* Solana API */
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 const endpoint = process.env.NEXT_PUBLIC_SOL_RPC;
 const connection = new Connection(endpoint);

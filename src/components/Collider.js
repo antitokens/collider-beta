@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { recordPrediction } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
-import { calculateScattering } from "../utils/scatterAlpha";
+import { calculateEqualisation } from "../utils/equaliserAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
@@ -20,6 +20,8 @@ import {
 } from "../utils/utils";
 Chart.register(...registerables);
 
+/* Collider Container */
+
 const Collider = ({
   wallet,
   antiBalance,
@@ -37,8 +39,8 @@ const Collider = ({
   config = emptyConfig,
   isMobile = false,
   bags = emptyBags,
-  metadata = emptyMetadata,
-  refresh = false,
+  balances = emptyMetadata,
+  inactive = true,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -60,6 +62,44 @@ const Collider = ({
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
     useState("1D");
   const sliderRef = useRef(null);
+  const verticalLinesPlugin = {
+    id: "verticalLines",
+    beforeDatasetsDraw: (chart, _, pluginOptions) => {
+      const { markerDates, labels } = pluginOptions;
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      const yAxis = chart.scales.y;
+      markerDates.forEach((date, index) => {
+        const dateStr = new Date(date)
+          .toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+          .split(" ")
+          .slice(0, 2)
+          .join(" ")
+          .slice(0, -1);
+        const xPosition = xAxis.getPixelForValue(dateStr);
+        if (!xPosition) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(xPosition, yAxis.top);
+        ctx.lineTo(xPosition, yAxis.bottom);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
+        ctx.stroke();
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
+        ctx.font = "10px 'SF Mono Round'";
+        ctx.translate(xPosition + 5, yAxis.top + 35);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(labels[index], 0, 0);
+        ctx.restore();
+      });
+    },
+  };
 
   useEffect(() => {
     if (sliderRef.current) {
@@ -78,30 +118,38 @@ const Collider = ({
     const getSegmentColor = (context) => {
       const _start =
         context.p0DataIndex +
-        metadata.eventsOverTime.cummulative.timestamps.findIndex(
-          (timestamp) => parseDateToISO(timestamp) >= config.startTime
+        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+          parseDateToISO(timestamp)
         );
       const _end =
         context.p1DataIndex +
-        metadata.eventsOverTime.cummulative.timestamps.findIndex(
-          (timestamp) => parseDateToISO(timestamp) >= config.startTime
+        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+          parseDateToISO(timestamp)
         );
-      const start = metadata.eventsOverTime.cummulative.photon[_start];
-      const end = metadata.eventsOverTime.cummulative.photon[_end];
+      const start = balances.eventsOverTime.cumulative.photon[_start];
+      const end = balances.eventsOverTime.cumulative.photon[_end];
       const limits = [
-        Math.min(...metadata.eventsOverTime.cummulative.photon),
-        Math.max(...metadata.eventsOverTime.cummulative.photon),
+        Math.min(...balances.eventsOverTime.cumulative.photon),
+        Math.max(...balances.eventsOverTime.cumulative.photon),
       ];
       const currentTick = parseDateToISO(
-        metadata.eventsOverTime.cummulative.timestamps[_start]
+        balances.eventsOverTime.cumulative.timestamps[_start]
       );
       const nextTick = parseDateToISO(
-        metadata.eventsOverTime.cummulative.timestamps[_end]
+        balances.eventsOverTime.cumulative.timestamps[_end]
       );
       const nowTime = new Date().toISOString();
+      // Past segments should be null
+      if (nextTick <= config.startTime) {
+        return "rgba(255, 0, 0, 0.25)";
+      }
       // Future segments should be grey
       if (currentTick > nowTime && nextTick > nowTime) {
         return "rgba(128, 128, 128, 0.5)";
+      }
+      // Far future segments should be null
+      if (currentTick > config.endTime) {
+        return "rgba(128, 0, 0, 0.0)";
       }
       // Segment crossing nowTime - gradient from color to grey
       if (currentTick <= nowTime && nextTick > nowTime) {
@@ -159,21 +207,21 @@ const Collider = ({
     };
     setPredictionHistoryChartData({
       type: "line",
-      labels: metadata.eventsOverTime.cummulative.timestamps
+      labels: balances.eventsOverTime.cumulative.timestamps
         .filter((timestamp) => {
           const dateISO = parseDateToISO(timestamp);
-          return dateISO >= config.startTime && dateISO <= config.endTime;
+          return dateISO;
         })
         .map((value) => value.split(" ").slice(0, 2).join(" ").slice(0, -1)),
       datasets: [
         {
           label: "Yes",
-          data: metadata.eventsOverTime.cummulative.timestamps
+          data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp);
-              if (dateISO >= config.startTime && dateISO <= config.endTime) {
-                const pro = metadata.eventsOverTime.cummulative.pro[index];
-                const anti = metadata.eventsOverTime.cummulative.anti[index];
+              if (dateISO) {
+                const pro = balances.eventsOverTime.cumulative.pro[index];
+                const anti = balances.eventsOverTime.cumulative.anti[index];
                 const total = pro + anti;
                 return total === 0 ? 0 : (pro / total) * 100;
               }
@@ -193,14 +241,14 @@ const Collider = ({
         {
           // Add a hidden dataset for the certainty tooltip
           label: "Certainty",
-          data: metadata.eventsOverTime.cummulative.timestamps
+          data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp);
-              if (dateISO >= config.startTime && dateISO <= config.endTime) {
+              if (dateISO) {
                 return (
-                  (metadata.eventsOverTime.cummulative.photon[index] /
-                    (metadata.eventsOverTime.cummulative.photon[index] +
-                      metadata.eventsOverTime.cummulative.baryon[index])) *
+                  (balances.eventsOverTime.cumulative.photon[index] /
+                    (balances.eventsOverTime.cumulative.photon[index] +
+                      balances.eventsOverTime.cumulative.baryon[index])) *
                   100
                 );
               }
@@ -217,6 +265,7 @@ const Collider = ({
           hoverBorderColor: "transparent",
         },
       ],
+      plugins: [verticalLinesPlugin],
       options: {
         responsive: true,
         interaction: {
@@ -224,6 +273,16 @@ const Collider = ({
           mode: "index",
         },
         plugins: {
+          verticalLines:
+            config.startTime === "-" || config.endTime === "-"
+              ? { markerDates: [], labels: [] }
+              : {
+                  markerDates: [config.startTime, config.endTime],
+                  labels:
+                    config.startTime === "-" || config.endTime === "-"
+                      ? []
+                      : ["OPEN", "CLOSE"],
+                },
           datalabels: {
             display: false,
           },
@@ -235,7 +294,7 @@ const Collider = ({
               label: (context) => {
                 const value = context.raw;
                 const currentTick = parseDateToISO(
-                  metadata.eventsOverTime.cummulative.timestamps.find(
+                  balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
                       timestamp
                         .split(" ")
@@ -256,11 +315,11 @@ const Collider = ({
               labelColor: (context) => {
                 const value = context.raw;
                 const limits = [
-                  Math.min(...metadata.eventsOverTime.cummulative.photon),
-                  Math.max(...metadata.eventsOverTime.cummulative.photon),
+                  Math.min(...balances.eventsOverTime.cumulative.photon),
+                  Math.max(...balances.eventsOverTime.cumulative.photon),
                 ];
                 const currentTick = parseDateToISO(
-                  metadata.eventsOverTime.cummulative.timestamps.find(
+                  balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
                       timestamp
                         .split(" ")
@@ -349,7 +408,7 @@ const Collider = ({
         },
       },
     });
-  }, [metadata, config]);
+  }, [balances, config]);
 
   useEffect(() => {
     if (antiData && proData) {
@@ -380,11 +439,9 @@ const Collider = ({
     if (wallet.publicKey) {
       const rewardCurrent =
         bags !== emptyBags
-          ? calculateScattering(
+          ? calculateEqualisation(
               bags.baryon,
               bags.photon,
-              bags.baryonPool,
-              bags.photonPool,
               bags.anti,
               bags.pro,
               bags.antiPool,
@@ -404,7 +461,10 @@ const Collider = ({
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         setGain(
-          (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) * 100
+          originalPosition > 0
+            ? (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) *
+                100
+            : 0
         );
       }
     }
@@ -431,11 +491,9 @@ const Collider = ({
 
       const rewardUpdated =
         bags !== emptyBags
-          ? calculateScattering(
+          ? calculateEqualisation(
               updatedBaryonBags,
               updatedPhotonBags,
-              bags.baryonPool + baryonTokens,
-              bags.photonPool + photonTokens,
               updatedAntiBags,
               updatedProBags,
               bags.antiPool + antiTokens,
@@ -449,7 +507,9 @@ const Collider = ({
 
       if (myBag >= 0) {
         setNewGain(
-          (Math.abs(rewardUpdated.change.gain[myBag]) / dollarStake) * 100
+          dollarStake > 0
+            ? (Math.abs(rewardUpdated.change.gain[myBag]) / dollarStake) * 100
+            : 0
         );
       }
 
@@ -729,7 +789,7 @@ const Collider = ({
         timestamp,
       });
       // Create prediction data object
-      const predictionData = {
+      const prediction = {
         antiTokens: antiTokens + antiUsage,
         proTokens: proTokens + proUsage,
         baryonTokens: baryonTokens,
@@ -739,7 +799,7 @@ const Collider = ({
         wallet: wallet.publicKey.toString(),
       };
       setGain(newGain);
-      onPredictionSubmitted(true, predictionData);
+      onPredictionSubmitted(true, prediction);
       toast.success("Your prediction has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
@@ -966,7 +1026,9 @@ const Collider = ({
           </div>
         </div>
       </div>
-      <div className="mb-4 bg-dark-card p-4 rounded w-full">
+      <div
+        className={inactive ? "hidden" : "mb-4 bg-dark-card p-4 rounded w-full"}
+      >
         {predictionHistoryChartData && (
           <div className="flex flex-col items-end gap-1">
             <div className="flex gap-1 mt-4 font-sfmono">
@@ -1144,10 +1206,7 @@ const Collider = ({
             value={Math.abs(totalInvest) || ""}
             onChange={handleTotalInvestChange}
             onWheel={(e) => e.target.blur()}
-            disabled={
-              new Date() < new Date(config.startTime) ||
-              new Date() > new Date(config.endTime)
-            }
+            disabled={inactive}
             placeholder="0"
             className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
           />
@@ -1161,10 +1220,7 @@ const Collider = ({
             max="100"
             value={splitPercentage}
             onChange={handlePercentageChange}
-            disabled={
-              new Date() < new Date(config.startTime) ||
-              new Date() > new Date(config.endTime)
-            }
+            disabled={inactive}
           />
           <div className="flex flex-row items-center justify-between text-[14px]">
             <span className="text-accent-secondary font-sfmono">
@@ -1182,7 +1238,7 @@ const Collider = ({
                 htmlFor="proTokens"
                 className="text-accent-secondary font-medium text-sm"
               >
-                $PRO
+                ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PRO
               </label>
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <input
@@ -1196,13 +1252,10 @@ const Collider = ({
                 onMouseDown={(e) => setProTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-sm"
-                disabled={
-                  new Date() < new Date(config.startTime) ||
-                  new Date() > new Date(config.endTime)
-                }
+                disabled={inactive}
               />
             </div>
-            <div className="text-xs">
+            <div className={inactive ? "hidden" : "text-xs"}>
               <img
                 src={`${BASE_URL}/assets/pro.png`}
                 alt="pro-logo"
@@ -1231,20 +1284,17 @@ const Collider = ({
                 onMouseDown={(e) => setAntiTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-xs sm:text-sm text-right"
-                disabled={
-                  new Date() < new Date(config.startTime) ||
-                  new Date() > new Date(config.endTime)
-                }
+                disabled={inactive}
               />
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <label
                 htmlFor="antiTokens"
                 className="text-accent-orange font-medium text-sm"
               >
-                $ANTI
+                ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}ANTI
               </label>
             </div>
-            <div className="text-xs">
+            <div className={inactive ? "hidden" : "text-xs"}>
               <img
                 src={`${BASE_URL}/assets/anti.png`}
                 alt="anti-logo"
@@ -1282,7 +1332,7 @@ const Collider = ({
                   htmlFor="photonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  $PHOTON
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PHOTON
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
@@ -1300,7 +1350,11 @@ const Collider = ({
                   readOnly
                 />
               </div>
-              <div className="text-sm flex flex-row items-center">
+              <div
+                className={
+                  inactive ? "hidden" : "text-sm flex flex-row items-center"
+                }
+              >
                 <img
                   src={`${BASE_URL}/assets/photon.png`}
                   alt="photon-logo"
@@ -1339,10 +1393,14 @@ const Collider = ({
                   htmlFor="baryonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  $BARYON
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON
                 </label>
               </div>
-              <div className="text-sm flex flex-row items-center">
+              <div
+                className={
+                  inactive ? "hidden" : "text-sm flex flex-row items-center"
+                }
+              >
                 <img
                   src={`${BASE_URL}/assets/baryon.png`}
                   alt="baryon-logo"
@@ -1372,7 +1430,7 @@ const Collider = ({
                   </span>
                 </div>
               </div>
-              <div style={{ height: "400px" }}>
+              <div className={inactive ? "hidden" : "h-[400px]"}>
                 <Line data={lineChartData} options={lineChartData.options} />
               </div>
             </>
@@ -1383,17 +1441,11 @@ const Collider = ({
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={
-          disabled ||
-          loading ||
-          new Date() < new Date(config.startTime) ||
-          new Date() > new Date(config.endTime)
-        }
+        disabled={disabled || loading || inactive}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
           loading ||
-          new Date() < new Date(config.startTime) ||
-          new Date() > new Date(config.endTime) ||
+          inactive ||
           (antiTokens === 0 && proTokens === 0) ||
           (Math.abs(antiTokens - proTokens) < 1 &&
             Math.abs(antiTokens - proTokens) !== 0) ||
@@ -1402,8 +1454,7 @@ const Collider = ({
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {new Date() < new Date(config.startTime) ||
-        new Date() > new Date(config.endTime)
+        {inactive
           ? "Closed"
           : (Math.abs(antiTokens - proTokens) < 1 &&
               Math.abs(antiTokens - proTokens) !== 0) ||

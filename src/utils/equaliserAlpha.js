@@ -1,11 +1,10 @@
-import { AreaChart } from "lucide-react";
-import { calculateCollision } from "../utils/colliderAlpha";
+import { calculateCollision } from "./colliderAlpha";
 
-export const calculateScattering = (
+/* Equaliser v1.0-alpha */
+
+export const calculateEqualisation = (
   baryonBags,
   photonBags,
-  baryonPool,
-  photonPool,
   antiBags,
   proBags,
   antiPool,
@@ -14,20 +13,6 @@ export const calculateScattering = (
   wallets,
   flag = false
 ) => {
-  // Calculate absolute overlap with truth
-  const _overlapAbsolute = baryonBags.map((baryon, i) => {
-    const photon = photonBags[i];
-    return (
-      Math.exp(
-        -Math.pow(Math.log(2e9 - baryon), 2) /
-          (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
-      ) /
-      (flag
-        ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon))
-        : 1)
-    );
-  });
-
   // Calculate normalised overlap with truth (inverse-log-normalised)
   const overlapNormalised = baryonBags
     .map((baryon, i) => {
@@ -114,11 +99,9 @@ export const calculateScattering = (
   return { overlap: overlapNormalised, invert, change };
 };
 
-export const implementScattering = (
+export const implementEqualisation = (
   baryonBags,
   photonBags,
-  baryonPool,
-  photonPool,
   antiBags,
   proBags,
   antiPool,
@@ -205,8 +188,8 @@ export const implementScattering = (
   };
 
   const returns = [
-    distributeValuesInBins(scatter.anti.resampled, forward.indices),
-    distributeValuesInBins(scatter.pro.resampled, forward.indices),
+    distributeValuesInBins(scatter.anti.resampled, forward.indices, antiBags),
+    distributeValuesInBins(scatter.pro.resampled, forward.indices, proBags),
     [],
     [],
   ];
@@ -356,7 +339,11 @@ function distributeValuesInBins(valueSums, indicesInBins, orderBy) {
       const binIndices = indicesInBins[binIndex];
       const orderValues = binIndices.map((i) => orderBy[i]);
       const total = orderValues.reduce((a, b) => a + b, 0);
-      return orderValues.map((v) => (v / total) * sums);
+      if (total > 0) {
+        return orderValues.map((v) => (v / total) * sums);
+      } else {
+        return Array(count).fill(sums / count);
+      }
     }
     return Array(count).fill(sums / count);
   });

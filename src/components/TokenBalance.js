@@ -5,7 +5,9 @@ import {
   getTokenBalance,
   PRO_TOKEN_MINT,
 } from "../utils/solana";
-import { getKVBalance } from "../utils/api";
+import { getBalance } from "../utils/api";
+
+/* Token Balances Navbar */
 
 const TokenBalance = (trigger) => {
   const wallet = useWallet();
@@ -21,7 +23,7 @@ const TokenBalance = (trigger) => {
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      const _balance = await getKVBalance(wallet.publicKey);
+      const _balance = await getBalance(wallet.publicKey);
       const balance = JSON.parse(_balance.message);
       setAntiBalance(antiBalanceResult - balance.anti);
       setProBalance(proBalanceResult - balance.pro);

@@ -1,17 +1,19 @@
+/* API to web2 Database */
+
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
 
-export const recordPrediction = async (walletAddress, voteData) => {
+export const recordPrediction = async (walletAddress, predict) => {
   const response = await fetch(`${API_URL}/predict`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       wallet: walletAddress,
-      antiTokens: voteData.antiTokens,
-      proTokens: voteData.proTokens,
-      baryonTokens: voteData.baryonTokens,
-      photonTokens: voteData.photonTokens,
-      signature: voteData.signature,
-      timestamp: voteData.timestamp,
+      antiTokens: predict.antiTokens,
+      proTokens: predict.proTokens,
+      baryonTokens: predict.baryonTokens,
+      photonTokens: predict.photonTokens,
+      signature: predict.signature,
+      timestamp: predict.timestamp,
     }),
   });
 
@@ -27,18 +29,18 @@ export const recordPrediction = async (walletAddress, voteData) => {
   }
 };
 
-export const recordClaim = async (walletAddress, claimData) => {
-  const response = await fetch(`${API_URL}/claim`, {
+export const recordClaim = async (walletAddress, claim) => {
+  const response = await fetch(`${API_URL}/reclaim`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       wallet: walletAddress,
-      antiTokens: claimData.antiTokens,
-      proTokens: claimData.proTokens,
-      baryonTokens: claimData.baryonTokens,
-      photonTokens: claimData.photonTokens,
-      signature: claimData.signature,
-      timestamp: claimData.timestamp,
+      antiTokens: claim.antiTokens,
+      proTokens: claim.proTokens,
+      baryonTokens: claim.baryonTokens,
+      photonTokens: claim.photonTokens,
+      signature: claim.signature,
+      timestamp: claim.timestamp,
     }),
   });
 
@@ -54,18 +56,36 @@ export const recordClaim = async (walletAddress, claimData) => {
   }
 };
 
-// Get token balances from KV
-export const getKVBalance = async (walletAddress) => {
-  const response = await fetch(`${API_URL}/balances/${walletAddress}`);
+// Get token balances from KV for a wallet
+export const getBalance = async (walletAddress) => {
+  const response = await fetch(`${API_URL}/balance/${walletAddress}`);
   if (!response.ok) {
     throw new Error("FAILED_TO_GET_BALANCES");
   }
   return response.json();
 };
 
-// Get global data from API
-export const getMetadata = async () => {
-  const response = await fetch(`${API_URL}/metadata`);
+// Get token claims from KV for a wallet
+export const getClaim = async (walletAddress) => {
+  const response = await fetch(`${API_URL}/claim/${walletAddress}`);
+  if (!response.ok) {
+    throw new Error("FAILED_TO_GET_CLAIMS");
+  }
+  return response.json();
+};
+
+// Get global balances data from API
+export const getBalances = async () => {
+  const response = await fetch(`${API_URL}/balances`);
+  if (!response.ok) {
+    throw new Error(`HTTP_ERROR: ${response.status}`);
+  }
+  return response.json();
+};
+
+// Get global claims data from API
+export const getClaims = async () => {
+  const response = await fetch(`${API_URL}/claims`);
   if (!response.ok) {
     throw new Error(`HTTP_ERROR: ${response.status}`);
   }

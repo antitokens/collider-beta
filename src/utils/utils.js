@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BadgeCheck, CircleAlert } from "lucide-react";
-import { calculateCollision } from "./colliderAlpha";
+
+/* Global Constants */
 
 // Metadata init
 export const metadataInit = {
@@ -11,6 +12,10 @@ export const metadataInit = {
   colliderDistribution: {
     u: 0,
     s: 0,
+    range: [],
+    distribution: [],
+    short: [],
+    curve: [],
   },
   totalDistribution: {
     u: 0,
@@ -63,7 +68,7 @@ export const metadataInit = {
         "1-10m": 0,
       },
     },
-    cummulative: {
+    cumulative: {
       timestamps: [],
       pro: [],
       anti: [],
@@ -304,6 +309,12 @@ export const generateGradientColor = (
   startColor,
   endColor
 ) => {
+  if (min === 0 && max === 0) {
+    return `rgba(0, 0, 0, 0)`;
+  }
+  if (min === max) {
+    return `rgba(128, 128, 128, 1)`;
+  }
   const intensity = (value - min) / (max - min); // Normalize value between 0 and 1
   const [r1, g1, b1] = startColor; // Start RGB color
   const [r2, g2, b2] = endColor; // End RGB color
