@@ -36,6 +36,7 @@ import {
   emptyBags,
   convertToLocaleTime,
   formatCount,
+  defaultToken,
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
@@ -128,14 +129,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
-  const [antiData, setAntiData] = useState({
-    priceUsd: 1.0,
-    marketCap: 1e9,
-  });
-  const [proData, setProData] = useState({
-    priceUsd: 1.0,
-    marketCap: 1e9,
-  });
+  const [antiData, setAntiData] = useState(defaultToken);
+  const [proData, setProData] = useState(defaultToken);
   const [showAnimation, setShowAnimation] = useState(false);
   const [currentPredictionData, setCurrentPredictionData] =
     useState(emptyMetadata);
@@ -146,7 +141,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [dynamics, setDynamics] = useState([]);
-  const [truth, setTruth] = useState([]);
+  const [truth, setTruth] = useState([1, 0]);
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
@@ -300,24 +295,25 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         const proData = await proResponse.json();
 
         // Update state for $ANTI and $PRO
-        if (antiData.pairs && antiData.pairs[0]) {
-          setAntiData({
-            priceUsd: parseFloat(antiData.pairs[0].priceUsd).toFixed(5),
-            marketCap: antiData.pairs[0].fdv,
-          });
-        }
+        if (!process.env.NEXT_PUBLIC_TEST_TOKENS) {
+          if (antiData.pairs && antiData.pairs[0]) {
+            setAntiData({
+              priceUsd: parseFloat(antiData.pairs[0].priceUsd).toFixed(5),
+              marketCap: antiData.pairs[0].fdv,
+            });
+          }
 
-        if (proData.pairs && proData.pairs[0]) {
-          setProData({
-            priceUsd: parseFloat(proData.pairs[0].priceUsd).toFixed(5),
-            marketCap: proData.pairs[0].fdv,
-          });
+          if (proData.pairs && proData.pairs[0]) {
+            setProData({
+              priceUsd: parseFloat(proData.pairs[0].priceUsd).toFixed(5),
+              marketCap: proData.pairs[0].fdv,
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching token data:", error);
       }
     };
-    setTruth([1, 0]); // [ANTI, PRO]
     fetchTokenData();
   }, []);
 
@@ -492,6 +488,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   bags={bags}
                   balances={balances}
                   inactive={inactive || dead}
+                  isMetaLoading={isMetaLoading}
                 />
               </div>
             ) : (
@@ -709,6 +706,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   dynamics={dynamics}
                   holders={bags.wallets}
                   isMobile={isMobile}
+                  schedule={[balances.startTime, balances.endTime]}
                 />
               ) : (
                 <div className="flex justify-center items-center w-full">
@@ -743,6 +741,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   dynamics={dynamics}
                   holders={bags.wallets}
                   isMobile={isMobile}
+                  schedule={[claims.startTime, claims.endTime]}
                 />
               ) : (
                 <div className="flex justify-center items-center w-full">

@@ -6,7 +6,9 @@ import {
   formatCount,
   truncateMiddle,
   generateGradientColor,
+  shortenTick,
 } from "../utils/utils";
+import plugin from "@tailwindcss/typography";
 
 Chart.register(ChartDataLabels, ...registerables);
 
@@ -23,6 +25,7 @@ const DashboardCollider = ({
   dynamics = [],
   holders = [],
   isMobile = false,
+  schedule = [],
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -30,6 +33,24 @@ const DashboardCollider = ({
   const [lineChartData, setLineChartData] = useState(null);
   const [netDistribution, setNetDistribution] = useState(null);
   const [winnerDistribution, setWinnerDistribution] = useState(null);
+
+  const xAxisLabelPlugin = {
+    id: "xAxisLabel",
+    afterDraw: (chart) => {
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      // Style settings for the label
+      ctx.font = "8px 'SF Mono Round'";
+      ctx.fillStyle = "#666666";
+      ctx.textBaseline = "middle";
+      // Position calculation
+      // This puts the label near the end of x-axis, slightly above it
+      const x = xAxis.right - 50; // Shift left from the end
+      const y = xAxis.top - 5; // Shift up from the axis
+      // Draw the label
+      ctx.fillText("Time (UTC)", x, y);
+    },
+  };
 
   useEffect(() => {
     // Prepare pie chart data for events
@@ -271,9 +292,12 @@ const DashboardCollider = ({
     });
 
     // Prepare line chart data
+    const timeDiffHours =
+      (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
+    const useHourly = schedule.length > 0 ? timeDiffHours < 24 : false;
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
-        value.split(" ").slice(0, 2).join(" ").slice(0, -1)
+        shortenTick(value, useHourly)
       ),
       datasets: [
         {
@@ -317,6 +341,7 @@ const DashboardCollider = ({
           tension: 0.25,
         },
       ],
+      plugins: [xAxisLabelPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -642,6 +667,7 @@ const DashboardCollider = ({
     colliderDistribution,
     totalDistribution,
     dynamics,
+    schedule,
   ]);
 
   return (
@@ -736,7 +762,11 @@ const DashboardCollider = ({
           </div>
           {lineChartData && (
             <div style={{ height: "250px" }}>
-              <Line data={lineChartData} options={lineChartData.options} />
+              <Line
+                data={lineChartData}
+                options={lineChartData.options}
+                plugins={lineChartData.plugins}
+              />
             </div>
           )}
         </div>

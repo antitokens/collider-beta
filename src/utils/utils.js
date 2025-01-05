@@ -326,3 +326,46 @@ export const generateGradientColor = (
 
   return `rgb(${r}, ${g}, ${b})`;
 };
+
+export const parseDateToISO = (dateStr, useHourly) => {
+  const local = new Date();
+  if (useHourly) {
+    const [month, day, year, time] = dateStr
+      .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+\s+[AP]M)/)
+      .slice(1);
+    const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-11)
+    const [hours, period] = time.split(/\s+/);
+    const hour12 = hours % 12 || 12;
+    // Reconstruct date in local timezone
+    const hour24 =
+      period === "PM" && hour12 !== 12
+        ? hour12 + 12
+        : period === "AM" && hour12 === 12
+        ? 0
+        : hour12;
+    // Create new date with local components
+    const date = new Date(year, monthIndex, day, hour24);
+    // Convert to ISO string
+    const localDate = new Date(
+      date.getTime() - local.getTimezoneOffset() * 60000
+    );
+    return localDate.toISOString();
+  }
+  // For non-hourly format, convert UTC to local time before creating ISO string
+  const date = new Date(dateStr);
+  const localDate = new Date(
+    date.getTime() - local.getTimezoneOffset() * 60000
+  );
+  return localDate.toISOString();
+};
+
+export const shortenTick = (tick, useHourly) => {
+  return !useHourly
+    ? tick.split(" ").slice(0, 2).join(" ").slice(0, -1)
+    : tick.split(" ").slice(-2).join(" ");
+};
+
+export const defaultToken = {
+  priceUsd: 1.0,
+  marketCap: 1e9,
+};

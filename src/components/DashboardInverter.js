@@ -6,6 +6,7 @@ import {
   formatCount,
   truncateMiddle,
   generateGradientColor,
+  shortenTick,
 } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
@@ -23,6 +24,7 @@ const DashboardInverter = ({
   dynamics = [],
   holders = [],
   isMobile = false,
+  schedule = [],
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -30,6 +32,11 @@ const DashboardInverter = ({
   const [lineChartData, setLineChartData] = useState(null);
   const [netDistribution, setNetDistribution] = useState(null);
   const [winnerDistribution, setWinnerDistribution] = useState(null);
+
+  const timeDiffHours =
+    (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
+  const useHourly = timeDiffHours < 24;
+
   useEffect(() => {
     // Prepare pie chart data for events
     setPieChartDataEmissions({
@@ -272,7 +279,7 @@ const DashboardInverter = ({
     // Prepare line chart data
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
-        value.split(" ").slice(0, 2).join(" ").slice(0, -1)
+        shortenTick(value, useHourly)
       ),
       datasets: [
         {

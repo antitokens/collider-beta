@@ -13,6 +13,7 @@ import {
   emptyBags,
   formatCount,
   formatPrecise,
+  defaultToken,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -30,8 +31,8 @@ const Inverter = ({
   BASE_URL,
   onClaimSubmitted,
   clearFields,
-  antiData,
-  proData,
+  antiData = defaultToken,
+  proData = defaultToken,
   isMobile = false,
   bags = emptyBags,
   inactive = true,
@@ -46,7 +47,6 @@ const Inverter = ({
   const [updatedBalances, setUpdatedBalances] = useState([0, 0]);
   const [gain, setGain] = useState(0);
   const [dollarGain, setDollarGain] = useState(0);
-  const [invest, setInvest] = useState(0);
   const [userDistribution, setUserDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
 
@@ -95,7 +95,6 @@ const Inverter = ({
               ]
             : [photonBalance, baryonBalance]
         );
-        setInvest(truth.length > 0 ? originalPosition : 0);
         setDollarGain(truth.length > 0 ? rewardCurrent.change.gain[myBag] : 0);
         setGain(
           truth.length > 0 && originalPosition > 0
@@ -474,7 +473,11 @@ const Inverter = ({
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                 </span>
               </div>
-              <div className="flex flex-row justify-between gap-1">
+              <div
+                className={`flex flex-row justify-between gap-1 ${
+                  inactive ? "hidden" : ""
+                }`}
+              >
                 <div
                   className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
                   onClick={() => setPhotonTokens(Number(updatedBalances[0]))}
@@ -517,7 +520,11 @@ const Inverter = ({
                   ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON
                 </label>
               </div>
-              <div className="flex flex-row justify-between items-center w-full">
+              <div
+                className={`flex flex-row justify-between items-center w-full ${
+                  inactive ? "hidden" : ""
+                }`}
+              >
                 <div className="flex flex-row justify-between gap-1">
                   <div
                     className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
