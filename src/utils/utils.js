@@ -326,3 +326,28 @@ export const generateGradientColor = (
 
   return `rgb(${r}, ${g}, ${b})`;
 };
+
+export const parseDateToISO = (dateStr, useHourly) => {
+  if (useHourly) {
+    const [month, day, year, time] = dateStr
+      .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+\s+[AP]M)/)
+      .slice(1);
+    const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-11)
+    const [hours, period] = time.split(/\s+/);
+    const hour24 =
+      period === "PM" && hours !== "12"
+        ? parseInt(hours) + 12
+        : period === "AM" && hours === "12"
+        ? 0
+        : parseInt(hours);
+    const date = new Date(parseInt(year), monthIndex, parseInt(day), hour24);
+    return date.toISOString();
+  }
+  return new Date(dateStr).toISOString();
+};
+
+export const shortenTick = (tick, useHourly) => {
+  return !useHourly
+    ? tick.split(" ").slice(0, 2).join(" ").slice(0, -1)
+    : tick.split(" ").slice(-2).join(" ");
+};

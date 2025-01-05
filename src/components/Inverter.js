@@ -46,7 +46,6 @@ const Inverter = ({
   const [updatedBalances, setUpdatedBalances] = useState([0, 0]);
   const [gain, setGain] = useState(0);
   const [dollarGain, setDollarGain] = useState(0);
-  const [invest, setInvest] = useState(0);
   const [userDistribution, setUserDistribution] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
 
@@ -95,7 +94,6 @@ const Inverter = ({
               ]
             : [photonBalance, baryonBalance]
         );
-        setInvest(truth.length > 0 ? originalPosition : 0);
         setDollarGain(truth.length > 0 ? rewardCurrent.change.gain[myBag] : 0);
         setGain(
           truth.length > 0 && originalPosition > 0

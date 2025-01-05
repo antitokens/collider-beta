@@ -709,6 +709,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   dynamics={dynamics}
                   holders={bags.wallets}
                   isMobile={isMobile}
+                  schedule={[balances.startTime, balances.endTime]}
                 />
               ) : (
                 <div className="flex justify-center items-center w-full">
@@ -743,6 +744,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   dynamics={dynamics}
                   holders={bags.wallets}
                   isMobile={isMobile}
+                  schedule={[claims.startTime, claims.endTime]}
                 />
               ) : (
                 <div className="flex justify-center items-center w-full">

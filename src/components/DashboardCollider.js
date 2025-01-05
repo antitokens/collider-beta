@@ -6,6 +6,7 @@ import {
   formatCount,
   truncateMiddle,
   generateGradientColor,
+  shortenTick,
 } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
@@ -23,6 +24,7 @@ const DashboardCollider = ({
   dynamics = [],
   holders = [],
   isMobile = false,
+  schedule = [],
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -271,9 +273,12 @@ const DashboardCollider = ({
     });
 
     // Prepare line chart data
+    const timeDiffHours =
+      (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
+    const useHourly = schedule.length > 0 ? timeDiffHours < 24 : false;
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
-        value.split(" ").slice(0, 2).join(" ").slice(0, -1)
+        shortenTick(value, useHourly)
       ),
       datasets: [
         {
@@ -642,6 +647,7 @@ const DashboardCollider = ({
     colliderDistribution,
     totalDistribution,
     dynamics,
+    schedule,
   ]);
 
   return (

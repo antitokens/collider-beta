@@ -17,6 +17,8 @@ import {
   formatPrecise,
   generateGradientColor,
   convertToLocaleTime,
+  parseDateToISO,
+  shortenTick,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -62,24 +64,29 @@ const Collider = ({
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
     useState("1D");
   const sliderRef = useRef(null);
+
   const verticalLinesPlugin = {
     id: "verticalLines",
     beforeDatasetsDraw: (chart, _, pluginOptions) => {
-      const { markerDates, labels } = pluginOptions;
+      const { markerDates, labels, useHourly } = pluginOptions;
       const ctx = chart.ctx;
       const xAxis = chart.scales.x;
       const yAxis = chart.scales.y;
       markerDates.forEach((date, index) => {
-        const dateStr = new Date(date)
-          .toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
-          .split(" ")
-          .slice(0, 2)
-          .join(" ")
-          .slice(0, -1);
+        const _dateStr = useHourly
+          ? new Date(date).toLocaleTimeString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              hour12: true,
+            })
+          : new Date(date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+        const dateStr = shortenTick(_dateStr, useHourly);
         const xPosition = xAxis.getPixelForValue(dateStr);
         if (!xPosition) return;
         ctx.save();
@@ -112,19 +119,24 @@ const Collider = ({
   }, []);
 
   useEffect(() => {
-    const parseDateToISO = (dateStr) => {
-      return new Date(dateStr).toISOString();
-    };
+    const useHourly = balances.eventsOverTime.cumulative.timestamps[0]
+      ? balances.eventsOverTime.cumulative.timestamps[0]
+          .toString()
+          .endsWith("AM") ||
+        balances.eventsOverTime.cumulative.timestamps[0]
+          .toString()
+          .endsWith("PM")
+      : false;
     const getSegmentColor = (context) => {
       const _start =
         context.p0DataIndex +
         balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
-          parseDateToISO(timestamp)
+          parseDateToISO(timestamp, useHourly)
         );
       const _end =
         context.p1DataIndex +
         balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
-          parseDateToISO(timestamp)
+          parseDateToISO(timestamp, useHourly)
         );
       const start = balances.eventsOverTime.cumulative.photon[_start];
       const end = balances.eventsOverTime.cumulative.photon[_end];
@@ -133,10 +145,12 @@ const Collider = ({
         Math.max(...balances.eventsOverTime.cumulative.photon),
       ];
       const currentTick = parseDateToISO(
-        balances.eventsOverTime.cumulative.timestamps[_start]
+        balances.eventsOverTime.cumulative.timestamps[_start],
+        useHourly
       );
       const nextTick = parseDateToISO(
-        balances.eventsOverTime.cumulative.timestamps[_end]
+        balances.eventsOverTime.cumulative.timestamps[_end],
+        useHourly
       );
       const nowTime = new Date().toISOString();
       // Past segments should be null
@@ -209,16 +223,16 @@ const Collider = ({
       type: "line",
       labels: balances.eventsOverTime.cumulative.timestamps
         .filter((timestamp) => {
-          const dateISO = parseDateToISO(timestamp);
+          const dateISO = parseDateToISO(timestamp, useHourly);
           return dateISO;
         })
-        .map((value) => value.split(" ").slice(0, 2).join(" ").slice(0, -1)),
+        .map((value) => shortenTick(value, useHourly)),
       datasets: [
         {
           label: "Yes",
           data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp);
+              const dateISO = parseDateToISO(timestamp, useHourly);
               if (dateISO) {
                 const pro = balances.eventsOverTime.cumulative.pro[index];
                 const anti = balances.eventsOverTime.cumulative.anti[index];
@@ -243,7 +257,7 @@ const Collider = ({
           label: "Certainty",
           data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp);
+              const dateISO = parseDateToISO(timestamp, useHourly);
               if (dateISO) {
                 return (
                   (balances.eventsOverTime.cumulative.photon[index] /
@@ -275,13 +289,17 @@ const Collider = ({
         plugins: {
           verticalLines:
             config.startTime === "-" || config.endTime === "-"
-              ? { markerDates: [], labels: [] }
+              ? { markerDates: [], labels: [], useHourly: useHourly }
               : {
-                  markerDates: [config.startTime, config.endTime],
+                  markerDates:
+                    config.startTime === "-" || config.endTime === "-"
+                      ? []
+                      : [config.startTime, config.endTime],
                   labels:
                     config.startTime === "-" || config.endTime === "-"
                       ? []
                       : ["OPEN", "CLOSE"],
+                  useHourly: useHourly,
                 },
           datalabels: {
             display: false,
@@ -296,13 +314,10 @@ const Collider = ({
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
-                      timestamp
-                        .split(" ")
-                        .slice(0, 2)
-                        .join(" ")
-                        .slice(0, -1) ===
+                      shortenTick(timestamp, useHourly) ===
                       context.chart.data.labels[context.dataIndex]
-                  )
+                  ),
+                  useHourly
                 );
                 const nowTime = new Date().toISOString();
                 if (currentTick > nowTime) {
@@ -321,13 +336,10 @@ const Collider = ({
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
-                      timestamp
-                        .split(" ")
-                        .slice(0, 2)
-                        .join(" ")
-                        .slice(0, -1) ===
+                      shortenTick(timestamp, useHourly) ===
                       context.chart.data.labels[context.dataIndex]
-                  )
+                  ),
+                  useHourly
                 );
                 const nowTime = new Date().toISOString();
                 // Future segments should be grey
