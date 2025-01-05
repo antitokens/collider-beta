@@ -66,7 +66,7 @@ const Inverter = ({
               bags.proPool,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                : [0, 0],
+                : [1, 1],
               bags.wallets,
               truth
             )
@@ -75,6 +75,7 @@ const Inverter = ({
       myBag = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
+
       if (proData && antiData && myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
@@ -479,7 +480,7 @@ const Inverter = ({
                 }`}
               >
                 <div
-                  className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
+                  className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer animate-pulse duration-1000"
                   onClick={() => setPhotonTokens(Number(updatedBalances[0]))}
                 >
                   MAX
@@ -527,7 +528,7 @@ const Inverter = ({
               >
                 <div className="flex flex-row justify-between gap-1">
                   <div
-                    className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer"
+                    className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer animate-pulse duration-1000"
                     onClick={() => setBaryonTokens(Number(updatedBalances[1]))}
                   >
                     MAX

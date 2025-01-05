@@ -33,9 +33,23 @@ const DashboardInverter = ({
   const [netDistribution, setNetDistribution] = useState(null);
   const [winnerDistribution, setWinnerDistribution] = useState(null);
 
-  const timeDiffHours =
-    (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
-  const useHourly = timeDiffHours < 24;
+  const xAxisLabelPlugin = {
+    id: "xAxisLabel",
+    afterDraw: (chart) => {
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      // Style settings for the label
+      ctx.font = "8px 'SF Mono Round'";
+      ctx.fillStyle = "#666666";
+      ctx.textBaseline = "middle";
+      // Position calculation
+      // This puts the label near the end of x-axis, slightly above it
+      const x = xAxis.right - 50; // Shift left from the end
+      const y = xAxis.top - 5; // Shift up from the axis
+      // Draw the label
+      ctx.fillText("Time (UTC)", x, y);
+    },
+  };
 
   useEffect(() => {
     // Prepare pie chart data for events
@@ -277,6 +291,9 @@ const DashboardInverter = ({
     });
 
     // Prepare line chart data
+    const timeDiffHours =
+      (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
+    const useHourly = timeDiffHours < 24;
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
         shortenTick(value, useHourly)
@@ -323,6 +340,7 @@ const DashboardInverter = ({
           tension: 0.25,
         },
       ],
+      plugins: [xAxisLabelPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -648,6 +666,7 @@ const DashboardInverter = ({
     colliderDistribution,
     totalDistribution,
     dynamics,
+    schedule,
   ]);
 
   return (
@@ -742,7 +761,11 @@ const DashboardInverter = ({
           </div>
           {lineChartData && (
             <div style={{ height: "250px" }}>
-              <Line data={lineChartData} options={lineChartData.options} />
+              <Line
+                data={lineChartData}
+                options={lineChartData.options}
+                plugins={lineChartData.plugins}
+              />
             </div>
           )}
         </div>

@@ -1,8 +1,6 @@
-import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 /* Solana API */
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 const endpoint = process.env.NEXT_PUBLIC_SOL_RPC;
 const connection = new Connection(endpoint);
 
@@ -15,10 +13,9 @@ export const PRO_TOKEN_MINT = new PublicKey(
 );
 
 export const getTokenBalance = async (walletPublicKey, mint) => {
-  const accounts = await connection.getParsedTokenAccountsByOwner(
-    walletPublicKey,
-    { mint }
-  );
+  const accounts = walletPublicKey
+    ? await connection.getParsedTokenAccountsByOwner(walletPublicKey, { mint })
+    : {};
   return (
     accounts.value?.reduce((memo, item) => {
       return memo + (item?.account?.data.parsed.info.tokenAmount.uiAmount || 0);
