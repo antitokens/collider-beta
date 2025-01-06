@@ -374,29 +374,31 @@ export const generateGradientColor = (
 export const parseDateToISO = (dateStr, useBinning) => {
   const local = new Date();
   if (useBinning) {
-    const [month, day, year, time] = dateStr
-      .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+\s+[AP]M)/)
-      .slice(1);
-    const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-11)
-    const [hours, period] = time.split(/\s+/);
-    const hour12 = hours % 12 || 12;
-    // Reconstruct date in local timezone
-    const hour24 =
-      period === "PM" && hour12 !== 12
-        ? hour12 + 12
-        : period === "AM" && hour12 === 12
-        ? 0
-        : hour12;
-    // Create new date with local components
-    const date = new Date(year, monthIndex, day, hour24);
-    // Convert to ISO string
-    const localDate = new Date(
-      date.getTime() - local.getTimezoneOffset() * 60000
-    );
-    return localDate.toISOString();
+    if (useBinning !== "daily") {
+      const [month, day, year, time] = dateStr
+        .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+\s+[AP]M)/)
+        .slice(1);
+      const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-11)
+      const [hours, period] = time.split(/\s+/);
+      const hour12 = hours % 12 || 12;
+      // Reconstruct date in local timezone
+      const hour24 =
+        period === "PM" && hour12 !== 12
+          ? hour12 + 12
+          : period === "AM" && hour12 === 12
+          ? 0
+          : hour12;
+      // Create new date with local components
+      const date = new Date(year, monthIndex, day, hour24);
+      // Convert to ISO string
+      const localDate = new Date(
+        date.getTime() - local.getTimezoneOffset() * 60000
+      );
+      return localDate.toISOString();
+    }
   }
   // For non-hourly format, convert UTC to local time before creating ISO string
-  const date = new Date(dateStr);
+  const date = parseCustomDate(dateStr);
   const localDate = new Date(
     date.getTime() - local.getTimezoneOffset() * 60000
   );
@@ -418,7 +420,6 @@ export const shortenTick = (tick, useBinning) => {
     if (useBinning === "hourly") {
       return tick.split(" ").slice(-2).join(" ");
     }
-    return tick;
   }
   return tick;
 };
@@ -439,7 +440,7 @@ export function detectBinningStrategy(dates) {
   const date1 = new Date(schedule[0]);
   const date2 = new Date(schedule[1]);
   const hourDiff = (date2 - date1) / (1000 * 60 * 60);
-  if (hourDiff <= 12) return "hourly";
+  if (hourDiff <= 24) return "hourly";
   if (hourDiff <= 48) return "6-hour";
   if (hourDiff <= 72) return "12-hour";
   return "unknown";
