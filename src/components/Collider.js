@@ -298,7 +298,32 @@ const Collider = ({
           hoverBackgroundColor: "#ffffff55",
           hoverBorderColor: "#ffffffaa",
         },
-        // ... rest of the datasets configuration remains the same
+        {
+          // Add a hidden dataset for the certainty tooltip
+          label: "Certainty",
+          data: balances.eventsOverTime.cumulative.timestamps
+            .map((timestamp, index) => {
+              const dateISO = parseDateToISO(timestamp, useBinning);
+              if (dateISO) {
+                return (
+                  (balances.eventsOverTime.cumulative.photon[index] /
+                    (balances.eventsOverTime.cumulative.photon[index] +
+                      balances.eventsOverTime.cumulative.baryon[index])) *
+                  100
+                );
+              }
+              return null;
+            })
+            .filter((value) => value !== null),
+          display: false,
+          hidden: false,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          borderWidth: 0,
+          hoverBorderWidth: 0,
+          hoverBackgroundColor: "transparent",
+          hoverBorderColor: "transparent",
+        },
       ],
       plugins: [verticalLinesPlugin, xAxisLabelPlugin],
       options: {
