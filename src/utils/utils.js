@@ -427,7 +427,7 @@ export const shortenTick = (tick, useBinning) => {
 export const copyText = debounce(async (text) => {
   try {
     await navigator.clipboard.writeText(text);
-    toast.success("CA Copied to clipboard!");
+    toast.success("CA copied to clipboard!");
   } catch (err) {
     console.error("Failed to copy text: ", err);
     toast.error("Failed to copy");
