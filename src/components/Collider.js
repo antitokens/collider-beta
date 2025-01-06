@@ -21,6 +21,7 @@ import {
   shortenTick,
   defaultToken,
   copyText,
+  detectBinningStrategy,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -83,7 +84,7 @@ const Collider = ({
       ctx.textBaseline = "middle";
       // Position calculation
       // This puts the label near the end of x-axis, slightly above it
-      const x = xAxis.right - 30; // Shift left from the end
+      const x = xAxis.right - 50; // Shift left from the end
       const y = xAxis.top - 5; // Shift up from the axis
       // Draw the label
       ctx.fillText("Time (UTC)", x, y);
@@ -93,7 +94,7 @@ const Collider = ({
   const verticalLinesPlugin = {
     id: "verticalLines",
     beforeDatasetsDraw: (chart, _, pluginOptions) => {
-      const { markerDates, labels, useHourly } = pluginOptions;
+      const { markerDates, labels, useBinning } = pluginOptions;
       const ctx = chart.ctx;
       const xAxis = chart.scales.x;
       const yAxis = chart.scales.y;
@@ -102,20 +103,22 @@ const Collider = ({
         const localDate = new Date(
           new Date(date).getTime() + local.getTimezoneOffset() * 60000
         );
-        const _date_ = useHourly
-          ? localDate.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-              hour: "numeric",
-              hour12: true,
-            })
-          : localDate.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            });
-        const dateStr = shortenTick(_date_, useHourly);
+        const _date_ =
+          useBinning !== "daily"
+            ? localDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                hour12: true,
+              })
+            : localDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              });
+        console.log(_date_);
+        const dateStr = shortenTick(_date_, useBinning);
         const xPosition = xAxis.getPixelForValue(dateStr);
         if (!xPosition) return;
         ctx.save();
@@ -150,15 +153,10 @@ const Collider = ({
   // Create a ref to store the chart instance
   const chartRef = useRef(null);
   useEffect(() => {
-    const useHourly = balances.eventsOverTime.cumulative.timestamps[0]
-      ? balances.eventsOverTime.cumulative.timestamps[0]
-          .toString()
-          .endsWith("AM") ||
-        balances.eventsOverTime.cumulative.timestamps[0]
-          .toString()
-          .endsWith("PM")
-      : false;
-
+    const useBinning = detectBinningStrategy([
+      config.startTime,
+      config.endTime,
+    ]);
     const getSegmentColor = (context) => {
       // Ensure we have a valid chart context
       if (!context.chart?.ctx) {
@@ -168,12 +166,12 @@ const Collider = ({
       const _start =
         context.p0DataIndex +
         balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
-          parseDateToISO(timestamp, useHourly)
+          parseDateToISO(timestamp, useBinning)
         );
       const _end =
         context.p1DataIndex +
         balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
-          parseDateToISO(timestamp, useHourly)
+          parseDateToISO(timestamp, useBinning)
         );
       const start = balances.eventsOverTime.cumulative.photon[_start];
       const end = balances.eventsOverTime.cumulative.photon[_end];
@@ -183,11 +181,11 @@ const Collider = ({
       ];
       const currentTick = parseDateToISO(
         balances.eventsOverTime.cumulative.timestamps[_start],
-        useHourly
+        useBinning
       );
       const nextTick = parseDateToISO(
         balances.eventsOverTime.cumulative.timestamps[_end],
-        useHourly
+        useBinning
       );
       const nowTime = new Date().toISOString();
 
@@ -269,16 +267,16 @@ const Collider = ({
       type: "line",
       labels: balances.eventsOverTime.cumulative.timestamps
         .filter((timestamp) => {
-          const dateISO = parseDateToISO(timestamp, useHourly);
+          const dateISO = parseDateToISO(timestamp, useBinning);
           return dateISO;
         })
-        .map((value) => shortenTick(value, useHourly)),
+        .map((value) => shortenTick(value, useBinning)),
       datasets: [
         {
           label: "Yes",
           data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp, useHourly);
+              const dateISO = parseDateToISO(timestamp, useBinning);
               if (dateISO) {
                 const pro = balances.eventsOverTime.cumulative.pro[index];
                 const anti = balances.eventsOverTime.cumulative.anti[index];
@@ -298,7 +296,32 @@ const Collider = ({
           hoverBackgroundColor: "#ffffff55",
           hoverBorderColor: "#ffffffaa",
         },
-        // ... rest of the datasets configuration remains the same
+        {
+          // Add a hidden dataset for the certainty tooltip
+          label: "Certainty",
+          data: balances.eventsOverTime.cumulative.timestamps
+            .map((timestamp, index) => {
+              const dateISO = parseDateToISO(timestamp, useBinning);
+              if (dateISO) {
+                return (
+                  (balances.eventsOverTime.cumulative.photon[index] /
+                    (balances.eventsOverTime.cumulative.photon[index] +
+                      balances.eventsOverTime.cumulative.baryon[index])) *
+                  100
+                );
+              }
+              return null;
+            })
+            .filter((value) => value !== null),
+          display: false,
+          hidden: false,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          borderWidth: 0,
+          hoverBorderWidth: 0,
+          hoverBackgroundColor: "transparent",
+          hoverBorderColor: "transparent",
+        },
       ],
       plugins: [verticalLinesPlugin, xAxisLabelPlugin],
       options: {
@@ -313,7 +336,7 @@ const Collider = ({
         plugins: {
           verticalLines:
             config.startTime === "-" || config.endTime === "-"
-              ? { markerDates: [], labels: [], useHourly: useHourly }
+              ? { markerDates: [], labels: [], useBinning: useBinning }
               : {
                   markerDates:
                     config.startTime === "-" || config.endTime === "-"
@@ -323,7 +346,7 @@ const Collider = ({
                     config.startTime === "-" || config.endTime === "-"
                       ? []
                       : ["OPEN", "CLOSE"],
-                  useHourly: useHourly,
+                  useBinning: useBinning,
                 },
           datalabels: {
             display: false,
@@ -338,10 +361,10 @@ const Collider = ({
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
-                      shortenTick(timestamp, useHourly) ===
+                      shortenTick(timestamp, useBinning) ===
                       context.chart.data.labels[context.dataIndex]
                   ),
-                  useHourly
+                  useBinning
                 );
                 const nowTime = new Date().toISOString();
                 if (currentTick > nowTime) {
@@ -360,10 +383,10 @@ const Collider = ({
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
-                      shortenTick(timestamp, useHourly) ===
+                      shortenTick(timestamp, useBinning) ===
                       context.chart.data.labels[context.dataIndex]
                   ),
-                  useHourly
+                  useBinning
                 );
                 const nowTime = new Date().toISOString();
                 // Future segments should be grey
@@ -410,6 +433,8 @@ const Collider = ({
                 family: "'SF Mono Round'",
                 size: 10,
               },
+              minRotation: 0,
+              maxRotation: 0,
               color: "#d3d3d399",
             },
           },

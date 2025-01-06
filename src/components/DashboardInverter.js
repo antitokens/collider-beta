@@ -7,6 +7,7 @@ import {
   truncateMiddle,
   generateGradientColor,
   shortenTick,
+  detectBinningStrategy,
 } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
@@ -291,12 +292,10 @@ const DashboardInverter = ({
     });
 
     // Prepare line chart data
-    const timeDiffHours =
-      (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
-    const useHourly = timeDiffHours < 24;
+    const useBinning = detectBinningStrategy(schedule);
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
-        shortenTick(value, useHourly)
+        shortenTick(value, useBinning)
       ),
       datasets: [
         {
@@ -396,6 +395,8 @@ const DashboardInverter = ({
                 family: "'SF Mono Round'",
                 size: 10,
               },
+              minRotation: 0,
+              maxRotation: 0,
             },
             grid: { color: "#d3d3d322" },
           },

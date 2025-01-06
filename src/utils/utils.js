@@ -4,6 +4,49 @@ import { BadgeCheck, CircleAlert } from "lucide-react";
 import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
+export function parseCustomDate(dateStr) {
+  // Check if date includes time
+  const parts = dateStr.split(", ");
+  const hasTime = parts.length > 2;
+
+  const monthDay = parts[0];
+  const year = parts[1];
+  const time = hasTime ? parts[2] : null;
+
+  const [month, day] = monthDay.split(" ");
+
+  // Convert month abbreviation to number
+  const months = {
+    Jan: 0,
+    Feb: 1,
+    Mar: 2,
+    Apr: 3,
+    May: 4,
+    Jun: 5,
+    Jul: 6,
+    Aug: 7,
+    Sep: 8,
+    Oct: 9,
+    Nov: 10,
+    Dec: 11,
+  };
+
+  if (hasTime) {
+    // Parse time if present
+    const [hour, period] = time.split(" ");
+
+    // Convert hour to 24-hour format
+    let hour24 = parseInt(hour);
+    if (period === "PM" && hour24 !== 12) hour24 += 12;
+    if (period === "AM" && hour24 === 12) hour24 = 0;
+
+    return new Date(parseInt(year), months[month], parseInt(day), hour24);
+  }
+
+  // Return date without time
+  return new Date(parseInt(year), months[month], parseInt(day));
+}
+
 /* Global Constants */
 
 // Metadata init
@@ -328,9 +371,9 @@ export const generateGradientColor = (
   return `rgb(${r}, ${g}, ${b})`;
 };
 
-export const parseDateToISO = (dateStr, useHourly) => {
+export const parseDateToISO = (dateStr, useBinning) => {
   const local = new Date();
-  if (useHourly) {
+  if (useBinning) {
     const [month, day, year, time] = dateStr
       .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+\s+[AP]M)/)
       .slice(1);
@@ -360,10 +403,24 @@ export const parseDateToISO = (dateStr, useHourly) => {
   return localDate.toISOString();
 };
 
-export const shortenTick = (tick, useHourly) => {
-  return !useHourly
-    ? tick.split(" ").slice(0, 2).join(" ").slice(0, -1)
-    : tick.split(" ").slice(-2).join(" ");
+export const shortenTick = (tick, useBinning) => {
+  if (useBinning) {
+    if (useBinning.endsWith("-hour")) {
+      return (
+        tick.split(" ").slice(0, 2).join(" ").slice(0, -1) +
+        ", " +
+        tick.split(" ").slice(-2).join(" ")
+      );
+    }
+    if (useBinning === "daily") {
+      return tick.split(" ").slice(0, 2).join(" ").slice(0, -1);
+    }
+    if (useBinning === "hourly") {
+      return tick.split(" ").slice(-2).join(" ");
+    }
+    return tick;
+  }
+  return tick;
 };
 
 export const copyText = debounce(async (text) => {
@@ -375,6 +432,18 @@ export const copyText = debounce(async (text) => {
     toast.error("Failed to copy");
   }
 }, 300);
+
+export function detectBinningStrategy(dates) {
+  if (dates.length < 2) return "unknown";
+  const schedule = dates.slice(0, 2);
+  const date1 = new Date(schedule[0]);
+  const date2 = new Date(schedule[1]);
+  const hourDiff = (date2 - date1) / (1000 * 60 * 60);
+  if (hourDiff <= 12) return "hourly";
+  if (hourDiff <= 48) return "6-hour";
+  if (hourDiff <= 72) return "12-hour";
+  return "unknown";
+}
 
 export const defaultToken = {
   priceUsd: 1.0,
