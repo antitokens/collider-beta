@@ -303,7 +303,7 @@ const Collider = ({
           label: "Certainty",
           data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp, useBinning);
+              const dateISO = parseDateToISO(timestamp, useHourly);
               if (dateISO) {
                 return (
                   (balances.eventsOverTime.cumulative.photon[index] /
