@@ -5,7 +5,7 @@ import {
   getTokenBalance,
   PRO_TOKEN_MINT,
 } from "../utils/solana";
-import { getBalance } from "../utils/api";
+import { getBalance, getClaim } from "../utils/api";
 
 /* Token Balances Navbar */
 
@@ -23,12 +23,14 @@ const TokenBalance = (trigger) => {
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      const _balance = await getBalance(wallet.publicKey);
-      const balance = JSON.parse(_balance.message);
-      setAntiBalance(antiBalanceResult - balance.anti);
-      setProBalance(proBalanceResult - balance.pro);
-      setBaryonBalance(balance.baryon);
-      setPhotonBalance(balance.photon);
+      const blobBalance = await getBalance(wallet.publicKey);
+      const blobClaim = await getClaim(wallet.publicKey);
+      const dataBalance = JSON.parse(blobBalance.message);
+      const dataClaim = JSON.parse(blobClaim.message);
+      setAntiBalance(antiBalanceResult - dataBalance.anti - dataClaim.anti);
+      setProBalance(proBalanceResult - dataBalance.pro - dataClaim.pro);
+      setBaryonBalance(dataBalance.baryon - dataClaim.baryon);
+      setPhotonBalance(dataBalance.photon - dataClaim.photon);
     };
 
     if (wallet.publicKey) checkBalance();

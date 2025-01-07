@@ -169,6 +169,23 @@ const Collider = ({
       config.startTime,
       config.endTime,
     ]);
+    if (useBinning) {
+      if (useBinning === "hourly") {
+        setPredictionHistoryTimeframe("1H");
+      }
+      if (useBinning === "6-hour") {
+        setPredictionHistoryTimeframe("6H");
+      }
+      if (useBinning === "12-hour") {
+        setPredictionHistoryTimeframe("12H");
+      }
+      if (useBinning === "daily") {
+        setPredictionHistoryTimeframe("1D");
+      }
+      if (useBinning === "unknown") {
+        setPredictionHistoryTimeframe("ALL");
+      }
+    }
     const getSegmentColor = (context) => {
       // Ensure we have a valid chart context
       if (!context.chart?.ctx) {
@@ -545,7 +562,12 @@ const Collider = ({
                   ? "YES"
                   : value.toFixed(0) + "%";
               },
-              stepSize: 10,
+              stepSize: function (ctx) {
+                const maxValue = Math.max(
+                  ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
+                );
+                return maxValue * 0.1;
+              },
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
@@ -1248,6 +1270,16 @@ const Collider = ({
               </div>
               <div
                 className={
+                  predictionHistoryTimeframe === "12H"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => {}}
+              >
+                <span className="text-xs opacity-75">12H</span>
+              </div>
+              <div
+                className={
                   predictionHistoryTimeframe === "1D"
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
@@ -1268,21 +1300,11 @@ const Collider = ({
               </div>
               <div
                 className={
-                  predictionHistoryTimeframe === "1M"
-                    ? "timeframe-pill-active"
-                    : "timeframe-pill"
-                }
-                onClick={() => {}}
-              >
-                <span className="text-xs opacity-75">1M</span>
-              </div>
-              <div
-                className={
                   predictionHistoryTimeframe === "ALL"
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
                 }
-                onClick={() => handleTimeframeChange("ALL")}
+                onClick={() => {}}
               >
                 <span className="text-xs">ALL</span>
               </div>
@@ -1678,7 +1700,9 @@ const Collider = ({
             (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
           ? "Submit"
           : loading
-          ? "Submitting..."
+          ? isMetaLoading
+            ? "Loading..."
+            : "Submitting..."
           : "Submit"}
       </button>
       <ToastContainer {...toastContainerConfig} />
