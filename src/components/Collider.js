@@ -21,6 +21,7 @@ import {
   shortenTick,
   defaultToken,
   copyText,
+  detectBinningStrategy,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -83,17 +84,17 @@ const Collider = ({
       ctx.textBaseline = "middle";
       // Position calculation
       // This puts the label near the end of x-axis, slightly above it
-      const x = xAxis.right - 30; // Shift left from the end
-      const y = xAxis.top - 5; // Shift up from the axis
+      const x = xAxis.right - 15; // Shift left from the end
+      const y = xAxis.top + 7.5; // Shift up from the axis
       // Draw the label
-      ctx.fillText("Time (UTC)", x, y);
+      ctx.fillText("UTC", x, y);
     },
   };
 
   const verticalLinesPlugin = {
     id: "verticalLines",
     beforeDatasetsDraw: (chart, _, pluginOptions) => {
-      const { markerDates, labels, useHourly } = pluginOptions;
+      const { markerDates, labels, useBinning } = pluginOptions;
       const ctx = chart.ctx;
       const xAxis = chart.scales.x;
       const yAxis = chart.scales.y;
@@ -102,22 +103,36 @@ const Collider = ({
         const localDate = new Date(
           new Date(date).getTime() + local.getTimezoneOffset() * 60000
         );
-        const _date_ = useHourly
-          ? localDate.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-              hour: "numeric",
-              hour12: true,
-            })
-          : localDate.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            });
-        const dateStr = shortenTick(_date_, useHourly);
-        const xPosition = xAxis.getPixelForValue(dateStr);
-        if (!xPosition) return;
+        const _date_ =
+          useBinning !== "daily"
+            ? localDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                hour12: true,
+              })
+            : localDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              });
+        const dateStr = shortenTick(_date_, useBinning);
+        // Find all occurrences of this date
+        const allIndices = chart.data.labels.reduce((acc, label, i) => {
+          if (label === dateStr) acc.push(i);
+          return acc;
+        }, []);
+        // If we have enough occurrences, use the one matching our index
+        let xPosition;
+        if (allIndices.length > index) {
+          xPosition = xAxis.getPixelForValue(allIndices[index]);
+        } else {
+          // Fallback to first occurrence if we don't have enough matches
+          xPosition = xAxis.getPixelForValue(allIndices[0]);
+        }
+        // Skip if we still don't have a valid position
+        if (!xPosition || isNaN(xPosition)) return;
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(xPosition, yAxis.top);
@@ -150,50 +165,62 @@ const Collider = ({
   // Create a ref to store the chart instance
   const chartRef = useRef(null);
   useEffect(() => {
-    const useHourly = balances.eventsOverTime.cumulative.timestamps[0]
-      ? balances.eventsOverTime.cumulative.timestamps[0]
-          .toString()
-          .endsWith("AM") ||
-        balances.eventsOverTime.cumulative.timestamps[0]
-          .toString()
-          .endsWith("PM")
-      : false;
-
+    const useBinning = detectBinningStrategy([
+      config.startTime,
+      config.endTime,
+    ]);
+    if (useBinning) {
+      if (useBinning === "hourly") {
+        setPredictionHistoryTimeframe("1H");
+      }
+      if (useBinning === "6-hour") {
+        setPredictionHistoryTimeframe("6H");
+      }
+      if (useBinning === "12-hour") {
+        setPredictionHistoryTimeframe("12H");
+      }
+      if (useBinning === "daily") {
+        setPredictionHistoryTimeframe("1D");
+      }
+      if (useBinning === "unknown") {
+        setPredictionHistoryTimeframe("ALL");
+      }
+    }
     const getSegmentColor = (context) => {
       // Ensure we have a valid chart context
       if (!context.chart?.ctx) {
         return "rgba(128, 128, 128, 0.5)"; // Fallback color
       }
 
-      const _start =
+      const thisBin =
         context.p0DataIndex +
         balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
-          parseDateToISO(timestamp, useHourly)
+          parseDateToISO(timestamp, useBinning)
         );
-      const _end =
+      const nextBin =
         context.p1DataIndex +
         balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
-          parseDateToISO(timestamp, useHourly)
+          parseDateToISO(timestamp, useBinning)
         );
-      const start = balances.eventsOverTime.cumulative.photon[_start];
-      const end = balances.eventsOverTime.cumulative.photon[_end];
+      const startValue = balances.eventsOverTime.cumulative.photon[thisBin];
+      const endValue = balances.eventsOverTime.cumulative.photon[nextBin];
       const limits = [
         Math.min(...balances.eventsOverTime.cumulative.photon),
         Math.max(...balances.eventsOverTime.cumulative.photon),
       ];
       const currentTick = parseDateToISO(
-        balances.eventsOverTime.cumulative.timestamps[_start],
-        useHourly
+        balances.eventsOverTime.cumulative.timestamps[thisBin],
+        useBinning
       );
       const nextTick = parseDateToISO(
-        balances.eventsOverTime.cumulative.timestamps[_end],
-        useHourly
+        balances.eventsOverTime.cumulative.timestamps[nextBin],
+        useBinning
       );
       const nowTime = new Date().toISOString();
 
       // Past segments should be null
       if (nextTick <= config.startTime) {
-        return "rgba(255, 0, 0, 0.25)";
+        return "rgba(128, 128, 128, 0.5)";
       }
       // Future segments should be grey
       if (currentTick > nowTime && nextTick > nowTime) {
@@ -206,6 +233,19 @@ const Collider = ({
 
       // Create gradients only when we have valid coordinates
       if (context.p0 && context.p1) {
+        // Segment crossing startTime - gradient from null to color
+        if (currentTick < config.startTime && nextTick > config.startTime) {
+          const gradient = context.chart.ctx.createLinearGradient(
+            context.p0.x,
+            context.p0.y,
+            context.p1.x,
+            context.p1.y
+          );
+          gradient.addColorStop(0, "rgba(128, 128, 128, 0.5)");
+          gradient.addColorStop(1, "rgba(3, 173, 252, 1)");
+          return gradient;
+        }
+
         // Segment crossing nowTime - gradient from color to grey
         if (currentTick < nowTime && nextTick > nowTime) {
           const gradient = context.chart.ctx.createLinearGradient(
@@ -217,17 +257,16 @@ const Collider = ({
           gradient.addColorStop(
             0,
             generateGradientColor(
-              start,
+              startValue,
               limits[0],
               limits[1],
-              [66, 255, 214],
-              [3, 173, 252]
+              [66, 255, 214, 1],
+              [3, 173, 252, 1]
             )
           );
           gradient.addColorStop(1, "rgba(128, 128, 128, 0.5)");
           return gradient;
         }
-
         // Past segments (both ticks before nowTime)
         if (currentTick < nowTime && nextTick < nowTime) {
           const gradient = context.chart.ctx.createLinearGradient(
@@ -239,21 +278,29 @@ const Collider = ({
           gradient.addColorStop(
             0,
             generateGradientColor(
-              start,
+              startValue,
               limits[0],
               limits[1],
-              [66, 255, 214],
-              [3, 173, 252]
+              balances.eventsOverTime.cumulative.photon.findIndex(
+                (value) => value !== 0
+              ) >= nextBin
+                ? [128, 128, 128, 0.5]
+                : [66, 255, 214, 1],
+              [3, 173, 252, 1]
             )
           );
           gradient.addColorStop(
             1,
             generateGradientColor(
-              end,
+              endValue,
               limits[0],
               limits[1],
-              [66, 255, 214],
-              [3, 173, 252]
+              balances.eventsOverTime.cumulative.photon.findIndex(
+                (value) => value !== 0
+              ) >= nextBin
+                ? [128, 128, 128, 0.5]
+                : [66, 255, 214, 1],
+              [3, 173, 252, 1]
             )
           );
           return gradient;
@@ -269,21 +316,21 @@ const Collider = ({
       type: "line",
       labels: balances.eventsOverTime.cumulative.timestamps
         .filter((timestamp) => {
-          const dateISO = parseDateToISO(timestamp, useHourly);
+          const dateISO = parseDateToISO(timestamp, useBinning);
           return dateISO;
         })
-        .map((value) => shortenTick(value, useHourly)),
+        .map((value) => shortenTick(value, useBinning)),
       datasets: [
         {
           label: "Yes",
           data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp, useHourly);
+              const dateISO = parseDateToISO(timestamp, useBinning);
               if (dateISO) {
                 const pro = balances.eventsOverTime.cumulative.pro[index];
                 const anti = balances.eventsOverTime.cumulative.anti[index];
                 const total = pro + anti;
-                return total === 0 ? 0 : (pro / total) * 100;
+                return total === 0 ? 50 : (pro / total) * 100;
               }
               return null;
             })
@@ -303,14 +350,15 @@ const Collider = ({
           label: "Certainty",
           data: balances.eventsOverTime.cumulative.timestamps
             .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp, useHourly);
+              const dateISO = parseDateToISO(timestamp, useBinning);
               if (dateISO) {
-                return (
-                  (balances.eventsOverTime.cumulative.photon[index] /
-                    (balances.eventsOverTime.cumulative.photon[index] +
-                      balances.eventsOverTime.cumulative.baryon[index])) *
-                  100
-                );
+                const total =
+                  balances.eventsOverTime.cumulative.photon[index] +
+                  balances.eventsOverTime.cumulative.baryon[index];
+                return total > 0
+                  ? (balances.eventsOverTime.cumulative.photon[index] / total) *
+                      100
+                  : 50;
               }
               return null;
             })
@@ -338,7 +386,7 @@ const Collider = ({
         plugins: {
           verticalLines:
             config.startTime === "-" || config.endTime === "-"
-              ? { markerDates: [], labels: [], useHourly: useHourly }
+              ? { markerDates: [], labels: [], useBinning: useBinning }
               : {
                   markerDates:
                     config.startTime === "-" || config.endTime === "-"
@@ -348,7 +396,7 @@ const Collider = ({
                     config.startTime === "-" || config.endTime === "-"
                       ? []
                       : ["OPEN", "CLOSE"],
-                  useHourly: useHourly,
+                  useBinning: useBinning,
                 },
           datalabels: {
             display: false,
@@ -360,16 +408,31 @@ const Collider = ({
             callbacks: {
               label: (context) => {
                 const value = context.raw;
+                const endIndex =
+                  balances.eventsOverTime.cumulative.timestamps.find(
+                    (timestamp) =>
+                      shortenTick(timestamp, useBinning) ===
+                      context.chart.data.labels[context.dataIndex]
+                  );
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
-                      shortenTick(timestamp, useHourly) ===
+                      shortenTick(timestamp, useBinning) ===
                       context.chart.data.labels[context.dataIndex]
                   ),
-                  useHourly
+                  useBinning
                 );
-                const nowTime = new Date().toISOString();
-                if (currentTick > nowTime) {
+                const nowTime = new Date();
+                if (
+                  new Date(currentTick).getTime() > nowTime.getTime() ||
+                  new Date(currentTick).getTime() <
+                    new Date(config.startTime).getTime() ||
+                  new Date(currentTick).getTime() >
+                    new Date(config.endTime).getTime() ||
+                  balances.eventsOverTime.cumulative.photon.findIndex(
+                    (value) => value !== 0
+                  ) > context.dataIndex
+                ) {
                   return ` -`;
                 }
                 return ` ${value.toFixed(0).padStart(2)}% ${
@@ -385,17 +448,23 @@ const Collider = ({
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
-                      shortenTick(timestamp, useHourly) ===
+                      shortenTick(timestamp, useBinning) ===
                       context.chart.data.labels[context.dataIndex]
                   ),
-                  useHourly
+                  useBinning
                 );
-                const nowTime = new Date().toISOString();
+                const nowTime = new Date();
                 // Future segments should be grey
-                if (currentTick > nowTime) {
+                if (
+                  new Date(currentTick).getTime() > nowTime.getTime() ||
+                  new Date(currentTick).getTime() <
+                    new Date(config.startTime).getTime() ||
+                  new Date(currentTick).getTime() >
+                    new Date(config.endTime).getTime()
+                ) {
                   return {
-                    backgroundColor: "#94949477",
-                    borderColor: "#94949477",
+                    backgroundColor: "#808080",
+                    borderColor: "#808080",
                   };
                 }
                 return {
@@ -403,15 +472,55 @@ const Collider = ({
                     value,
                     context.datasetIndex === 0 ? 0 : limits[0],
                     context.datasetIndex === 0 ? 100 : limits[1],
-                    context.datasetIndex === 0 ? [255, 51, 0] : [66, 255, 214],
-                    context.datasetIndex === 0 ? [0, 219, 84] : [3, 173, 252]
+                    context.datasetIndex === 0
+                      ? balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                        ? [128, 128, 128, 1]
+                        : [255, 51, 0, 1]
+                      : balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                      ? [128, 128, 128, 1]
+                      : [66, 255, 214, 1],
+                    context.datasetIndex === 0
+                      ? balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                        ? [128, 128, 128, 1]
+                        : [0, 219, 84, 1]
+                      : balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                      ? [128, 128, 128, 1]
+                      : [3, 173, 252, 1]
                   ),
                   borderColor: generateGradientColor(
                     value,
                     context.datasetIndex === 0 ? 0 : limits[0],
                     context.datasetIndex === 0 ? 100 : limits[1],
-                    context.datasetIndex === 0 ? [255, 51, 0] : [66, 255, 214],
-                    context.datasetIndex === 0 ? [0, 219, 84] : [3, 173, 252]
+                    context.datasetIndex === 0
+                      ? balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                        ? [128, 128, 128, 1]
+                        : [255, 51, 0, 1]
+                      : balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                      ? [128, 128, 128, 1]
+                      : [66, 255, 214, 1],
+                    context.datasetIndex === 0
+                      ? balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                        ? [128, 128, 128, 1]
+                        : [0, 219, 84, 1]
+                      : balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                      ? [128, 128, 128, 1]
+                      : [3, 173, 252, 1]
                   ),
                 };
               },
@@ -435,6 +544,8 @@ const Collider = ({
                 family: "'SF Mono Round'",
                 size: 10,
               },
+              minRotation: 0,
+              maxRotation: 0,
               color: "#d3d3d399",
             },
           },
@@ -445,9 +556,18 @@ const Collider = ({
             },
             ticks: {
               callback: function (value) {
-                return value === 0 ? "NO" : value === 100 ? "YES" : value + "%";
+                return value === 0
+                  ? "NO"
+                  : value === 100
+                  ? "YES"
+                  : value.toFixed(0) + "%";
               },
-              stepSize: 5,
+              stepSize: function (ctx) {
+                const maxValue = Math.max(
+                  ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
+                );
+                return maxValue * 0.1;
+              },
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
@@ -458,8 +578,8 @@ const Collider = ({
                   value,
                   0,
                   100,
-                  [255, 51, 0],
-                  [0, 219, 84]
+                  [255, 51, 0, 1],
+                  [0, 219, 84, 1]
                 );
               },
             },
@@ -468,7 +588,7 @@ const Collider = ({
               const maxValue = Math.max(
                 ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
               );
-              return 25;
+              return maxValue * 2;
             },
           },
         },
@@ -1150,6 +1270,16 @@ const Collider = ({
               </div>
               <div
                 className={
+                  predictionHistoryTimeframe === "12H"
+                    ? "timeframe-pill-active"
+                    : "timeframe-pill"
+                }
+                onClick={() => {}}
+              >
+                <span className="text-xs opacity-75">12H</span>
+              </div>
+              <div
+                className={
                   predictionHistoryTimeframe === "1D"
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
@@ -1170,21 +1300,11 @@ const Collider = ({
               </div>
               <div
                 className={
-                  predictionHistoryTimeframe === "1M"
-                    ? "timeframe-pill-active"
-                    : "timeframe-pill"
-                }
-                onClick={() => {}}
-              >
-                <span className="text-xs opacity-75">1M</span>
-              </div>
-              <div
-                className={
                   predictionHistoryTimeframe === "ALL"
                     ? "timeframe-pill-active"
                     : "timeframe-pill"
                 }
-                onClick={() => handleTimeframeChange("ALL")}
+                onClick={() => {}}
               >
                 <span className="text-xs">ALL</span>
               </div>

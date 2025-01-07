@@ -7,6 +7,7 @@ import {
   truncateMiddle,
   generateGradientColor,
   shortenTick,
+  detectBinningStrategy,
 } from "../utils/utils";
 import plugin from "@tailwindcss/typography";
 
@@ -45,10 +46,10 @@ const DashboardCollider = ({
       ctx.textBaseline = "middle";
       // Position calculation
       // This puts the label near the end of x-axis, slightly above it
-      const x = xAxis.right - 50; // Shift left from the end
-      const y = xAxis.top - 5; // Shift up from the axis
+      const x = xAxis.right - 15; // Shift left from the end
+      const y = xAxis.top + 7.5; // Shift up from the axis
       // Draw the label
-      ctx.fillText("Time (UTC)", x, y);
+      ctx.fillText("UTC", x, y);
     },
   };
 
@@ -292,12 +293,10 @@ const DashboardCollider = ({
     });
 
     // Prepare line chart data
-    const timeDiffHours =
-      (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
-    const useHourly = schedule.length > 0 ? timeDiffHours < 24 : false;
+    const useBinning = detectBinningStrategy(schedule);
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
-        shortenTick(value, useHourly)
+        shortenTick(value, useBinning)
       ),
       datasets: [
         {
@@ -397,6 +396,8 @@ const DashboardCollider = ({
                 family: "'SF Mono Round'",
                 size: 10,
               },
+              minRotation: 0,
+              maxRotation: 0,
             },
             grid: { color: "#d3d3d322" },
           },
@@ -702,11 +703,11 @@ const DashboardCollider = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-black border-x border-b border-gray-800 rounded-b-lg">
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{"Token Emissions"}</div>
+            <div>{"Token Collisions"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of BARYON & PHOTON emissions in the pool`}
+                {`Displays the distribution of PRO & ANTI collisions in the pool`}
               </span>
             </div>
           </div>
@@ -719,11 +720,11 @@ const DashboardCollider = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{"Token Collisions"}</div>
+            <div>{"Token Emissions"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of PRO & ANTI collisions in the pool`}
+                {`Displays the distribution of BARYON & PHOTON emissions in the pool`}
               </span>
             </div>
           </div>

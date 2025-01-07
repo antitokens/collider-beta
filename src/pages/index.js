@@ -205,53 +205,54 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       const fetchBalancesWithClaims = async () => {
         try {
           setIsMetaLoading(true);
-          const blob = await getBalances();
+          const blobBalance = await getBalances();
           const blobClaim = await getClaims();
-          const data = JSON.parse(blob.message);
+          const dataBalance = JSON.parse(blobBalance.message);
           const dataClaim = JSON.parse(blobClaim.message);
           const colliderDistribution =
             baryonBalance >= 0 && photonBalance >= 0
               ? calculateCollision(baryonBalance, photonBalance, true)
               : emptyGaussian;
           const totalDistribution =
-            data.totalDistribution.u >= 0 && data.totalDistribution.s >= 0
+            dataBalance.totalDistribution.u >= 0 &&
+            dataBalance.totalDistribution.s >= 0
               ? calculateCollision(
-                  data.emissionsData.baryonTokens,
-                  data.emissionsData.photonTokens,
+                  dataBalance.emissionsData.baryonTokens,
+                  dataBalance.emissionsData.photonTokens,
                   true
                 )
               : emptyGaussian;
           setBalances({
-            startTime: data.startTime,
-            endTime: data.endTime,
+            startTime: dataBalance.startTime,
+            endTime: dataBalance.endTime,
             colliderDistribution: colliderDistribution,
             totalDistribution: totalDistribution,
-            emissionsData: data.emissionsData,
-            collisionsData: data.collisionsData,
-            eventsOverTime: data.eventsOverTime,
+            emissionsData: dataBalance.emissionsData,
+            collisionsData: dataBalance.collisionsData,
+            eventsOverTime: dataBalance.eventsOverTime,
           });
           setBags({
-            baryon: data.totalDistribution.bags.baryon,
-            photon: data.totalDistribution.bags.photon,
-            baryonPool: data.emissionsData.baryonTokens,
-            photonPool: data.emissionsData.photonTokens,
-            anti: data.totalDistribution.bags.anti,
-            pro: data.totalDistribution.bags.pro,
-            antiPool: data.collisionsData.antiTokens,
-            proPool: data.collisionsData.proTokens,
-            wallets: data.totalDistribution.wallets,
+            baryon: dataBalance.totalDistribution.bags.baryon,
+            photon: dataBalance.totalDistribution.bags.photon,
+            baryonPool: dataBalance.emissionsData.baryonTokens,
+            photonPool: dataBalance.emissionsData.photonTokens,
+            anti: dataBalance.totalDistribution.bags.anti,
+            pro: dataBalance.totalDistribution.bags.pro,
+            antiPool: dataBalance.collisionsData.antiTokens,
+            proPool: dataBalance.collisionsData.proTokens,
+            wallets: dataBalance.totalDistribution.wallets,
           });
           const rewardCurrent = calculateEqualisation(
-            data.totalDistribution.bags.baryon,
-            data.totalDistribution.bags.photon,
-            data.totalDistribution.bags.anti,
-            data.totalDistribution.bags.pro,
-            data.collisionsData.antiTokens,
-            data.collisionsData.proTokens,
+            dataBalance.totalDistribution.bags.baryon,
+            dataBalance.totalDistribution.bags.photon,
+            dataBalance.totalDistribution.bags.anti,
+            dataBalance.totalDistribution.bags.pro,
+            dataBalance.collisionsData.antiTokens,
+            dataBalance.collisionsData.proTokens,
             antiData && proData
               ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
               : [1, 1],
-            data.totalDistribution.wallets
+            dataBalance.totalDistribution.wallets
           );
           setDynamics(rewardCurrent ? rewardCurrent.overlap : []);
           setClaims({
