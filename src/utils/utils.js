@@ -360,15 +360,16 @@ export const generateGradientColor = (
     return `rgba(128, 128, 128, 1)`;
   }
   const intensity = (value - min) / (max - min); // Normalize value between 0 and 1
-  const [r1, g1, b1] = startColor; // Start RGB color
-  const [r2, g2, b2] = endColor; // End RGB color
+  const [r1, g1, b1, a1] = startColor; // Start RGB color
+  const [r2, g2, b2, a2] = endColor; // End RGB color
 
   // Interpolate each color channel based on intensity
   const r = Math.round(r1 + intensity * (r2 - r1));
   const g = Math.round(g1 + intensity * (g2 - g1));
   const b = Math.round(b1 + intensity * (b2 - b1));
+  const a = Math.round(a1 + intensity * (a2 - a1));
 
-  return `rgb(${r}, ${g}, ${b})`;
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
 
 export const parseDateToISO = (dateStr, useBinning) => {

@@ -45,10 +45,10 @@ const DashboardInverter = ({
       ctx.textBaseline = "middle";
       // Position calculation
       // This puts the label near the end of x-axis, slightly above it
-      const x = xAxis.right - 50; // Shift left from the end
-      const y = xAxis.top - 5; // Shift up from the axis
+      const x = xAxis.right - 15; // Shift left from the end
+      const y = xAxis.top + 7.5; // Shift up from the axis
       // Draw the label
-      ctx.fillText("Time (UTC)", x, y);
+      ctx.fillText("UTC", x, y);
     },
   };
 
