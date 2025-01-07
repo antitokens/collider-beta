@@ -464,7 +464,12 @@ const Collider = ({
               },
             },
             min: 0,
-            max: 100,
+            max: function (ctx) {
+              const maxValue = Math.max(
+                ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
+              );
+              return maxValue * 2;
+            },
           },
         },
       },
