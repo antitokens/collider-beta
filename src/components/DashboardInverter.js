@@ -559,8 +559,8 @@ const DashboardInverter = ({
                 value,
                 Math.min(...dynamics),
                 Math.max(...dynamics),
-                [255, 51, 0],
-                [0, 219, 84]
+                [255, 51, 0, 1],
+                [0, 219, 84, 1]
               )
             )
             .map((color) =>
@@ -571,8 +571,8 @@ const DashboardInverter = ({
               value,
               Math.min(...dynamics),
               Math.max(...dynamics),
-              [255, 51, 0],
-              [0, 219, 84]
+              [255, 51, 0, 1],
+              [0, 219, 84, 1]
             )
           ),
           pointStyle: "line",
