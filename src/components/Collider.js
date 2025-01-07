@@ -447,7 +447,7 @@ const Collider = ({
               callback: function (value) {
                 return value === 0 ? "NO" : value === 100 ? "YES" : value + "%";
               },
-              stepSize: 10,
+              stepSize: 5,
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
