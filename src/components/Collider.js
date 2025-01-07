@@ -468,7 +468,7 @@ const Collider = ({
               const maxValue = Math.max(
                 ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
               );
-              return maxValue <= 25 ? 25 : maxValue <= 50 ? 50 : 100;
+              return 25;
             },
           },
         },
@@ -1580,7 +1580,9 @@ const Collider = ({
             (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
           ? "Submit"
           : loading
-          ? "Submitting..."
+          ? isMetaLoading
+            ? "Loading..."
+            : "Submitting..."
           : "Submit"}
       </button>
       <ToastContainer {...toastContainerConfig} />
