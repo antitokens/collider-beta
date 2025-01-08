@@ -443,7 +443,7 @@ export function detectBinningStrategy(dates) {
   const hourDiff = (date2 - date1) / (1000 * 60 * 60);
   if (hourDiff <= 24) return "hourly";
   if (hourDiff <= 48) return "6-hour";
-  if (hourDiff <= 72) return "12-hour";
+  if (hourDiff <= 96) return "12-hour";
   return "unknown";
 }
 
