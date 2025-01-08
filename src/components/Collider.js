@@ -646,7 +646,7 @@ const Collider = ({
               bags.proPool,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                : [0, 0],
+                : [1, 1],
               bags.wallets
             )
           : undefined;
@@ -659,9 +659,8 @@ const Collider = ({
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         setGain(
-          originalPosition > 0
-            ? (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) *
-                100
+          originalPosition !== 0 && !inactive
+            ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
             : 0
         );
       }
@@ -705,8 +704,8 @@ const Collider = ({
 
       if (myBag >= 0) {
         setNewGain(
-          dollarStake > 0
-            ? (Math.abs(rewardUpdated.change.gain[myBag]) / dollarStake) * 100
+          dollarStake !== 0 && !inactive
+            ? (rewardUpdated.change.gain[myBag] / dollarStake) * 100
             : 0
         );
       }
@@ -1353,13 +1352,17 @@ const Collider = ({
                     Displays your current tokens in the pool
                   </span>
                 </div>
-                <div>&nbsp;Your Pool:&nbsp;</div>
+                <div>&nbsp;{`Your Pool`}:&nbsp;</div>
                 <div className="flex flex-row justify-center font-sfmono pt-[0px] lg:pt-[1px]">
-                  <div className="text-accent-secondary text-[11px] opacity-95">
+                  <div
+                    className={`text-accent-secondary text-[11px] opacity-95`}
+                  >
+                    {proUsage > 0 ? "+" : ""}
                     {formatCount(proUsage.toFixed(2))}
                   </div>
                   <div>/</div>
-                  <div className="text-accent-primary text-[11px] opacity-95">
+                  <div className={`text-accent-primary text-[11px] opacity-95`}>
+                    {antiUsage > 0 ? "+" : ""}
                     {formatCount(antiUsage.toFixed(2))}
                   </div>
                 </div>
@@ -1376,7 +1379,11 @@ const Collider = ({
                 <div className="flex flex-row text-right">
                   <span>&nbsp;P/L:&nbsp;</span>
                   <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[1px]">
-                    <span className="text-accent-secondary opacity-95">
+                    <span
+                      className={`text-${
+                        gain >= 0 ? "accent-secondary" : "accent-primary"
+                      } opacity-95`}
+                    >
                       {formatCount(gain.toFixed(2))}%&nbsp;
                     </span>
                   </span>

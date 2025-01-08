@@ -14,7 +14,10 @@ import {
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
-import { calculateEqualisation } from "../utils/equaliserAlpha";
+import {
+  calculateEqualisation,
+  implementEqualisation,
+} from "../utils/equaliserAlpha";
 import Navbar from "../components/TopNavbar";
 import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
@@ -137,8 +140,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
-  const [dynamics, setDynamics] = useState([]);
-  const [truth, setTruth] = useState([]);
+  const [dynamicsCurrent, setDynamicsCurrent] = useState([]);
+  const [dynamicsFinal, setDynamicsFinal] = useState([]);
+  const [truth, setTruth] = useState([0, 1]); // ANTI-PRO
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
@@ -242,6 +246,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             proPool: dataBalance.collisionsData.proTokens,
             wallets: dataBalance.totalDistribution.wallets,
           });
+
           const rewardCurrent = calculateEqualisation(
             dataBalance.totalDistribution.bags.baryon,
             dataBalance.totalDistribution.bags.photon,
@@ -254,7 +259,23 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               : [1, 1],
             dataBalance.totalDistribution.wallets
           );
-          setDynamics(rewardCurrent ? rewardCurrent.overlap : []);
+          const rewardFinal = implementEqualisation(
+            dataBalance.totalDistribution.bags.baryon,
+            dataBalance.totalDistribution.bags.photon,
+            dataBalance.totalDistribution.bags.anti,
+            dataBalance.totalDistribution.bags.pro,
+            dataBalance.collisionsData.antiTokens,
+            dataBalance.collisionsData.proTokens,
+            antiData && proData
+              ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+              : [1, 1],
+            dataBalance.totalDistribution.wallets,
+            truth
+          );
+
+          setDynamicsCurrent(rewardCurrent ? rewardCurrent.normalised : []);
+          setDynamicsFinal(rewardFinal ? rewardFinal.normalised : []);
+
           setClaims({
             startTime: dataClaim.startTime,
             endTime: dataClaim.endTime,
@@ -274,7 +295,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       };
       fetchBalancesWithClaims();
     }
-  }, [refresh, baryonBalance, photonBalance, antiData, proData, dead]);
+  }, [
+    refresh,
+    baryonBalance,
+    photonBalance,
+    antiData,
+    proData,
+    dead,
+    truth,
+    inactive,
+  ]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -327,10 +357,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       const claim = JSON.parse(_claim.message);
       setAntiBalance(antiBalanceResult - balance.anti + claim.anti);
       setProBalance(proBalanceResult - balance.pro + claim.pro);
-      setAntiUsage(balance.anti - claim.anti);
-      setProUsage(balance.pro - claim.pro);
-      setBaryonBalance(balance.baryon - claim.baryon);
-      setPhotonBalance(balance.photon - claim.photon);
+      setAntiUsage(
+        claim.anti + claim.pro > 0 ? claim.anti - balance.anti : balance.anti
+      );
+      setProUsage(
+        claim.anti + claim.pro > 0 ? claim.pro - balance.pro : balance.pro
+      );
+      setBaryonBalance(claim.baryon + claim.photon > 0 ? 0 : balance.baryon);
+      setPhotonBalance(claim.photon + claim.baryon > 0 ? 0 : balance.photon);
     };
 
     if (wallet.publicKey || dataUpdated) checkBalance();
@@ -663,7 +697,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     isMobile={isMobile}
                     bags={bags}
                     inactive={!inactive || dead}
-                    truth={truth}
+                    truth={!inactive || dead ? [] : truth}
                   />
                   <p
                     className={`mt-1 text-sm font-sfmono ${
@@ -697,7 +731,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   totalDistribution={balances.totalDistribution}
                   onRefresh={onRefresh}
                   connected={wallet.connected}
-                  dynamics={dynamics}
+                  dynamics={dynamicsCurrent}
                   holders={bags.wallets}
                   isMobile={isMobile}
                   schedule={[balances.startTime, balances.endTime]}
@@ -732,7 +766,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   totalDistribution={balances.totalDistribution}
                   onRefresh={onRefresh}
                   connected={wallet.connected}
-                  dynamics={dynamics}
+                  dynamics={dynamicsFinal}
                   holders={bags.wallets}
                   isMobile={isMobile}
                   schedule={[claims.startTime, claims.endTime]}

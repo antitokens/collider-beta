@@ -7,9 +7,7 @@ export const calculateInversion = (baryon, photon, sign) => {
       ? baryon >= 1
         ? photon > 0
           ? photon >= 1
-            ? sign < 0
-              ? 0.5 * baryon * (photon + 1 * sign)
-              : 1.0 * baryon
+            ? 0.5 * baryon * (photon + 1 * sign)
             : 0
           : 0
         : 0.5 * baryon
@@ -21,9 +19,7 @@ export const calculateInversion = (baryon, photon, sign) => {
       ? baryon >= 1
         ? photon > 0
           ? photon >= 1
-            ? sign < 0
-              ? 0.5 * baryon * (photon - 1 * sign)
-              : 1.0 * baryon
+            ? 0.5 * baryon * (photon - 1 * sign)
             : 0
           : 0
         : 0.5 * baryon

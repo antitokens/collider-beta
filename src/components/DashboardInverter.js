@@ -485,6 +485,12 @@ const DashboardInverter = ({
             display: connected,
             ticks: {
               maxTicksLimit: 10,
+              callback: function (value, index) {
+                // Map index to a new labels array for the second axis
+                return colliderDistribution.short[index]
+                  ? formatCount(colliderDistribution.short[index], false, 7)
+                  : null;
+              },
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
@@ -498,7 +504,7 @@ const DashboardInverter = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? formatCount(totalDistribution.short[index], false)
+                  ? formatCount(totalDistribution.short[index], false, 7)
                   : null;
               },
               font: {

@@ -80,7 +80,7 @@ const Inverter = ({
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         setChange(
-          truth.length > 0
+          truth.length > 0 && (photonBalance > 0 || baryonBalance > 0)
             ? [
                 rewardCurrent.change.photon[myBag],
                 rewardCurrent.change.baryon[myBag],
@@ -89,16 +89,22 @@ const Inverter = ({
             : []
         );
         setUpdatedBalances(
-          truth.length > 0
+          truth.length > 0 && (photonBalance > 0 || baryonBalance > 0)
             ? [
                 rewardCurrent.invert.photon[myBag],
                 rewardCurrent.invert.baryon[myBag],
               ]
             : [photonBalance, baryonBalance]
         );
-        setDollarGain(truth.length > 0 ? rewardCurrent.change.gain[myBag] : 0);
+        setDollarGain(
+          truth.length > 0 && (photonBalance > 0 || baryonBalance > 0)
+            ? rewardCurrent.change.gain[myBag]
+            : 0
+        );
         setGain(
-          truth.length > 0 && originalPosition > 0
+          truth.length > 0 &&
+            originalPosition > 0 &&
+            (photonBalance > 0 || baryonBalance > 0)
             ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
             : 0
         );
@@ -299,6 +305,7 @@ const Inverter = ({
         photonTokens,
         gain > 0 ? 1 : -1
       );
+      console.log(distribution);
       setUserDistribution(distribution);
     } else {
       setUserDistribution({
@@ -397,7 +404,7 @@ const Inverter = ({
                         .toFixed(1)
                         .toString()
                         .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    : "-"}
+                    : "0"}
                 </span>
               </span>
               {"/"}
@@ -422,7 +429,7 @@ const Inverter = ({
                       .toFixed(1)
                       .toString()
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  : "-"}
+                  : "0"}
               </span>
               &nbsp;&nbsp;
             </div>
