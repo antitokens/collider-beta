@@ -424,8 +424,7 @@ const DashboardCollider = ({
         },
       },
     });
-    console.log(totalDistribution);
-    console.log(colliderDistribution);
+
     setNetDistribution({
       type: "line",
       labels: totalDistribution
