@@ -588,7 +588,7 @@ const Collider = ({
               const maxValue = Math.max(
                 ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
               );
-              return maxValue * 2;
+              return maxValue <= 50 ? 50 : 100;
             },
           },
         },
