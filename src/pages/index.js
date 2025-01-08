@@ -138,7 +138,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [dynamics, setDynamics] = useState([]);
-  const [truth, setTruth] = useState([0, 1]);
+  const [truth, setTruth] = useState([]);
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
