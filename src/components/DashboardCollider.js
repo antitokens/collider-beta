@@ -301,9 +301,9 @@ const DashboardCollider = ({
       datasets: [
         {
           label: "Pro",
-          data: eventsOverTime.events.pro.every((value) => value === 0)
+          data: eventsOverTime.cumulative.pro.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.pro,
+            : eventsOverTime.cumulative.pro,
           borderColor: "#00bb7a",
           backgroundColor: "#00bb7a",
           fill: false,
@@ -311,9 +311,9 @@ const DashboardCollider = ({
         },
         {
           label: "Anti",
-          data: eventsOverTime.events.anti.every((value) => value === 0)
+          data: eventsOverTime.cumulative.anti.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.anti,
+            : eventsOverTime.cumulative.anti,
           borderColor: "#c12f00",
           backgroundColor: "#c12f00",
           fill: false,
@@ -321,9 +321,9 @@ const DashboardCollider = ({
         },
         {
           label: "Photon",
-          data: eventsOverTime.events.photon.every((value) => value === 0)
+          data: eventsOverTime.cumulative.photon.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.photon,
+            : eventsOverTime.cumulative.photon,
           borderColor: "rgb(123, 191, 255)",
           backgroundColor: "rgb(123, 191, 255)",
           fill: false,
@@ -331,9 +331,9 @@ const DashboardCollider = ({
         },
         {
           label: "Baryon",
-          data: eventsOverTime.events.baryon.every((value) => value === 0)
+          data: eventsOverTime.cumulative.baryon.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.baryon,
+            : eventsOverTime.cumulative.baryon,
           borderColor: "rgb(58, 182, 193)",
           backgroundColor: "rgb(58, 182, 193)",
           fill: false,
@@ -424,7 +424,8 @@ const DashboardCollider = ({
         },
       },
     });
-
+    console.log(totalDistribution);
+    console.log(colliderDistribution);
     setNetDistribution({
       type: "line",
       labels: totalDistribution
@@ -486,6 +487,12 @@ const DashboardCollider = ({
             display: connected,
             ticks: {
               maxTicksLimit: 10,
+              callback: function (value, index) {
+                // Map index to a new labels array for the second axis
+                return colliderDistribution.short[index]
+                  ? formatCount(colliderDistribution.short[index], false, 7)
+                  : null;
+              },
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
@@ -499,7 +506,7 @@ const DashboardCollider = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? formatCount(totalDistribution.short[index], false)
+                  ? formatCount(totalDistribution.short[index], false, 7)
                   : null;
               },
               font: {

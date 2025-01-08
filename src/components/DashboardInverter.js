@@ -300,9 +300,9 @@ const DashboardInverter = ({
       datasets: [
         {
           label: "Pro",
-          data: eventsOverTime.events.pro.every((value) => value === 0)
+          data: eventsOverTime.cumulative.pro.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.pro,
+            : eventsOverTime.cumulative.pro,
           borderColor: "#00bb7a",
           backgroundColor: "#00bb7a",
           fill: false,
@@ -310,9 +310,9 @@ const DashboardInverter = ({
         },
         {
           label: "Anti",
-          data: eventsOverTime.events.anti.every((value) => value === 0)
+          data: eventsOverTime.cumulative.anti.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.anti,
+            : eventsOverTime.cumulative.anti,
           borderColor: "#c12f00",
           backgroundColor: "#c12f00",
           fill: false,
@@ -320,9 +320,9 @@ const DashboardInverter = ({
         },
         {
           label: "Photon",
-          data: eventsOverTime.events.photon.every((value) => value === 0)
+          data: eventsOverTime.cumulative.photon.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.photon,
+            : eventsOverTime.cumulative.photon,
           borderColor: "rgb(123, 191, 255)",
           backgroundColor: "rgb(123, 191, 255)",
           fill: false,
@@ -330,9 +330,9 @@ const DashboardInverter = ({
         },
         {
           label: "Baryon",
-          data: eventsOverTime.events.baryon.every((value) => value === 0)
+          data: eventsOverTime.cumulative.baryon.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.baryon,
+            : eventsOverTime.cumulative.baryon,
           borderColor: "rgb(58, 182, 193)",
           backgroundColor: "rgb(58, 182, 193)",
           fill: false,
