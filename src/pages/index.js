@@ -215,8 +215,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       !dead &&
       wallet.publicKey &&
       !wallet.disconnecting &&
-      wallet.connected &&
-      baryonBalance + photonBalance > 0
+      wallet.connected
     ) {
       const fetchBalancesWithClaims = async () => {
         try {
