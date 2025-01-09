@@ -170,7 +170,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     if (state) {
       setCurrentClaimData(claim);
       setRefresh(true);
-      setTruth([]);
     } else {
       // Handle error case
       console.error("Reclaim submission failed:", claim.error);
@@ -182,6 +181,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTimeout(() => setClearFields(false), 100);
     setTimeout(() => setShowAnimation(state), 100);
   };
+
+  useEffect(() => {
+    if (wallet.disconnecting) {
+      setShowCollider(true);
+    }
+  }, [wallet, wallet.disconnecting]);
 
   useEffect(() => {
     const checkMeta = async () => {
@@ -208,6 +213,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     if (refresh && !dead) {
       const fetchBalancesWithClaims = async () => {
         try {
+          setRefresh(false);
           setIsMetaLoading(true);
           const blobBalance = await getBalances();
           const blobClaim = await getClaims();
@@ -355,20 +361,48 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       const balance = JSON.parse(_balance.message);
       const _claim = await getClaim(wallet.publicKey);
       const claim = JSON.parse(_claim.message);
-      setAntiBalance(antiBalanceResult - balance.anti + claim.anti);
-      setProBalance(proBalanceResult - balance.pro + claim.pro);
+      setAntiBalance(
+        !wallet.disconnecting
+          ? antiBalanceResult - balance.anti + claim.anti
+          : 0
+      );
+      setProBalance(
+        !wallet.disconnecting ? proBalanceResult - balance.pro + claim.pro : 0
+      );
       setAntiUsage(
-        claim.anti + claim.pro > 0 ? claim.anti - balance.anti : balance.anti
+        !wallet.disconnecting
+          ? claim.anti + claim.pro > 0
+            ? claim.anti - balance.anti
+            : balance.anti
+          : 0
       );
       setProUsage(
-        claim.anti + claim.pro > 0 ? claim.pro - balance.pro : balance.pro
+        !wallet.disconnecting
+          ? claim.anti + claim.pro > 0
+            ? claim.pro - balance.pro
+            : balance.pro
+          : 0
       );
-      setBaryonBalance(claim.baryon + claim.photon > 0 ? 0 : balance.baryon);
-      setPhotonBalance(claim.photon + claim.baryon > 0 ? 0 : balance.photon);
+      setBaryonBalance(
+        !wallet.disconnecting
+          ? claim.baryon + claim.photon > 0
+            ? 0
+            : balance.baryon
+          : 0
+      );
+      setPhotonBalance(
+        !wallet.disconnecting
+          ? claim.photon + claim.baryon > 0
+            ? 0
+            : balance.photon
+          : 0
+      );
     };
 
-    if (wallet.publicKey || dataUpdated) checkBalance();
-  }, [wallet, dataUpdated]);
+    if (wallet.publicKey || dataUpdated) {
+      checkBalance();
+    }
+  }, [wallet, dataUpdated, wallet.disconnecting]);
 
   return (
     <>

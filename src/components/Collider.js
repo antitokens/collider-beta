@@ -658,11 +658,16 @@ const Collider = ({
       if (proData && antiData && myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
-        setGain(
-          originalPosition !== 0 && !inactive
-            ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
-            : 0
-        );
+        console.log(wallet.disconnecting);
+        if (!wallet.disconnecting) {
+          setGain(
+            originalPosition !== 0 && (baryonBalance > 0 || photonBalance > 0)
+              ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
+              : 0
+          );
+        } else {
+          setGain(0);
+        }
       }
     }
 
@@ -704,7 +709,7 @@ const Collider = ({
 
       if (myBag >= 0) {
         setNewGain(
-          dollarStake !== 0 && !inactive
+          dollarStake !== 0 && !inactive && !wallet.disconnecting
             ? (rewardUpdated.change.gain[myBag] / dollarStake) * 100
             : 0
         );
@@ -931,6 +936,7 @@ const Collider = ({
     totalInvest,
     wallet,
     bags,
+    wallet.disconnecting,
   ]);
 
   const handlePrediction = async () => {
