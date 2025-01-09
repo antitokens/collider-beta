@@ -26,6 +26,7 @@ const DashboardInverter = ({
   holders = [],
   isMobile = false,
   schedule = [],
+  start = false,
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -555,35 +556,45 @@ const DashboardInverter = ({
     );
     setWinnerDistribution({
       labels: winnerRanks,
-      datasets: [
-        {
-          label: "Ranking Metric",
-          data: dynamics,
-          borderColor: dynamics
-            .map((value) =>
-              generateGradientColor(
-                value,
-                Math.min(...dynamics),
-                Math.max(...dynamics),
-                [255, 51, 0, 1],
-                [0, 219, 84, 1]
-              )
-            )
-            .map((color) =>
-              color.replace(/rgba\((.+), (\d+\.\d+)\)/, "rgba($1, 1)")
-            ),
-          backgroundColor: dynamics.map((value) =>
-            generateGradientColor(
-              value,
-              Math.min(...dynamics),
-              Math.max(...dynamics),
-              [255, 51, 0, 1],
-              [0, 219, 84, 1]
-            )
-          ),
-          pointStyle: "line",
-        },
-      ],
+      datasets: start
+        ? [
+            {
+              label: "Ranking Metric",
+              data: [],
+              borderColor: "#c4c4c4",
+              backgroundColor: "#c4c4c4",
+              pointStyle: "line",
+            },
+          ]
+        : [
+            {
+              label: "Ranking Metric",
+              data: dynamics,
+              borderColor: dynamics
+                .map((value) =>
+                  generateGradientColor(
+                    value,
+                    Math.min(...dynamics),
+                    Math.max(...dynamics),
+                    [255, 51, 0, 1],
+                    [0, 219, 84, 1]
+                  )
+                )
+                .map((color) =>
+                  color.replace(/rgba\((.+), (\d+\.\d+)\)/, "rgba($1, 1)")
+                ),
+              backgroundColor: dynamics.map((value) =>
+                generateGradientColor(
+                  value,
+                  Math.min(...dynamics),
+                  Math.max(...dynamics),
+                  [255, 51, 0, 1],
+                  [0, 219, 84, 1]
+                )
+              ),
+              pointStyle: "line",
+            },
+          ],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -636,9 +647,12 @@ const DashboardInverter = ({
                 family: "'SF Mono Round'",
                 size: 10,
               },
+              callback: function (value) {
+                return !start ? value : ""; // Format x-axis
+              },
             },
             title: {
-              display: !dynamics.every((item) => item === 0),
+              display: true,
               text: "Rank",
               font: {
                 family: "'SF Mono Round'",
@@ -653,7 +667,9 @@ const DashboardInverter = ({
             ticks: {
               display: !dynamics.every((item) => item === 0),
               callback: function (value) {
-                return value > 0 && Number.isInteger(-Math.log10(value))
+                return value > 0 &&
+                  Number.isInteger(-Math.log10(value)) &&
+                  !start
                   ? value.toFixed(2)
                   : ""; // Format y-axis
               },
@@ -662,6 +678,7 @@ const DashboardInverter = ({
                 size: 10,
               },
             },
+            max: 1,
           },
         },
       },

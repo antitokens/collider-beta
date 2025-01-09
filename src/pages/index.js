@@ -210,7 +210,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [balances]);
 
   useEffect(() => {
-    if (refresh && !dead) {
+    if (
+      refresh &&
+      !dead &&
+      wallet.publicKey &&
+      !wallet.disconnecting &&
+      wallet.connected
+    ) {
       const fetchBalancesWithClaims = async () => {
         try {
           setRefresh(false);
@@ -232,6 +238,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   true
                 )
               : emptyGaussian;
+
           setBalances({
             startTime: dataBalance.startTime,
             endTime: dataBalance.endTime,
@@ -241,6 +248,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             collisionsData: dataBalance.collisionsData,
             eventsOverTime: dataBalance.eventsOverTime,
           });
+
           setBags({
             baryon: dataBalance.totalDistribution.bags.baryon,
             photon: dataBalance.totalDistribution.bags.photon,
@@ -253,6 +261,19 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             wallets: dataBalance.totalDistribution.wallets,
           });
 
+          const _antiUsage =
+            dataBalance.totalDistribution.bags.anti[
+              dataBalance.totalDistribution.wallets.indexOf(
+                wallet.publicKey.toString()
+              )
+            ];
+          const _proUsage =
+            dataBalance.totalDistribution.bags.pro[
+              dataBalance.totalDistribution.wallets.indexOf(
+                wallet.publicKey.toString()
+              )
+            ];
+
           const rewardCurrent = calculateEqualisation(
             dataBalance.totalDistribution.bags.baryon,
             dataBalance.totalDistribution.bags.photon,
@@ -263,8 +284,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             antiData && proData
               ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
               : [1, 1],
-            dataBalance.totalDistribution.wallets
+            dataBalance.totalDistribution.wallets,
+            [_antiUsage > _proUsage ? 1 : 0, _antiUsage < _proUsage ? 1 : 0]
           );
+
           const rewardFinal = implementEqualisation(
             dataBalance.totalDistribution.bags.baryon,
             dataBalance.totalDistribution.bags.photon,
@@ -301,6 +324,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       };
       fetchBalancesWithClaims();
     }
+    if (wallet.disconnecting) {
+      setDynamicsCurrent([]);
+      setDynamicsFinal([]);
+    }
+    if (!wallet.connected) {
+      setRefresh(true);
+    }
   }, [
     refresh,
     baryonBalance,
@@ -310,6 +340,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     dead,
     truth,
     inactive,
+    wallet,
+    wallet.disconnecting,
+    wallet.connecting,
   ]);
 
   useEffect(() => {
@@ -804,6 +837,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   holders={bags.wallets}
                   isMobile={isMobile}
                   schedule={[claims.startTime, claims.endTime]}
+                  start={!inactive}
                 />
               ) : (
                 <div className="flex justify-center items-center w-full">

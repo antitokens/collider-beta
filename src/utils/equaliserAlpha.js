@@ -12,29 +12,46 @@ export const calculateEqualisation = (
   proPool,
   prices,
   wallets,
+  truth = [],
   flag = false
 ) => {
   // Calculate normalised overlap with truth (inverse-log-normalised)
   const overlap = baryonBags
     .map((baryon, i) => {
       const photon = photonBags[i];
-      return (
-        Math.exp(
-          -Math.pow(Math.log(2e9 - baryon), 2) /
-            (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
-        ) /
-        (flag
-          ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon))
-          : 1)
-      );
+      const sign =
+        truth.length > 0
+          ? truth[0] > truth[1] && antiBags[i] > proBags[i]
+            ? 1
+            : truth[0] < truth[1] && antiBags[i] > proBags[i]
+            ? -1
+            : truth[0] > truth[1] && antiBags[i] < proBags[i]
+            ? -1
+            : truth[0] < truth[1] && antiBags[i] < proBags[i]
+            ? 1
+            : -1
+          : 0;
+
+      return [
+        (sign *
+          Math.exp(
+            -Math.pow(Math.log(2e9 - baryon), 2) /
+              (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
+          )) /
+          (flag
+            ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon))
+            : 1),
+      ];
     })
-    .map((value) =>
-      value === 0
+    .map((value) => {
+      return value === 0
         ? 0
         : value === 1
         ? 1
-        : 1 / Math.abs(value <= 0 ? 1 : 1 + Math.log(value))
-    );
+        : value > 0
+        ? 1 / Math.abs(Math.log(value))
+        : 1 - 1 / Math.abs(Math.log(Math.abs(value)));
+    });
 
   // Calculate forward distribution
   const forward = calculateDistribution(overlap, [], [], antiBags, proBags);
@@ -46,6 +63,7 @@ export const calculateEqualisation = (
     baryon: [],
     photon: [],
   };
+
   const returns = [
     distributeValuesInBins(scatter.anti.resampled, forward.indices, antiBags),
     distributeValuesInBins(scatter.pro.resampled, forward.indices, proBags),
@@ -55,23 +73,28 @@ export const calculateEqualisation = (
 
   // Calculate inversions
   const invert = {
-    anti: [],
-    pro: [],
-    baryon: [],
-    photon: [],
-    wallet: [],
-    indices: [],
+    anti: Array(wallets.length).fill(0),
+    pro: Array(wallets.length).fill(0),
+    baryon: Array(wallets.length).fill(0),
+    photon: Array(wallets.length).fill(0),
+    wallet: Array(wallets.length).fill(0),
+    indices: Array(wallets.length).fill(0),
   };
   let _counter_ = 0;
   for (let i = 0; i < returns[0].length; i++) {
     for (let j = 0; j < returns[0][i].length; j++) {
-      invert.anti.push(returns[0][i][j]);
-      invert.pro.push(returns[1][i][j]);
-      invert.baryon.push(0);
-      invert.photon.push(0);
-      invert.wallet.push(wallets[_counter_]);
+      const _anti = returns[0][i][j];
+      const _pro = returns[1][i][j];
+      invert.anti[forward.indices[i][j]] = _anti;
+      invert.pro[forward.indices[i][j]] = _pro;
+      const collide = calculateCollision(_anti, _pro);
+      const _baryon = collide.u;
+      const _photon = collide.s;
+      invert.baryon[forward.indices[i][j]] = _baryon;
+      invert.photon[forward.indices[i][j]] = _photon;
+      invert.wallet[forward.indices[i][j]] = wallets[_counter_];
       _counter_ += 1;
-      invert.indices.push(forward.indices[i]);
+      invert.indices.push(forward.indices[i][j]);
     }
   }
 
@@ -91,11 +114,12 @@ export const calculateEqualisation = (
     ),
     wallets: wallets,
   };
+
   return {
     overlap: overlap,
     normalised: Math.max(...overlap)
-      ? overlap.map((x) => x / Math.max(...overlap))
-      : overlap,
+      ? overlap.map((x) => 1 - x / Math.max(...overlap))
+      : overlap.map((x) => 1 - x),
     invert,
     change,
   };
@@ -119,15 +143,17 @@ export const implementEqualisation = (
     .map((baryon, i) => {
       const photon = photonBags[i];
       const sign =
-        truth[0] > truth[1] && antiBags[i] > proBags[i]
-          ? 1
-          : truth[0] < truth[1] && antiBags[i] > proBags[i]
-          ? -1
-          : truth[0] > truth[1] && antiBags[i] < proBags[i]
-          ? -1
-          : truth[0] < truth[1] && antiBags[i] < proBags[i]
-          ? 1
-          : 1;
+        truth.length > 0
+          ? truth[0] > truth[1] && antiBags[i] > proBags[i]
+            ? 1
+            : truth[0] < truth[1] && antiBags[i] > proBags[i]
+            ? -1
+            : truth[0] > truth[1] && antiBags[i] < proBags[i]
+            ? -1
+            : truth[0] < truth[1] && antiBags[i] < proBags[i]
+            ? 1
+            : 1
+          : 0;
 
       return (
         (sign *
@@ -140,51 +166,15 @@ export const implementEqualisation = (
           : 1)
       );
     })
-    .map((value) =>
-      value === 0
+    .map((value) => {
+      return value === 0
         ? 0
         : value === 1
         ? 1
-        : 1 / Math.abs(value <= 0 ? 1 : 1 + Math.log(value))
-    );
-
-  const overlapNormalised = baryonBags
-    .map((baryon, i) => {
-      const photon = photonBags[i];
-      const sign =
-        truth[0] > truth[1] && antiBags[i] > proBags[i]
-          ? 1
-          : truth[0] < truth[1] && antiBags[i] > proBags[i]
-          ? -1
-          : truth[0] > truth[1] && antiBags[i] < proBags[i]
-          ? -1
-          : truth[0] < truth[1] && antiBags[i] < proBags[i]
-          ? 1
-          : 1;
-
-      return [
-        (sign *
-          Math.exp(
-            -Math.pow(Math.log(2e9 - baryon), 2) /
-              (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
-          )) /
-          (flag
-            ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon))
-            : 1),
-        sign,
-      ];
-    })
-    .map((value, i) =>
-      value[0] === 0
-        ? 0
-        : value[0] === 1
-        ? value[1] > 0
-          ? 1
-          : value[1]
-        : value[1] > 0
-        ? 1 - value[1] / Math.abs(value[0] <= 0 ? 1 : 1 + Math.log(value[0]))
-        : 1 + value[1] / Math.abs(value[0] <= 0 ? 1 : 1 + Math.log(value[0]))
-    );
+        : value > 0
+        ? 1 / Math.abs(Math.log(value))
+        : 1 - 1 / Math.abs(Math.log(Math.abs(value)));
+    });
 
   // Calculate forward distribution
   const forward = calculateDistribution(overlap, [], [], antiBags, proBags);
@@ -196,7 +186,6 @@ export const implementEqualisation = (
     baryon: [],
     photon: [],
   };
-
   const returns = [
     distributeValuesInBins(scatter.anti.resampled, forward.indices, antiBags),
     distributeValuesInBins(scatter.pro.resampled, forward.indices, proBags),
@@ -249,9 +238,9 @@ export const implementEqualisation = (
   };
   return {
     overlap: overlap,
-    normalised: Math.max(...overlapNormalised)
-      ? overlapNormalised.map((x) => x / Math.max(...overlapNormalised))
-      : overlapNormalised,
+    normalised: Math.max(...overlap)
+      ? overlap.map((x) => 1 - x / Math.max(...overlap))
+      : overlap.map((x) => 1 - x),
     invert,
     change,
   };

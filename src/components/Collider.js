@@ -647,10 +647,10 @@ const Collider = ({
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [1, 1],
-              bags.wallets
+              bags.wallets,
+              [antiUsage > proUsage ? 1 : 0, antiUsage < proUsage ? 1 : 0]
             )
           : undefined;
-
       myBag = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
@@ -658,7 +658,6 @@ const Collider = ({
       if (proData && antiData && myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
-        console.log(wallet.disconnecting);
         if (!wallet.disconnecting) {
           setGain(
             originalPosition !== 0 && (baryonBalance > 0 || photonBalance > 0)
@@ -703,7 +702,8 @@ const Collider = ({
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [1, 1],
-              bags.wallets
+              bags.wallets,
+              [antiUsage > proUsage ? 1 : 0, antiUsage < proUsage ? 1 : 0]
             )
           : undefined;
 
@@ -937,6 +937,8 @@ const Collider = ({
     wallet,
     bags,
     wallet.disconnecting,
+    antiBalance,
+    proBalance,
   ]);
 
   const handlePrediction = async () => {
