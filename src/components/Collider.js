@@ -1380,7 +1380,9 @@ const Collider = ({
                   In USD:{" "}
                   <span className="text-[11px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
-                    {formatCount(dollarStake.toFixed(2))}
+                    {dollarStake >= 1e4
+                      ? formatCount(dollarStake.toFixed(2))
+                      : dollarStake.toFixed(2)}
                   </span>{" "}
                 </div>
                 &nbsp;
@@ -1415,7 +1417,9 @@ const Collider = ({
                   Current Bet:{" "}
                   <span className="text-[11px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
-                    {formatCount(dollarBet.toFixed(2))}
+                    {dollarBet >= 1e4
+                      ? formatCount(dollarBet.toFixed(2))
+                      : dollarBet.toFixed(2)}
                   </span>
                 </div>
                 &nbsp;

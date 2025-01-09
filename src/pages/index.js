@@ -142,7 +142,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [refresh, setRefresh] = useState(true);
   const [dynamicsCurrent, setDynamicsCurrent] = useState([]);
   const [dynamicsFinal, setDynamicsFinal] = useState([]);
-  const [truth, setTruth] = useState([0, 1]); // ANTI-PRO
+  const [truth, setTruth] = useState([1, 0]); // ANTI-PRO
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
@@ -215,7 +215,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       !dead &&
       wallet.publicKey &&
       !wallet.disconnecting &&
-      wallet.connected
+      wallet.connected &&
+      baryonBalance + photonBalance > 0
     ) {
       const fetchBalancesWithClaims = async () => {
         try {
@@ -225,10 +226,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const blobClaim = await getClaims();
           const dataBalance = JSON.parse(blobBalance.message);
           const dataClaim = JSON.parse(blobClaim.message);
+
           const colliderDistribution =
-            baryonBalance >= 0 && photonBalance >= 0
+            baryonBalance >= 0 || photonBalance >= 0
               ? calculateCollision(baryonBalance, photonBalance, true)
               : emptyGaussian;
+
           const totalDistribution =
             dataBalance.totalDistribution.u >= 0 &&
             dataBalance.totalDistribution.s >= 0
@@ -416,6 +419,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             : balance.pro
           : 0
       );
+
       setBaryonBalance(
         !wallet.disconnecting
           ? claim.baryon + claim.photon > 0
