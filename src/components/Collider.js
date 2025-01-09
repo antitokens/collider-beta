@@ -646,11 +646,11 @@ const Collider = ({
               bags.proPool,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                : [0, 0],
-              bags.wallets
+                : [1, 1],
+              bags.wallets,
+              [antiUsage > proUsage ? 1 : 0, antiUsage < proUsage ? 1 : 0]
             )
           : undefined;
-
       myBag = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
@@ -658,12 +658,15 @@ const Collider = ({
       if (proData && antiData && myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
-        setGain(
-          originalPosition > 0
-            ? (Math.abs(rewardCurrent.change.gain[myBag]) / originalPosition) *
-                100
-            : 0
-        );
+        if (!wallet.disconnecting) {
+          setGain(
+            originalPosition !== 0 && (baryonBalance > 0 || photonBalance > 0)
+              ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
+              : 0
+          );
+        } else {
+          setGain(0);
+        }
       }
     }
 
@@ -699,14 +702,15 @@ const Collider = ({
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [1, 1],
-              bags.wallets
+              bags.wallets,
+              [antiUsage > proUsage ? 1 : 0, antiUsage < proUsage ? 1 : 0]
             )
           : undefined;
 
       if (myBag >= 0) {
         setNewGain(
-          dollarStake > 0
-            ? (Math.abs(rewardUpdated.change.gain[myBag]) / dollarStake) * 100
+          dollarStake !== 0 && !inactive && !wallet.disconnecting
+            ? (rewardUpdated.change.gain[myBag] / dollarStake) * 100
             : 0
         );
       }
@@ -932,6 +936,9 @@ const Collider = ({
     totalInvest,
     wallet,
     bags,
+    wallet.disconnecting,
+    antiBalance,
+    proBalance,
   ]);
 
   const handlePrediction = async () => {
@@ -1353,13 +1360,17 @@ const Collider = ({
                     Displays your current tokens in the pool
                   </span>
                 </div>
-                <div>&nbsp;Your Pool:&nbsp;</div>
+                <div>&nbsp;{`Your Pool`}:&nbsp;</div>
                 <div className="flex flex-row justify-center font-sfmono pt-[0px] lg:pt-[1px]">
-                  <div className="text-accent-secondary text-[11px] opacity-95">
+                  <div
+                    className={`text-accent-secondary text-[11px] opacity-95`}
+                  >
+                    {proUsage > 0 ? "+" : ""}
                     {formatCount(proUsage.toFixed(2))}
                   </div>
                   <div>/</div>
-                  <div className="text-accent-primary text-[11px] opacity-95">
+                  <div className={`text-accent-primary text-[11px] opacity-95`}>
+                    {antiUsage > 0 ? "+" : ""}
                     {formatCount(antiUsage.toFixed(2))}
                   </div>
                 </div>
@@ -1369,14 +1380,20 @@ const Collider = ({
                   In USD:{" "}
                   <span className="text-[11px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
-                    {formatCount(dollarStake.toFixed(2))}
+                    {dollarStake >= 1e4
+                      ? formatCount(dollarStake.toFixed(2))
+                      : dollarStake.toFixed(2)}
                   </span>{" "}
                 </div>
                 &nbsp;
                 <div className="flex flex-row text-right">
                   <span>&nbsp;P/L:&nbsp;</span>
                   <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[1px]">
-                    <span className="text-accent-secondary opacity-95">
+                    <span
+                      className={`text-${
+                        gain >= 0 ? "accent-secondary" : "accent-primary"
+                      } opacity-95`}
+                    >
                       {formatCount(gain.toFixed(2))}%&nbsp;
                     </span>
                   </span>
@@ -1400,7 +1417,9 @@ const Collider = ({
                   Current Bet:{" "}
                   <span className="text-[11px] text-white font-sfmono">
                     <span className="text-gray-400">$</span>
-                    {formatCount(dollarBet.toFixed(2))}
+                    {dollarBet >= 1e4
+                      ? formatCount(dollarBet.toFixed(2))
+                      : dollarBet.toFixed(2)}
                   </span>
                 </div>
                 &nbsp;

@@ -14,7 +14,10 @@ import {
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
-import { calculateEqualisation } from "../utils/equaliserAlpha";
+import {
+  calculateEqualisation,
+  implementEqualisation,
+} from "../utils/equaliserAlpha";
 import Navbar from "../components/TopNavbar";
 import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
@@ -137,8 +140,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
-  const [dynamics, setDynamics] = useState([]);
-  const [truth, setTruth] = useState([]);
+  const [dynamicsCurrent, setDynamicsCurrent] = useState([]);
+  const [dynamicsFinal, setDynamicsFinal] = useState([]);
+  const [truth, setTruth] = useState([1, 0]); // ANTI-PRO
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
@@ -166,7 +170,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     if (state) {
       setCurrentClaimData(claim);
       setRefresh(true);
-      setTruth([]);
     } else {
       // Handle error case
       console.error("Reclaim submission failed:", claim.error);
@@ -178,6 +181,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTimeout(() => setClearFields(false), 100);
     setTimeout(() => setShowAnimation(state), 100);
   };
+
+  useEffect(() => {
+    if (wallet.disconnecting) {
+      setShowCollider(true);
+    }
+  }, [wallet, wallet.disconnecting]);
 
   useEffect(() => {
     const checkMeta = async () => {
@@ -201,18 +210,28 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [balances]);
 
   useEffect(() => {
-    if (refresh && !dead) {
+    if (
+      refresh &&
+      !dead &&
+      wallet.publicKey &&
+      !wallet.disconnecting &&
+      wallet.connected &&
+      baryonBalance + photonBalance > 0
+    ) {
       const fetchBalancesWithClaims = async () => {
         try {
+          setRefresh(false);
           setIsMetaLoading(true);
           const blobBalance = await getBalances();
           const blobClaim = await getClaims();
           const dataBalance = JSON.parse(blobBalance.message);
           const dataClaim = JSON.parse(blobClaim.message);
+
           const colliderDistribution =
-            baryonBalance >= 0 && photonBalance >= 0
+            baryonBalance >= 0 || photonBalance >= 0
               ? calculateCollision(baryonBalance, photonBalance, true)
               : emptyGaussian;
+
           const totalDistribution =
             dataBalance.totalDistribution.u >= 0 &&
             dataBalance.totalDistribution.s >= 0
@@ -222,6 +241,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   true
                 )
               : emptyGaussian;
+
           setBalances({
             startTime: dataBalance.startTime,
             endTime: dataBalance.endTime,
@@ -231,6 +251,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             collisionsData: dataBalance.collisionsData,
             eventsOverTime: dataBalance.eventsOverTime,
           });
+
           setBags({
             baryon: dataBalance.totalDistribution.bags.baryon,
             photon: dataBalance.totalDistribution.bags.photon,
@@ -242,6 +263,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             proPool: dataBalance.collisionsData.proTokens,
             wallets: dataBalance.totalDistribution.wallets,
           });
+
+          const _antiUsage =
+            dataBalance.totalDistribution.bags.anti[
+              dataBalance.totalDistribution.wallets.indexOf(
+                wallet.publicKey.toString()
+              )
+            ];
+          const _proUsage =
+            dataBalance.totalDistribution.bags.pro[
+              dataBalance.totalDistribution.wallets.indexOf(
+                wallet.publicKey.toString()
+              )
+            ];
+
           const rewardCurrent = calculateEqualisation(
             dataBalance.totalDistribution.bags.baryon,
             dataBalance.totalDistribution.bags.photon,
@@ -252,9 +287,27 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             antiData && proData
               ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
               : [1, 1],
-            dataBalance.totalDistribution.wallets
+            dataBalance.totalDistribution.wallets,
+            [_antiUsage > _proUsage ? 1 : 0, _antiUsage < _proUsage ? 1 : 0]
           );
-          setDynamics(rewardCurrent ? rewardCurrent.overlap : []);
+
+          const rewardFinal = implementEqualisation(
+            dataBalance.totalDistribution.bags.baryon,
+            dataBalance.totalDistribution.bags.photon,
+            dataBalance.totalDistribution.bags.anti,
+            dataBalance.totalDistribution.bags.pro,
+            dataBalance.collisionsData.antiTokens,
+            dataBalance.collisionsData.proTokens,
+            antiData && proData
+              ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+              : [1, 1],
+            dataBalance.totalDistribution.wallets,
+            truth
+          );
+
+          setDynamicsCurrent(rewardCurrent ? rewardCurrent.normalised : []);
+          setDynamicsFinal(rewardFinal ? rewardFinal.normalised : []);
+
           setClaims({
             startTime: dataClaim.startTime,
             endTime: dataClaim.endTime,
@@ -274,7 +327,26 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       };
       fetchBalancesWithClaims();
     }
-  }, [refresh, baryonBalance, photonBalance, antiData, proData, dead]);
+    if (wallet.disconnecting) {
+      setDynamicsCurrent([]);
+      setDynamicsFinal([]);
+    }
+    if (!wallet.connected) {
+      setRefresh(true);
+    }
+  }, [
+    refresh,
+    baryonBalance,
+    photonBalance,
+    antiData,
+    proData,
+    dead,
+    truth,
+    inactive,
+    wallet,
+    wallet.disconnecting,
+    wallet.connecting,
+  ]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -325,16 +397,49 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       const balance = JSON.parse(_balance.message);
       const _claim = await getClaim(wallet.publicKey);
       const claim = JSON.parse(_claim.message);
-      setAntiBalance(antiBalanceResult - balance.anti + claim.anti);
-      setProBalance(proBalanceResult - balance.pro + claim.pro);
-      setAntiUsage(balance.anti - claim.anti);
-      setProUsage(balance.pro - claim.pro);
-      setBaryonBalance(balance.baryon - claim.baryon);
-      setPhotonBalance(balance.photon - claim.photon);
+      setAntiBalance(
+        !wallet.disconnecting
+          ? antiBalanceResult - balance.anti + claim.anti
+          : 0
+      );
+      setProBalance(
+        !wallet.disconnecting ? proBalanceResult - balance.pro + claim.pro : 0
+      );
+      setAntiUsage(
+        !wallet.disconnecting
+          ? claim.anti + claim.pro > 0
+            ? claim.anti - balance.anti
+            : balance.anti
+          : 0
+      );
+      setProUsage(
+        !wallet.disconnecting
+          ? claim.anti + claim.pro > 0
+            ? claim.pro - balance.pro
+            : balance.pro
+          : 0
+      );
+
+      setBaryonBalance(
+        !wallet.disconnecting
+          ? claim.baryon + claim.photon > 0
+            ? 0
+            : balance.baryon
+          : 0
+      );
+      setPhotonBalance(
+        !wallet.disconnecting
+          ? claim.photon + claim.baryon > 0
+            ? 0
+            : balance.photon
+          : 0
+      );
     };
 
-    if (wallet.publicKey || dataUpdated) checkBalance();
-  }, [wallet, dataUpdated]);
+    if (wallet.publicKey || dataUpdated) {
+      checkBalance();
+    }
+  }, [wallet, dataUpdated, wallet.disconnecting]);
 
   return (
     <>
@@ -663,7 +768,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     isMobile={isMobile}
                     bags={bags}
                     inactive={!inactive || dead}
-                    truth={truth}
+                    truth={!inactive || dead ? [] : truth}
                   />
                   <p
                     className={`mt-1 text-sm font-sfmono ${
@@ -697,7 +802,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   totalDistribution={balances.totalDistribution}
                   onRefresh={onRefresh}
                   connected={wallet.connected}
-                  dynamics={dynamics}
+                  dynamics={dynamicsCurrent}
                   holders={bags.wallets}
                   isMobile={isMobile}
                   schedule={[balances.startTime, balances.endTime]}
@@ -732,10 +837,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   totalDistribution={balances.totalDistribution}
                   onRefresh={onRefresh}
                   connected={wallet.connected}
-                  dynamics={dynamics}
+                  dynamics={dynamicsFinal}
                   holders={bags.wallets}
                   isMobile={isMobile}
                   schedule={[claims.startTime, claims.endTime]}
+                  start={!inactive}
                 />
               ) : (
                 <div className="flex justify-center items-center w-full">

@@ -80,31 +80,46 @@ const Inverter = ({
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         setChange(
-          truth.length > 0
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonBalance > 0 || baryonBalance > 0)
             ? [
                 rewardCurrent.change.photon[myBag],
                 rewardCurrent.change.baryon[myBag],
                 rewardCurrent.change.gain[myBag],
               ]
-            : []
+            : [0, 0, 0]
         );
         setUpdatedBalances(
-          truth.length > 0
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonBalance > 0 || baryonBalance > 0)
             ? [
                 rewardCurrent.invert.photon[myBag],
                 rewardCurrent.invert.baryon[myBag],
               ]
-            : [photonBalance, baryonBalance]
+            : !wallet.disconnecting
+            ? [photonBalance, baryonBalance]
+            : [0, 0]
         );
-        setDollarGain(truth.length > 0 ? rewardCurrent.change.gain[myBag] : 0);
+        setDollarGain(
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonBalance > 0 || baryonBalance > 0)
+            ? rewardCurrent.change.gain[myBag]
+            : 0
+        );
         setGain(
-          truth.length > 0 && originalPosition > 0
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            originalPosition > 0 &&
+            (photonBalance > 0 || baryonBalance > 0)
             ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
             : 0
         );
       }
     }
-  }, [antiData, proData, bags, truth]);
+  }, [antiData, proData, bags, truth, wallet, wallet.disconnecting]);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
@@ -306,7 +321,7 @@ const Inverter = ({
         pro: 0,
       });
     }
-  }, [baryonTokens, photonTokens, gain, updatedBalances]);
+  }, [baryonTokens, photonTokens, gain]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
@@ -397,7 +412,7 @@ const Inverter = ({
                         .toFixed(1)
                         .toString()
                         .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    : "-"}
+                    : "0"}
                 </span>
               </span>
               {"/"}
@@ -422,7 +437,7 @@ const Inverter = ({
                       .toFixed(1)
                       .toString()
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  : "-"}
+                  : "0"}
               </span>
               &nbsp;&nbsp;
             </div>

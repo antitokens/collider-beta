@@ -639,7 +639,7 @@ const DashboardCollider = ({
               },
             },
             title: {
-              display: !dynamics.every((item) => item === 0),
+              display: true,
               text: "Rank",
               font: {
                 family: "'SF Mono Round'",
@@ -663,6 +663,7 @@ const DashboardCollider = ({
                 size: 10,
               },
             },
+            max: 1,
           },
         },
       },
