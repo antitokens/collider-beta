@@ -344,7 +344,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     inactive,
     wallet,
     wallet.disconnecting,
-    wallet.connecting,
+    wallet.connected,
   ]);
 
   useEffect(() => {
@@ -437,6 +437,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
     if (wallet.publicKey || dataUpdated) {
       checkBalance();
+      setRefresh(true);
     }
   }, [wallet, dataUpdated, wallet.disconnecting]);
 
