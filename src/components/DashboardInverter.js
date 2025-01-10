@@ -294,6 +294,7 @@ const DashboardInverter = ({
 
     // Prepare line chart data
     const useBinning = detectBinningStrategy(schedule);
+    const nowTime = new Date();
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
         shortenTick(value, useBinning)
@@ -303,7 +304,11 @@ const DashboardInverter = ({
           label: "Pro",
           data: eventsOverTime.cumulative.pro.every((value) => value === 0)
             ? []
-            : eventsOverTime.cumulative.pro,
+            : eventsOverTime.cumulative.pro.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "#00bb7a",
           backgroundColor: "#00bb7a",
           fill: false,
@@ -313,7 +318,11 @@ const DashboardInverter = ({
           label: "Anti",
           data: eventsOverTime.cumulative.anti.every((value) => value === 0)
             ? []
-            : eventsOverTime.cumulative.anti,
+            : eventsOverTime.cumulative.anti.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "#c12f00",
           backgroundColor: "#c12f00",
           fill: false,
@@ -323,7 +332,11 @@ const DashboardInverter = ({
           label: "Photon",
           data: eventsOverTime.cumulative.photon.every((value) => value === 0)
             ? []
-            : eventsOverTime.cumulative.photon,
+            : eventsOverTime.cumulative.photon.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "rgb(123, 191, 255)",
           backgroundColor: "rgb(123, 191, 255)",
           fill: false,
@@ -333,7 +346,11 @@ const DashboardInverter = ({
           label: "Baryon",
           data: eventsOverTime.cumulative.baryon.every((value) => value === 0)
             ? []
-            : eventsOverTime.cumulative.baryon,
+            : eventsOverTime.cumulative.baryon.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "rgb(58, 182, 193)",
           backgroundColor: "rgb(58, 182, 193)",
           fill: false,
@@ -489,7 +506,15 @@ const DashboardInverter = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return colliderDistribution.short[index]
-                  ? formatCount(colliderDistribution.short[index], false, 7)
+                  ? formatCount(
+                      colliderDistribution.short[index],
+                      false,
+                      colliderDistribution.short[index] > 1e6
+                        ? 10
+                        : colliderDistribution.short[index] > 1e3
+                        ? 7
+                        : 0
+                    )
                   : null;
               },
               font: {
@@ -505,7 +530,15 @@ const DashboardInverter = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? formatCount(totalDistribution.short[index], false, 7)
+                  ? formatCount(
+                      totalDistribution.short[index],
+                      false,
+                      totalDistribution.short[index] > 1e6
+                        ? 10
+                        : totalDistribution.short[index] > 1e3
+                        ? 7
+                        : 0
+                    )
                   : null;
               },
               font: {
