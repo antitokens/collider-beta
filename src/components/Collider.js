@@ -654,7 +654,6 @@ const Collider = ({
       myBag = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
-
       if (proData && antiData && myBag >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
@@ -666,6 +665,57 @@ const Collider = ({
           );
         } else {
           setGain(0);
+        }
+      } else if (proData && antiData && myBag < 0 && totalInvest > 0) {
+        console.log("HERE");
+        let myFutureBag = -1;
+        let pseudoBags = {
+          baryon: [...bags.baryon],
+          photon: [...bags.photon],
+          baryonPool: bags.baryonPool + baryonTokens,
+          photonPool: bags.photonPool + photonTokens,
+          anti: [...bags.anti],
+          pro: [...bags.pro],
+          antiPool: bags.antiPool + antiTokens,
+          proPool: bags.proPool + proTokens,
+          wallets: [...bags.wallets],
+        };
+        pseudoBags.anti.push(antiTokens);
+        pseudoBags.pro.push(proTokens);
+        pseudoBags.baryon.push(baryonTokens);
+        pseudoBags.photon.push(photonTokens);
+        pseudoBags.wallets.push(wallet.publicKey.toString());
+
+        const rewardFuture =
+          pseudoBags !== emptyBags
+            ? calculateEqualisation(
+                pseudoBags.baryon,
+                pseudoBags.photon,
+                pseudoBags.anti,
+                pseudoBags.pro,
+                pseudoBags.antiPool,
+                pseudoBags.proPool,
+                antiData && proData
+                  ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
+                  : [1, 1],
+                pseudoBags.wallets,
+                [antiTokens > proTokens ? 1 : 0, antiTokens < proTokens ? 1 : 0]
+              )
+            : undefined;
+        myFutureBag = rewardFuture
+          ? rewardFuture.change.wallets.indexOf(wallet.publicKey.toString())
+          : -1;
+        const originalPosition =
+          proTokens * proData.priceUsd + antiTokens * antiData.priceUsd;
+
+        if (!wallet.disconnecting) {
+          setNewGain(
+            originalPosition !== 0 && (baryonTokens > 0 || photonTokens > 0)
+              ? (rewardFuture.change.gain[myFutureBag] / originalPosition) * 100
+              : 0
+          );
+        } else {
+          setNewGain(0);
         }
       }
     }
@@ -684,8 +734,10 @@ const Collider = ({
       const updatedProBags = [...bags.pro];
 
       if (myBag >= 0) {
-        updatedBaryonBags[myBag] += baryonTokens;
-        updatedPhotonBags[myBag] += photonTokens;
+        updatedBaryonBags[myBag] =
+          totalInvest > 0 ? F * totalDistribution.u : baryonTokens;
+        updatedPhotonBags[myBag] =
+          totalInvest > 0 ? F * totalDistribution.u : photonTokens;
         updatedAntiBags[myBag] += antiTokens;
         updatedProBags[myBag] += proTokens;
       }
@@ -703,13 +755,19 @@ const Collider = ({
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [1, 1],
               bags.wallets,
-              [antiUsage > proUsage ? 1 : 0, antiUsage < proUsage ? 1 : 0]
+              [
+                antiUsage + antiTokens > proUsage + proTokens ? 1 : 0,
+                antiUsage + antiTokens < proUsage + proTokens ? 1 : 0,
+              ]
             )
           : undefined;
 
       if (myBag >= 0) {
         setNewGain(
-          dollarStake !== 0 && !inactive && !wallet.disconnecting
+          dollarStake !== 0 &&
+            !inactive &&
+            !wallet.disconnecting &&
+            totalInvest > 0
             ? (rewardUpdated.change.gain[myBag] / dollarStake) * 100
             : 0
         );
@@ -939,6 +997,9 @@ const Collider = ({
     wallet.disconnecting,
     antiBalance,
     proBalance,
+    splitPercentage,
+    baryonTokens,
+    photonTokens,
   ]);
 
   const handlePrediction = async () => {
@@ -1427,10 +1488,12 @@ const Collider = ({
                   <div>
                     &nbsp;P/L:{" "}
                     <span className="text-[11px] text-white font-sfmono pt-[2px]">
-                      <span className="text-accent-secondary opacity-95">
-                        {gain !== newGain
-                          ? formatCount(newGain.toFixed(2))
-                          : "0"}
+                      <span
+                        className={`text-${
+                          newGain >= 0 ? "accent-secondary" : "accent-primary"
+                        } opacity-95`}
+                      >
+                        {formatCount(newGain.toFixed(2))}
                         %&nbsp;
                       </span>
                     </span>
