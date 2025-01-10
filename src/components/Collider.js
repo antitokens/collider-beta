@@ -94,16 +94,16 @@ const Collider = ({
   const verticalLinesPlugin = {
     id: "verticalLines",
     beforeDatasetsDraw: (chart, _, pluginOptions) => {
-      const { markerDates, labels, useBinning } = pluginOptions;
+      const { markers, labels, useBinning } = pluginOptions;
       const ctx = chart.ctx;
       const xAxis = chart.scales.x;
       const yAxis = chart.scales.y;
       const local = new Date();
-      markerDates.forEach((date, index) => {
+      markers.forEach((date, index) => {
         const localDate = new Date(
           new Date(date).getTime() + local.getTimezoneOffset() * 60000
         );
-        const _date_ =
+        const item =
           useBinning !== "daily"
             ? localDate.toLocaleDateString("en-US", {
                 month: "short",
@@ -117,7 +117,7 @@ const Collider = ({
                 day: "numeric",
                 year: "numeric",
               });
-        const dateStr = shortenTick(_date_, useBinning);
+        const dateStr = shortenTick(item, useBinning);
         // Find all occurrences of this date
         const allIndices = chart.data.labels.reduce((acc, label, i) => {
           if (label === dateStr) acc.push(i);
@@ -144,11 +144,91 @@ const Collider = ({
         ctx.textBaseline = "top";
         ctx.fillStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
         ctx.font = "10px 'SF Mono Round'";
-        ctx.translate(xPosition + 5, yAxis.top + 35);
+        ctx.translate(
+          xPosition + 10 * (index > 0 ? 3 / 7 : -13 / 10),
+          yAxis.bottom - 5
+        );
         ctx.rotate(-Math.PI / 2);
         ctx.fillText(labels[index], 0, 0);
         ctx.restore();
       });
+    },
+  };
+
+  const nowTimePlugin = {
+    id: "nowTime",
+    beforeDatasetsDraw: (chart, _, pluginOptions) => {
+      if (!chart?.ctx) return;
+      const { marker, values, labels, useBinning } = pluginOptions;
+      if (!marker) return;
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      const yAxis = chart.scales.y;
+      if (!xAxis || !yAxis) return;
+      const local = new Date();
+      try {
+        marker.forEach((date, index) => {
+          if (!date) return;
+          const localDate = new Date(new Date(date).getTime());
+          const item =
+            useBinning !== "daily"
+              ? localDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "numeric",
+                  hour12: true,
+                })
+              : localDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+          const dateStr = shortenTick(item, useBinning);
+
+          const allIndices =
+            chart.data.labels?.reduce((acc, label, i) => {
+              if (label === dateStr) acc.push(i);
+              return acc;
+            }, []) || [];
+
+          let xPosition;
+          if (allIndices.length > index) {
+            xPosition = xAxis.getPixelForValue(allIndices[index]);
+          } else if (allIndices.length > 0) {
+            xPosition = xAxis.getPixelForValue(allIndices[0]);
+          }
+
+          if (!xPosition || isNaN(xPosition)) return;
+          const yPosition = yAxis.getPixelForValue(
+            values[1][values[0].indexOf(dateStr)]
+          );
+          if (!yPosition || isNaN(yPosition)) return;
+          // Draw marker
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(xPosition, yPosition, 4, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(196, 196, 196, 0.5)";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(196, 196, 196, 0.8)";
+          ctx.stroke();
+
+          // Draw label if exists
+          if (labels?.[index]) {
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            ctx.fillStyle = "#c4c4c488";
+            ctx.font = "10px 'SF Mono Round'";
+            ctx.translate(xPosition + 5, yPosition + 5);
+            ctx.rotate(0);
+            ctx.fillText(labels[index], 0, 0);
+          }
+          ctx.restore();
+        });
+      } catch (error) {
+        console.error("Plugin error:", error);
+        ctx?.restore();
+      }
     },
   };
 
@@ -312,29 +392,31 @@ const Collider = ({
     };
 
     // Prepare the chart data
+    const plotable = balances.eventsOverTime.cumulative.timestamps
+      .map((timestamp, index) => {
+        const dateISO = parseDateToISO(timestamp, useBinning);
+        if (dateISO) {
+          const pro = balances.eventsOverTime.cumulative.pro[index];
+          const anti = balances.eventsOverTime.cumulative.anti[index];
+          const total = pro + anti;
+          return total === 0 ? 50 : (pro / total) * 100;
+        }
+        return null;
+      })
+      .filter((value) => value !== null);
+    const labels = balances.eventsOverTime.cumulative.timestamps
+      .filter((timestamp) => {
+        const dateISO = parseDateToISO(timestamp, useBinning);
+        return dateISO;
+      })
+      .map((value) => shortenTick(value, useBinning));
     const chartData = {
       type: "line",
-      labels: balances.eventsOverTime.cumulative.timestamps
-        .filter((timestamp) => {
-          const dateISO = parseDateToISO(timestamp, useBinning);
-          return dateISO;
-        })
-        .map((value) => shortenTick(value, useBinning)),
+      labels: labels,
       datasets: [
         {
           label: "Yes",
-          data: balances.eventsOverTime.cumulative.timestamps
-            .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp, useBinning);
-              if (dateISO) {
-                const pro = balances.eventsOverTime.cumulative.pro[index];
-                const anti = balances.eventsOverTime.cumulative.anti[index];
-                const total = pro + anti;
-                return total === 0 ? 50 : (pro / total) * 100;
-              }
-              return null;
-            })
-            .filter((value) => value !== null),
+          data: plotable,
           segment: {
             borderCapStyle: "round",
             borderColor: getSegmentColor,
@@ -373,10 +455,15 @@ const Collider = ({
           hoverBorderColor: "transparent",
         },
       ],
-      plugins: [verticalLinesPlugin, xAxisLabelPlugin],
+      plugins: [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin],
       options: {
+        layout: {
+          padding: {
+            top: 20,
+          },
+        },
         animation: {
-          duration: 0, // Disable animations for initial render
+          duration: 0,
         },
         responsive: true,
         interaction: {
@@ -386,16 +473,36 @@ const Collider = ({
         plugins: {
           verticalLines:
             config.startTime === "-" || config.endTime === "-"
-              ? { markerDates: [], labels: [], useBinning: useBinning }
+              ? { markers: [], labels: [], useBinning: useBinning }
               : {
-                  markerDates:
+                  markers:
                     config.startTime === "-" || config.endTime === "-"
                       ? []
                       : [config.startTime, config.endTime],
                   labels:
                     config.startTime === "-" || config.endTime === "-"
                       ? []
-                      : ["OPEN", "CLOSE"],
+                      : ["Open", "Close"],
+                  useBinning: useBinning,
+                },
+          nowTime:
+            config.startTime === "-" || config.endTime === "-"
+              ? {
+                  marker: [],
+                  values: [[], []],
+                  labels: [],
+                  useBinning: useBinning,
+                }
+              : {
+                  marker:
+                    config.startTime === "-" || config.endTime === "-"
+                      ? []
+                      : [new Date()],
+                  values: [labels, plotable],
+                  labels:
+                    config.startTime === "-" || config.endTime === "-"
+                      ? []
+                      : ["Now"],
                   useBinning: useBinning,
                 },
           datalabels: {
@@ -667,7 +774,6 @@ const Collider = ({
           setGain(0);
         }
       } else if (proData && antiData && myBag < 0 && totalInvest > 0) {
-        console.log("HERE");
         let myFutureBag = -1;
         let pseudoBags = {
           baryon: [...bags.baryon],

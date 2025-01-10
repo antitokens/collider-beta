@@ -296,6 +296,7 @@ export const formatCount = (_value, _flag = undefined, _fill = 4) => {
     // For millions, fill-2 digits (accounting for 'm' and one leading zero + decimal)
     const digits = _fill - Math.abs(_value).toString().split(".")[0].length;
     const scaled = value / 1e6;
+    console.log(_fill)
     const formatted = scaled
       .toFixed(digits >= 0 ? digits : 1)
       .replace(/^0+/, "0");
@@ -443,8 +444,8 @@ export function detectBinningStrategy(dates) {
   const hourDiff = (date2 - date1) / (1000 * 60 * 60);
   if (hourDiff <= 24) return "hourly";
   if (hourDiff <= 48) return "6-hour";
-  if (hourDiff <= 120) return "12-hour";
-  return "unknown";
+  if (hourDiff <= 144) return "12-hour";
+  return "daily";
 }
 
 export const defaultToken = {
