@@ -22,6 +22,9 @@ import {
   defaultToken,
   copyText,
   detectBinningStrategy,
+  findBinForTimestamp,
+  parseCustomDate,
+  dateToLocal,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -103,20 +106,7 @@ const Collider = ({
         const localDate = new Date(
           new Date(date).getTime() + local.getTimezoneOffset() * 60000
         );
-        const item =
-          useBinning !== "daily"
-            ? localDate.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                hour12: true,
-              })
-            : localDate.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              });
+        const item = dateToLocal(localDate, useBinning);
         const dateStr = shortenTick(item, useBinning);
         // Find all occurrences of this date
         const allIndices = chart.data.labels.reduce((acc, label, i) => {
@@ -165,27 +155,25 @@ const Collider = ({
       const xAxis = chart.scales.x;
       const yAxis = chart.scales.y;
       if (!xAxis || !yAxis) return;
-      const local = new Date();
+
       try {
         marker.forEach((date, index) => {
           if (!date) return;
           const localDate = new Date(new Date(date).getTime());
-          const item =
-            useBinning !== "daily"
-              ? localDate.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                  hour: "numeric",
-                  hour12: true,
-                })
-              : localDate.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                });
-          const dateStr = shortenTick(item, useBinning);
-
+          const item = dateToLocal(localDate, useBinning);
+          const closestBin = findBinForTimestamp(
+            parseCustomDate(item),
+            values[0].map((value) =>
+              parseCustomDate(
+                value.replace(
+                  /(\w+ \d+), (\d+ [AP]M)/,
+                  `$1, ${new Date(date).getFullYear()}, $2`
+                )
+              )
+            )
+          );
+          const closestBinStr = dateToLocal(closestBin, useBinning);
+          const dateStr = shortenTick(closestBinStr, useBinning);
           const allIndices =
             chart.data.labels?.reduce((acc, label, i) => {
               if (label === dateStr) acc.push(i);
@@ -219,7 +207,7 @@ const Collider = ({
             ctx.textBaseline = "top";
             ctx.fillStyle = "#c4c4c488";
             ctx.font = "10px 'SF Mono Round'";
-            ctx.translate(xPosition + 5, yPosition + 5);
+            ctx.translate(xPosition - 18.25, yPosition + 7.5);
             ctx.rotate(0);
             ctx.fillText(labels[index], 0, 0);
           }
@@ -502,7 +490,7 @@ const Collider = ({
                   labels:
                     config.startTime === "-" || config.endTime === "-"
                       ? []
-                      : ["Now"],
+                      : ["Latest"],
                   useBinning: useBinning,
                 },
           datalabels: {
