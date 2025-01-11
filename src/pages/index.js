@@ -210,13 +210,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [balances]);
 
   useEffect(() => {
-    if (
-      refresh &&
-      !dead &&
-      wallet.publicKey &&
-      !wallet.disconnecting &&
-      wallet.connected
-    ) {
+    if (refresh && !dead && !wallet.disconnecting) {
       const fetchBalancesWithClaims = async () => {
         try {
           setRefresh(false);
@@ -263,18 +257,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             wallets: dataBalance.totalDistribution.wallets,
           });
 
-          const _antiUsage =
-            dataBalance.totalDistribution.bags.anti[
-              dataBalance.totalDistribution.wallets.indexOf(
-                wallet.publicKey.toString()
-              )
-            ];
-          const _proUsage =
-            dataBalance.totalDistribution.bags.pro[
-              dataBalance.totalDistribution.wallets.indexOf(
-                wallet.publicKey.toString()
-              )
-            ];
+          const thisAntiUsage = wallet.publicKey
+            ? dataBalance.totalDistribution.bags.anti[
+                dataBalance.totalDistribution.wallets.indexOf(
+                  wallet.publicKey.toString()
+                )
+              ]
+            : 0;
+          const thisProUsage = wallet.publicKey
+            ? dataBalance.totalDistribution.bags.pro[
+                dataBalance.totalDistribution.wallets.indexOf(
+                  wallet.publicKey.toString()
+                )
+              ]
+            : 0;
 
           const rewardCurrent = calculateEqualisation(
             dataBalance.totalDistribution.bags.baryon,
@@ -287,7 +283,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
               : [1, 1],
             dataBalance.totalDistribution.wallets,
-            [_antiUsage > _proUsage ? 1 : 0, _antiUsage < _proUsage ? 1 : 0]
+            [
+              thisAntiUsage > thisProUsage ? 1 : 0,
+              thisAntiUsage < thisProUsage ? 1 : 0,
+            ]
           );
 
           const rewardFinal = implementEqualisation(
@@ -329,9 +328,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     if (wallet.disconnecting) {
       setDynamicsCurrent([]);
       setDynamicsFinal([]);
-    }
-    if (!wallet.connected) {
-      setRefresh(true);
     }
   }, [
     refresh,
