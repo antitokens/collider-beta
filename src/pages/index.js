@@ -511,8 +511,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         </div>
 
         {/* Collider Sections Toggle */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto">
-          <div className="lg:col-span-1 xl:col-span-2 mx-2 md:mx-0">
+        <div
+          className={
+            process.env.NEXT_PUBLIC_LIGHT
+              ? ``
+              : `grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto`
+          }
+        >
+          <div
+            className={
+              process.env.NEXT_PUBLIC_LIGHT
+                ? ``
+                : `lg:col-span-1 xl:col-span-2 mx-2 md:mx-0`
+            }
+          >
             {showCollider ? (
               <div className="text-center mt-20">
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
@@ -628,160 +640,31 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     </div>
                   </button>
                 </div>
-                <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
-                  <div className="bg-dark-card p-4 rounded w-full mb-4 flex flex-col justify-center">
-                    <h2 className="text-xl text-gray-300 text-center font-medium mb-2">
-                      Claim your Collider Emissions
-                    </h2>
-                    <div className="flex flex-row justify-between">
-                      <div className="text-[12px] text-gray-500 text-left">
-                        <span className="relative group">
-                          <span className="cursor-pointer">
-                            &#9432;
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              {isMobile
-                                ? `Reclaim opening date & time: ${
-                                    balances.endTime
-                                      ? isMobile
-                                        ? convertToLocaleTime(
-                                            balances.startTime,
-                                            isMobile
-                                          ).split(",")[0]
-                                        : convertToLocaleTime(
-                                            balances.startTime,
-                                            isMobile
-                                          )
-                                      : "-"
-                                  }`
-                                : "Reclaim opening date & time"}
-                            </span>
-                          </span>
-                        </span>{" "}
-                        &nbsp;Open:{" "}
-                        <span className="font-sfmono text-gray-400 text-[11px]">
-                          {balances.endTime
-                            ? isMobile
-                              ? convertToLocaleTime(
-                                  balances.endTime,
-                                  isMobile
-                                ).split(",")[0]
-                              : convertToLocaleTime(balances.endTime, isMobile)
-                            : "-"}
-                        </span>{" "}
-                      </div>
-                      <div className="text-[12px] text-gray-500 text-right">
-                        Close:{" "}
-                        <span className="font-sfmono text-gray-400 text-[11px]">
-                          {balances.endTime
-                            ? isMobile
-                              ? "Never"
-                              : "Never"
-                            : "-"}
-                        </span>{" "}
-                        &nbsp;
-                        <span className="relative group">
-                          <span className="cursor-pointer">
-                            &#9432;
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              {isMobile
-                                ? `Reclaim closing date & time: ${
-                                    balances.endTime
-                                      ? !isMobile
-                                        ? "Never"
-                                        : "Never"
-                                      : "-"
-                                  }`
-                                : "Reclaim closing date & time"}
-                            </span>
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-row justify-between">
-                      <div className="text-[12px] text-gray-500 text-left">
-                        <span className="relative group">
-                          <span className="cursor-pointer">&#9432;</span>
-                          <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                            Total amount of PHOTON & BARYON in the prediction
-                            pool
-                          </span>
-                        </span>{" "}
-                        &nbsp;Total Pool:{" "}
-                        <span className="font-sfmono text-accent-steel text-[11px] text-opacity-80">
-                          {formatCount(
-                            balances.emissionsData.photonTokens -
-                              claims.emissionsData.photonTokens
-                          )}
-                        </span>
-                        {"/"}
-                        <span className="font-sfmono text-accent-cement text-[11px] text-opacity-90">
-                          {formatCount(
-                            balances.emissionsData.baryonTokens -
-                              claims.emissionsData.baryonTokens
-                          )}
-                        </span>
-                      </div>
-                      <div className="text-[12px] text-gray-500 text-right">
-                        Token Ratio:{" "}
-                        <span className="font-sfmono text-gray-400 text-[11px]">
-                          {balances.emissionsData.baryonTokens -
-                            claims.emissionsData.baryonTokens >
-                          0
-                            ? (
-                                (balances.emissionsData.photonTokens -
-                                  claims.emissionsData.photonTokens) /
-                                (balances.emissionsData.baryonTokens -
-                                  claims.emissionsData.baryonTokens)
-                              ).toFixed(3)
-                            : "0.000"}
-                        </span>{" "}
-                        &nbsp;
-                        <span className="relative group">
-                          <span className="cursor-pointer">
-                            &#9432;
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              Ratio PHOTON:BARYON in the prediction pool
-                            </span>
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <Inverter
-                    wallet={wallet}
-                    antiBalance={antiBalance}
-                    proBalance={proBalance}
-                    antiUsage={antiUsage}
-                    proUsage={proUsage}
-                    baryonBalance={baryonBalance}
-                    photonBalance={photonBalance}
-                    disabled={!wallet.connected}
-                    BASE_URL={BASE_URL}
-                    onClaimSubmitted={handleClaimSubmitted}
-                    clearFields={clearFields}
-                    antiData={antiData}
-                    proData={proData}
-                    isMobile={isMobile}
-                    bags={bags}
-                    inactive={!inactive || dead}
-                    truth={!inactive || dead ? [] : truth}
-                  />
-                  <p
-                    className={`mt-1 text-sm font-sfmono ${
-                      wallet.connected
-                        ? "text-gray-300"
-                        : "text-red-500 animate-pulse"
-                    }`}
-                  >
-                    {wallet.connected
-                      ? ""
-                      : "Connect your wallet to enable reclaims"}
-                  </p>
-                </div>
+                <Inverter
+                  wallet={wallet}
+                  antiBalance={antiBalance}
+                  proBalance={proBalance}
+                  antiUsage={antiUsage}
+                  proUsage={proUsage}
+                  baryonBalance={baryonBalance}
+                  photonBalance={photonBalance}
+                  disabled={!wallet.connected}
+                  BASE_URL={BASE_URL}
+                  onClaimSubmitted={handleClaimSubmitted}
+                  clearFields={clearFields}
+                  antiData={antiData}
+                  proData={proData}
+                  isMobile={isMobile}
+                  bags={bags}
+                  inactive={!inactive || dead}
+                  truth={!inactive || dead ? [] : truth}
+                  balances={balances}
+                  claims={claims}
+                />
               </div>
             )}
           </div>
-          {showCollider && (
+          {showCollider && !process.env.NEXT_PUBLIC_LIGHT && (
             <div
               className={`xl:col-span-3 mx-2 md:mx-0 ${
                 isMetaLoading || isMobile
@@ -816,7 +699,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               )}
             </div>
           )}
-          {!showCollider && (
+          {!showCollider && !process.env.NEXT_PUBLIC_LIGHT && (
             <div
               className={`xl:col-span-3 mx-2 md:mx-0 ${
                 isMetaLoading || isMobile

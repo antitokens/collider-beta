@@ -1738,7 +1738,7 @@ const Collider = ({
       </div>
 
       {/* User Distribution */}
-      {userDistribution && (
+      {userDistribution && !process.env.NEXT_PUBLIC_LIGHT && (
         <div className="bg-dark-card p-4 rounded w-full">
           <div className="mb-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
             <div className="flex flex-col items-start gap-1/2 w-full">
