@@ -692,7 +692,7 @@ const DashboardInverter = ({
                 size: 12,
               },
             },
-            grid: { color: "#d3d3d322" },
+            grid: { display: !start, color: "#d3d3d322" },
           },
           y: {
             type: "logarithmic",

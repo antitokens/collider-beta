@@ -296,7 +296,7 @@ export const formatCount = (_value, _flag = undefined, _fill = 4) => {
     // For millions, fill-2 digits (accounting for 'm' and one leading zero + decimal)
     const digits = _fill - Math.abs(_value).toString().split(".")[0].length;
     const scaled = value / 1e6;
-    console.log(_fill)
+    console.log(_fill);
     const formatted = scaled
       .toFixed(digits >= 0 ? digits : 1)
       .replace(/^0+/, "0");
@@ -426,6 +426,22 @@ export const shortenTick = (tick, useBinning) => {
   return tick;
 };
 
+export const dateToLocal = (date, useBinning) => {
+  return useBinning !== "daily"
+    ? date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        hour12: true,
+      })
+    : date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+};
+
 export const copyText = debounce(async (text) => {
   try {
     await navigator.clipboard.writeText(text);
@@ -447,6 +463,15 @@ export function detectBinningStrategy(dates) {
   if (hourDiff <= 144) return "12-hour";
   return "daily";
 }
+
+export const findBinForTimestamp = (timestamp, bins) => {
+  // Find the first bin whose date is less than or equal to our timestamp
+  return (
+    bins.findLast((bin) => {
+      return bin <= timestamp;
+    }) || bins[0]
+  ); // Default to first bin if timestamp is before all bins
+};
 
 export const defaultToken = {
   priceUsd: 1.0,
