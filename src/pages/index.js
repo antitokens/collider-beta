@@ -1202,13 +1202,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           >
             {!isMetaLoading ? (
               <div className="flex flex-col w-full lg:w-3/4">
-                <div
-                  className={
-                    inactive
-                      ? "hidden"
-                      : "flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card w-full border-x border-b border-t border-gray-800 rounded-t-lg"
-                  }
-                >
+                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card w-full border-x border-b border-t border-gray-800 rounded-t-lg">
                   {predictionHistoryChartData && (
                     <div className={`flex justify-between items-center w-full`}>
                       <h2 className="text-xl text-gray-300 text-left font-medium">
