@@ -292,7 +292,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               ? "10px 'SF Mono Round'"
               : "12px 'SF Mono Round'";
             ctx.translate(
-              xPosition - (isMobile ? 18.25 : 20.25),
+              xPosition - (isMobile ? 28.25 : 30.25),
               yPosition + 9.5
             );
             ctx.rotate(0);
@@ -1016,7 +1016,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 size: isMobile ? 10 : 12,
               },
               minRotation: 0,
-              maxRotation: 0,
+              maxRotation: 90,
               color: "#d3d3d399",
               padding: isMobile ? 10 : 15,
             },
