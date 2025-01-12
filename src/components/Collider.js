@@ -660,31 +660,18 @@ const Collider = ({
               <span className="cursor-pointer">
                 &#9432;
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  {isMobile
-                    ? `Prediction market opening date & time: ${
-                        config.startTime !== "-"
-                          ? !isMobile
-                            ? convertToLocaleTime(
-                                config.startTime,
-                                isMobile
-                              ).split(",")[0]
-                            : convertToLocaleTime(config.startTime, isMobile)
-                          : "-"
-                      }`
-                    : "Prediction market opening date & time"}
+                  {`Prediction market opening date & time: ${
+                    config.startTime !== "-"
+                      ? convertToLocaleTime(config.startTime, isMobile)
+                      : "-"
+                  }`}
                 </span>
               </span>
             </span>{" "}
-            &nbsp;Open:{" "}
+            &nbsp;Start:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {config.startTime !== "-"
-                ? isMobile
-                  ? convertToLocaleTime(config.startTime, isMobile).split(
-                      ","
-                    )[0]
-                  : convertToLocaleTime(config.startTime, isMobile).split(
-                      ","
-                    )[0]
+                ? convertToLocaleTime(config.startTime, isMobile).split(",")[0]
                 : "-"}
             </span>{" "}
           </div>
@@ -692,9 +679,7 @@ const Collider = ({
             Close:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {config.endTime !== "-"
-                ? isMobile
-                  ? convertToLocaleTime(config.endTime, isMobile).split(",")[0]
-                  : convertToLocaleTime(config.endTime, isMobile).split(",")[0]
+                ? convertToLocaleTime(config.endTime, isMobile).split(",")[0]
                 : "-"}
             </span>{" "}
             &nbsp;
@@ -702,18 +687,11 @@ const Collider = ({
               <span className="cursor-pointer">
                 &#9432;
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  {isMobile
-                    ? `Prediction market closing date & time: ${
-                        config.endTime !== "-"
-                          ? !isMobile
-                            ? convertToLocaleTime(
-                                config.endTime,
-                                isMobile
-                              ).split(",")[0]
-                            : convertToLocaleTime(config.endTime, isMobile)
-                          : "-"
-                      }`
-                    : "Prediction market closing date & time"}
+                  {`Prediction market closing date & time: ${
+                    config.endTime !== "-"
+                      ? convertToLocaleTime(config.endTime, isMobile)
+                      : "-"
+                  }`}
                 </span>
               </span>
             </span>

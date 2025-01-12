@@ -342,33 +342,24 @@ const Inverter = ({
                   {isMobile
                     ? `Reclaim opening date & time: ${
                         balances.endTime !== "-" && balances.startTime !== "-"
-                          ? isMobile
-                            ? convertToLocaleTime(
-                                balances.startTime,
-                                isMobile
-                              ).split(",")[0]
-                            : convertToLocaleTime(balances.startTime, isMobile)
+                          ? convertToLocaleTime(balances.startTime, isMobile)
                           : "-"
                       }`
                     : "Reclaim opening date & time"}
                 </span>
               </span>
             </span>{" "}
-            &nbsp;Open:{" "}
+            &nbsp;Start:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {balances.endTime !== "-"
-                ? isMobile
-                  ? convertToLocaleTime(balances.endTime, isMobile).split(
-                      ","
-                    )[0]
-                  : convertToLocaleTime(balances.endTime, isMobile)
+                ? convertToLocaleTime(balances.endTime, isMobile)
                 : "-"}
             </span>{" "}
           </div>
           <div className="text-[12px] text-gray-500 text-right">
             Close:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
-              {balances.endTime !== "-" ? (isMobile ? "Never" : "Never") : "-"}
+              {balances.endTime !== "-" ? "Never" : "-"}
             </span>{" "}
             &nbsp;
             <span className="relative group">
@@ -377,11 +368,7 @@ const Inverter = ({
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {isMobile
                     ? `Reclaim closing date & time: ${
-                        balances.endTime !== "-"
-                          ? !isMobile
-                            ? "Never"
-                            : "Never"
-                          : "-"
+                        balances.endTime !== "-" ? "Never" : "-"
                       }`
                     : "Reclaim closing date & time"}
                 </span>

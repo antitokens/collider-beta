@@ -19,6 +19,7 @@ import {
   calculateEqualisation,
   implementEqualisation,
 } from "../utils/equaliserAlpha";
+import Metadata from "../components/Metadata";
 import Navbar from "../components/TopNavbar";
 import Footer from "../components/BottomFooter";
 import BuyTokenModal from "../components/BuyTokenModal";
@@ -43,6 +44,7 @@ import {
   dateToLocal,
   findBinForTimestamp,
   parseCustomDate,
+  TimeTicker,
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
@@ -841,7 +843,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   labels:
                     balances.startTime === "-" || balances.endTime === "-"
                       ? []
-                      : ["Open", "Close"],
+                      : ["Start", "Close"],
                   useBinning: useBinning,
                   isMobile: isMobile,
                 },
@@ -1057,12 +1059,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               },
             },
             min: 0,
-            max: function (ctx) {
-              const maxValue = Math.max(
-                ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
-              );
-              return maxValue <= 50 ? 50 : 100;
-            },
+            max: inactive
+              ? function (ctx) {
+                  const maxValue = Math.max(
+                    ...ctx.chart.data.datasets.flatMap(
+                      (dataset) => dataset.data
+                    )
+                  );
+                  return maxValue <= 50 ? 50 : 100;
+                }
+              : 100,
           },
           y2: {
             position: "right",
@@ -1101,12 +1107,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               },
             },
             min: 0,
-            max: function (ctx) {
-              const maxValue = Math.max(
-                ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
-              );
-              return maxValue <= 50 ? 50 : 100;
-            },
+            max: inactive
+              ? function (ctx) {
+                  const maxValue = Math.max(
+                    ...ctx.chart.data.datasets.flatMap(
+                      (dataset) => dataset.data
+                    )
+                  );
+                  return maxValue <= 50 ? 50 : 100;
+                }
+              : 100,
           },
         },
       },
@@ -1217,84 +1227,96 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               <div className="flex flex-col w-full lg:w-3/4">
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card w-full border-x border-b border-t border-gray-800 rounded-t-lg">
                   {predictionHistoryChartData && (
-                    <div className={`flex justify-between items-center w-full`}>
-                      <h2 className="text-xl text-gray-300 text-left font-medium">
-                        Current Trend&nbsp;
-                        <span className="font-grotesk">
-                          <span className="relative group">
-                            <span className="cursor-pointer text-sm text-gray-500">
-                              &nbsp;&#9432;
-                            </span>
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              {`Displays the global expectation of the outcome over time`}
-                            </span>
-                          </span>
-                        </span>
-                      </h2>
+                    <div className={`flex flex-col w-full`}>
                       <div
-                        className={`flex gap-1 mt-1 ml-auto font-sfmono ${
-                          loading ? "hidden" : "ml-auto"
-                        }`}
+                        className={`flex justify-between items-center w-full`}
                       >
-                        <div
-                          className={
-                            predictionHistoryTimeframe === "1H"
-                              ? "timeframe-pill-active"
-                              : "timeframe-pill"
-                          }
-                          onClick={() => {}}
-                        >
-                          <span className="text-xs opacity-75">1H</span>
+                        <div className="flex flex-row">
+                          <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          </h2>
+                          <div className="flex flex-row items-center">
+                            <TimeTicker
+                              fontSize={isMobile ? 12 : 12}
+                              isMobile={isMobile}
+                            />
+                            <div className="font-grotesk">
+                              <span className="relative group">
+                                <span className="cursor-pointer text-xs text-gray-500">
+                                  &#9432;
+                                </span>
+                                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                                  {`Displays the global expectation of the outcome over time`}
+                                </span>
+                              </span>
+                            </div>
+                          </div>
                         </div>
                         <div
-                          className={
-                            predictionHistoryTimeframe === "6H"
-                              ? "timeframe-pill-active"
-                              : "timeframe-pill"
-                          }
-                          onClick={() => {}}
+                          className={`flex gap-1 mt-1 ml-auto font-sfmono ${
+                            loading ? "hidden" : "ml-auto"
+                          }`}
                         >
-                          <span className="text-xs opacity-75">6H</span>
-                        </div>
-                        <div
-                          className={
-                            predictionHistoryTimeframe === "12H"
-                              ? "timeframe-pill-active"
-                              : "timeframe-pill"
-                          }
-                          onClick={() => {}}
-                        >
-                          <span className="text-xs opacity-75">12H</span>
-                        </div>
-                        <div
-                          className={
-                            predictionHistoryTimeframe === "1D"
-                              ? "timeframe-pill-active"
-                              : "timeframe-pill"
-                          }
-                          onClick={() => {}}
-                        >
-                          <span className="text-xs opacity-75">1D</span>
-                        </div>
-                        <div
-                          className={
-                            predictionHistoryTimeframe === "1W"
-                              ? "timeframe-pill-active"
-                              : "timeframe-pill"
-                          }
-                          onClick={() => {}}
-                        >
-                          <span className="text-xs opacity-75">1W</span>
-                        </div>
-                        <div
-                          className={
-                            predictionHistoryTimeframe === "ALL"
-                              ? "timeframe-pill-active"
-                              : "timeframe-pill"
-                          }
-                          onClick={() => {}}
-                        >
-                          <span className="text-xs">ALL</span>
+                          <div
+                            className={
+                              predictionHistoryTimeframe === "1H"
+                                ? "timeframe-pill-active"
+                                : "timeframe-pill"
+                            }
+                            onClick={() => {}}
+                          >
+                            <span className="text-xs opacity-75">1H</span>
+                          </div>
+                          <div
+                            className={
+                              predictionHistoryTimeframe === "6H"
+                                ? "timeframe-pill-active"
+                                : "timeframe-pill"
+                            }
+                            onClick={() => {}}
+                          >
+                            <span className="text-xs opacity-75">6H</span>
+                          </div>
+                          <div
+                            className={
+                              predictionHistoryTimeframe === "12H"
+                                ? "timeframe-pill-active"
+                                : "timeframe-pill"
+                            }
+                            onClick={() => {}}
+                          >
+                            <span className="text-xs opacity-75">12H</span>
+                          </div>
+                          <div
+                            className={
+                              predictionHistoryTimeframe === "1D"
+                                ? "timeframe-pill-active"
+                                : "timeframe-pill"
+                            }
+                            onClick={() => {}}
+                          >
+                            <span className="text-xs opacity-75">1D</span>
+                          </div>
+                          <div
+                            className={
+                              predictionHistoryTimeframe === "1W"
+                                ? "timeframe-pill-active"
+                                : "timeframe-pill"
+                            }
+                            onClick={() => {}}
+                          >
+                            <span className="text-xs opacity-75">1W</span>
+                          </div>
+                          <div
+                            className={
+                              predictionHistoryTimeframe === "ALL"
+                                ? "timeframe-pill-active"
+                                : "timeframe-pill"
+                            }
+                            onClick={() => {}}
+                          >
+                            <span className="text-xs">ALL</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1306,6 +1328,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     data={predictionHistoryChartData}
                     options={predictionHistoryChartData.options}
                     plugins={predictionHistoryChartData.plugins}
+                  />
+                </div>
+                <div className="mb-8 mt-0">
+                  <Metadata
+                    type="Binary"
+                    oracle="Milton AI Agent"
+                    truth="Unknown"
+                    tellers="ChatGPT-o1, Claude Sonnet 3.5, Grok 2"
+                    isMobile={isMobile}
                   />
                 </div>
               </div>

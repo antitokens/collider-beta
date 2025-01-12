@@ -1,8 +1,40 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import { BadgeCheck, CircleAlert } from "lucide-react";
 import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
+
+// Convert month abbreviation to number
+const months = {
+  Jan: 0,
+  Feb: 1,
+  Mar: 2,
+  Apr: 3,
+  May: 4,
+  Jun: 5,
+  Jul: 6,
+  Aug: 7,
+  Sep: 8,
+  Oct: 9,
+  Nov: 10,
+  Dec: 11,
+};
+
+// Convert number to month abbreviation
+const monthsReverse = {
+  1: "Jan",
+  2: "Feb",
+  3: "Mar",
+  4: "Apr",
+  5: "May",
+  6: "Jun",
+  7: "Jul",
+  8: "Aug",
+  9: "Sep",
+  10: "Oct",
+  11: "Nov",
+  12: "Dec",
+};
 
 export function parseCustomDate(dateStr) {
   // Check if date includes time
@@ -14,22 +46,6 @@ export function parseCustomDate(dateStr) {
   const time = hasTime ? parts[2] : null;
 
   const [month, day] = monthDay.split(" ");
-
-  // Convert month abbreviation to number
-  const months = {
-    Jan: 0,
-    Feb: 1,
-    Mar: 2,
-    Apr: 3,
-    May: 4,
-    Jun: 5,
-    Jul: 6,
-    Aug: 7,
-    Sep: 8,
-    Oct: 9,
-    Nov: 10,
-    Dec: 11,
-  };
 
   if (hasTime) {
     // Parse time if present
@@ -476,4 +492,61 @@ export const findBinForTimestamp = (timestamp, bins) => {
 export const defaultToken = {
   priceUsd: 1.0,
   marketCap: 1e9,
+};
+
+export const TimeTicker = ({
+  showSeconds = true,
+  className = "",
+  fontSize = 12,
+  isMobile = false,
+}) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatUTCDateTime = (date) => {
+    // Format date
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    const day = date.getUTCDate().toString().padStart(2, "0");
+
+    // Format time
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+    const seconds = date.getUTCSeconds().toString().padStart(2, "0");
+
+    const dateStr = isMobile
+      ? `${monthsReverse[Number(month)]} ${day}`
+      : `${year} ${monthsReverse[Number(month)]} ${day}`;
+    const timeStr = showSeconds
+      ? `${hours}:${minutes}:${seconds}`
+      : `${hours}:${minutes}`;
+
+    return `${dateStr} ${timeStr}`;
+  };
+
+  return (
+    <div
+      className={`flex items-center bg-transparent rounded-md px-3 py-1 ${className}`}
+    >
+      <div className="flex items-center space-x-2">
+        <span
+          className={`font-mono text-[${String(fontSize)}px] text-gray-300`}
+        >
+          {formatUTCDateTime(currentTime)}
+          <span
+            className={`ml-1 text-[${String(fontSize - 2)}px] text-gray-500`}
+          >
+            UTC
+          </span>
+        </span>
+      </div>
+    </div>
+  );
 };
