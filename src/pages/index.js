@@ -1,5 +1,6 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import Head from "next/head";
+import { Line } from "react-chartjs-2";
 import {
   ConnectionProvider,
   WalletProvider,
@@ -19,11 +20,9 @@ import {
   implementEqualisation,
 } from "../utils/equaliserAlpha";
 import Navbar from "../components/TopNavbar";
-import BinaryOrbit from "../components/BinaryOrbit";
 import Footer from "../components/BottomFooter";
-import DashboardCollider from "../components/DashboardCollider";
-import DashboardInverter from "../components/DashboardInverter";
 import BuyTokenModal from "../components/BuyTokenModal";
+import BinaryOrbit from "../components/BinaryOrbit";
 import {
   ANTI_TOKEN_MINT,
   PRO_TOKEN_MINT,
@@ -36,9 +35,14 @@ import {
   metadataInit,
   emptyGaussian,
   emptyBags,
-  convertToLocaleTime,
-  formatCount,
   defaultToken,
+  detectBinningStrategy,
+  generateGradientColor,
+  parseDateToISO,
+  shortenTick,
+  dateToLocal,
+  findBinForTimestamp,
+  parseCustomDate,
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
@@ -140,13 +144,167 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
-  const [dynamicsCurrent, setDynamicsCurrent] = useState([]);
-  const [dynamicsFinal, setDynamicsFinal] = useState([]);
+  const [loading, setLoading] = useState(isMetaLoading);
+  const [, setDynamicsCurrent] = useState([]);
+  const [, setDynamicsFinal] = useState([]);
   const [truth, setTruth] = useState([1, 0]); // ANTI-PRO
   const isMobile = useIsMobile();
+  const [predictionHistoryChartData, setPredictionHistoryChartData] =
+    useState(null);
+  const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
+    useState("1D");
 
-  const onRefresh = (state) => {
-    setRefresh(state);
+  useEffect(() => {
+    setLoading(isMetaLoading);
+  }, [isMetaLoading]);
+
+  const xAxisLabelPlugin = {
+    id: "xAxisLabel",
+    afterDraw: (chart, _, pluginOptions) => {
+      const { isMobile } = pluginOptions;
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      // Style settings for the label
+      ctx.font = isMobile ? "10px 'SF Mono Round'" : "12px 'SF Mono Round'";
+      ctx.fillStyle = "#666666";
+      ctx.textBaseline = "middle";
+      // Position calculation
+      // This puts the label near the end of x-axis, slightly above it
+      const x = xAxis.right - 15; // Shift left from the end
+      const y = xAxis.top + 7.5; // Shift up from the axis
+      // Draw the label
+      ctx.fillText("UTC", x, y);
+    },
+  };
+
+  const verticalLinesPlugin = {
+    id: "verticalLines",
+    beforeDatasetsDraw: (chart, _, pluginOptions) => {
+      const { markers, labels, useBinning, isMobile } = pluginOptions;
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      const yAxis = chart.scales.y;
+      const local = new Date();
+      markers.forEach((date, index) => {
+        const localDate = new Date(
+          new Date(date).getTime() + local.getTimezoneOffset() * 60000
+        );
+        const item = dateToLocal(localDate, useBinning);
+        const dateStr = shortenTick(item, useBinning);
+        // Find all occurrences of this date
+        const allIndices = chart.data.labels.reduce((acc, label, i) => {
+          if (label === dateStr) acc.push(i);
+          return acc;
+        }, []);
+        // If we have enough occurrences, use the one matching our index
+        let xPosition;
+        if (allIndices.length > index) {
+          xPosition = xAxis.getPixelForValue(allIndices[index]);
+        } else {
+          // Fallback to first occurrence if we don't have enough matches
+          xPosition = xAxis.getPixelForValue(allIndices[0]);
+        }
+        // Skip if we still don't have a valid position
+        if (!xPosition || isNaN(xPosition)) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(xPosition, yAxis.top);
+        ctx.lineTo(xPosition, yAxis.bottom);
+        ctx.strokeStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
+        ctx.stroke();
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
+        ctx.font = isMobile ? "10px 'SF Mono Round'" : "12px 'SF Mono Round'";
+        ctx.translate(
+          xPosition + 10 * (index > 0 ? 3 / 7 : -16 / 10),
+          yAxis.bottom - 5
+        );
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(labels[index], 0, 0);
+        ctx.restore();
+      });
+    },
+  };
+
+  const nowTimePlugin = {
+    id: "nowTime",
+    beforeDatasetsDraw: (chart, _, pluginOptions) => {
+      if (!chart?.ctx) return;
+      const { marker, values, labels, useBinning, isMobile } = pluginOptions;
+      if (!marker) return;
+      const ctx = chart.ctx;
+      const xAxis = chart.scales.x;
+      const yAxis = chart.scales.y;
+      if (!xAxis || !yAxis) return;
+
+      try {
+        marker.forEach((date, index) => {
+          if (!date) return;
+          const localDate = new Date(new Date(date).getTime());
+          const item = dateToLocal(localDate, useBinning);
+          const closestBin = findBinForTimestamp(
+            parseCustomDate(item),
+            values[0].map((value) =>
+              parseCustomDate(
+                value.replace(
+                  /(\w+ \d+), (\d+ [AP]M)/,
+                  `$1, ${new Date(date).getFullYear()}, $2`
+                )
+              )
+            )
+          );
+          const closestBinStr = dateToLocal(closestBin, useBinning);
+          const dateStr = shortenTick(closestBinStr, useBinning);
+          const allIndices =
+            chart.data.labels?.reduce((acc, label, i) => {
+              if (label === dateStr) acc.push(i);
+              return acc;
+            }, []) || [];
+
+          let xPosition;
+          if (allIndices.length > index) {
+            xPosition = xAxis.getPixelForValue(allIndices[index]);
+          } else if (allIndices.length > 0) {
+            xPosition = xAxis.getPixelForValue(allIndices[0]);
+          }
+
+          if (!xPosition || isNaN(xPosition)) return;
+          const yPosition = yAxis.getPixelForValue(
+            values[1][values[0].indexOf(dateStr)]
+          );
+          if (!yPosition || isNaN(yPosition)) return;
+          // Draw marker
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(xPosition, yPosition, isMobile ? 4 : 6, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(196, 196, 196, 0.5)";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(196, 196, 196, 0.8)";
+          ctx.stroke();
+
+          // Draw label if exists
+          if (labels?.[index]) {
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            ctx.fillStyle = "#c4c4c488";
+            ctx.font = isMobile
+              ? "10px 'SF Mono Round'"
+              : "12px 'SF Mono Round'";
+            ctx.translate(
+              xPosition - (isMobile ? 18.25 : 20.25),
+              yPosition + 9.5
+            );
+            ctx.rotate(0);
+            ctx.fillText(labels[index], 0, 0);
+          }
+          ctx.restore();
+        });
+      } catch (error) {
+        console.error("Plugin error:", error);
+        ctx?.restore();
+      }
+    },
   };
 
   const handlePredictionSubmitted = (state, event) => {
@@ -437,12 +595,542 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     }
   }, [wallet, dataUpdated, wallet.disconnecting]);
 
+  // Create a ref to store the chart instance
+  const chartRef = useRef(null);
+  useEffect(() => {
+    const useBinning = detectBinningStrategy([
+      balances.startTime,
+      balances.endTime,
+    ]);
+    if (useBinning) {
+      if (useBinning === "hourly") {
+        setPredictionHistoryTimeframe("1H");
+      }
+      if (useBinning === "6-hour") {
+        setPredictionHistoryTimeframe("6H");
+      }
+      if (useBinning === "12-hour") {
+        setPredictionHistoryTimeframe("12H");
+      }
+      if (useBinning === "daily") {
+        setPredictionHistoryTimeframe("1D");
+      }
+      if (useBinning === "unknown") {
+        setPredictionHistoryTimeframe("ALL");
+      }
+    }
+    const getSegmentColor = (context) => {
+      // Ensure we have a valid chart context
+      if (!context.chart?.ctx) {
+        return "rgba(128, 128, 128, 0.5)"; // Fallback color
+      }
+
+      const thisBin =
+        context.p0DataIndex +
+        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+          parseDateToISO(timestamp, useBinning)
+        );
+      const nextBin =
+        context.p1DataIndex +
+        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+          parseDateToISO(timestamp, useBinning)
+        );
+      const startValue = balances.eventsOverTime.cumulative.photon[thisBin];
+      const endValue = balances.eventsOverTime.cumulative.photon[nextBin];
+      const limits = [
+        Math.min(...balances.eventsOverTime.cumulative.photon),
+        Math.max(...balances.eventsOverTime.cumulative.photon),
+      ];
+      const currentTick = parseDateToISO(
+        balances.eventsOverTime.cumulative.timestamps[thisBin],
+        useBinning
+      );
+      const nextTick = parseDateToISO(
+        balances.eventsOverTime.cumulative.timestamps[nextBin],
+        useBinning
+      );
+      const nowTime = new Date().toISOString();
+
+      // Past segments should be null
+      if (nextTick <= balances.startTime) {
+        return "rgba(128, 128, 128, 0.5)";
+      }
+      // Future segments should be grey
+      if (currentTick > nowTime && nextTick > nowTime) {
+        return "rgba(128, 128, 128, 0.5)";
+      }
+      // Far future segments should be null
+      if (currentTick > balances.endTime) {
+        return "rgba(128, 0, 0, 0.0)";
+      }
+
+      // Create gradients only when we have valid coordinates
+      if (context.p0 && context.p1) {
+        // Segment crossing startTime - gradient from null to color
+        if (currentTick < balances.startTime && nextTick > balances.startTime) {
+          const gradient = context.chart.ctx.createLinearGradient(
+            context.p0.x,
+            context.p0.y,
+            context.p1.x,
+            context.p1.y
+          );
+          gradient.addColorStop(0, "rgba(128, 128, 128, 0.5)");
+          gradient.addColorStop(1, "rgba(3, 173, 252, 1)");
+          return gradient;
+        }
+
+        // Segment crossing nowTime - gradient from color to grey
+        if (currentTick < nowTime && nextTick > nowTime) {
+          const gradient = context.chart.ctx.createLinearGradient(
+            context.p0.x,
+            context.p0.y,
+            context.p1.x,
+            context.p1.y
+          );
+          gradient.addColorStop(
+            0,
+            generateGradientColor(
+              startValue,
+              limits[0],
+              limits[1],
+              [66, 255, 214, 1],
+              [3, 173, 252, 1]
+            )
+          );
+          gradient.addColorStop(1, "rgba(128, 128, 128, 0.5)");
+          return gradient;
+        }
+        // Past segments (both ticks before nowTime)
+        if (currentTick < nowTime && nextTick < nowTime) {
+          const gradient = context.chart.ctx.createLinearGradient(
+            context.p0.x,
+            context.p0.y,
+            context.p1.x,
+            context.p1.y
+          );
+          gradient.addColorStop(
+            0,
+            generateGradientColor(
+              startValue,
+              limits[0],
+              limits[1],
+              balances.eventsOverTime.cumulative.photon.findIndex(
+                (value) => value !== 0
+              ) >= nextBin
+                ? [128, 128, 128, 0.5]
+                : [66, 255, 214, 1],
+              [3, 173, 252, 1]
+            )
+          );
+          gradient.addColorStop(
+            1,
+            generateGradientColor(
+              endValue,
+              limits[0],
+              limits[1],
+              balances.eventsOverTime.cumulative.photon.findIndex(
+                (value) => value !== 0
+              ) >= nextBin
+                ? [128, 128, 128, 0.5]
+                : [66, 255, 214, 1],
+              [3, 173, 252, 1]
+            )
+          );
+          return gradient;
+        }
+      }
+
+      // Fallback
+      return "rgba(128, 128, 128, 0.5)";
+    };
+
+    // Prepare the chart data
+    const plotable = balances.eventsOverTime.cumulative.timestamps
+      .map((timestamp, index) => {
+        const dateISO = parseDateToISO(timestamp, useBinning);
+        if (dateISO) {
+          const pro = balances.eventsOverTime.cumulative.pro[index];
+          const anti = balances.eventsOverTime.cumulative.anti[index];
+          const total = pro + anti;
+          return total === 0 ? 50 : (pro / total) * 100;
+        }
+        return null;
+      })
+      .filter((value) => value !== null);
+    const labels = balances.eventsOverTime.cumulative.timestamps
+      .filter((timestamp) => {
+        const dateISO = parseDateToISO(timestamp, useBinning);
+        return dateISO;
+      })
+      .map((value) => shortenTick(value, useBinning));
+    const chartData = {
+      type: "line",
+      labels: labels,
+      datasets: [
+        {
+          label: "Yes",
+          data: plotable,
+          segment: {
+            borderCapStyle: "round",
+            borderColor: getSegmentColor,
+          },
+          tension: 0,
+          borderWidth: isMobile ? 2 : 4,
+          pointRadius: 0,
+          pointHoverRadius: isMobile ? 4 : 6,
+          hoverBackgroundColor: "#ffffff55",
+          hoverBorderColor: "#ffffffaa",
+        },
+        {
+          // Add a hidden dataset for the certainty tooltip
+          label: "Certainty",
+          data: balances.eventsOverTime.cumulative.timestamps
+            .map((timestamp, index) => {
+              const dateISO = parseDateToISO(timestamp, useBinning);
+              if (dateISO) {
+                const total =
+                  balances.eventsOverTime.cumulative.photon[index] +
+                  balances.eventsOverTime.cumulative.baryon[index];
+                return total > 0
+                  ? (balances.eventsOverTime.cumulative.photon[index] / total) *
+                      100
+                  : 50;
+              }
+              return null;
+            })
+            .filter((value) => value !== null),
+          display: false,
+          hidden: false,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          borderWidth: 0,
+          hoverBorderWidth: 0,
+          hoverBackgroundColor: "transparent",
+          hoverBorderColor: "transparent",
+        },
+      ],
+      plugins: [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin],
+      options: {
+        layout: {
+          padding: {
+            top: 20,
+          },
+        },
+        animation: {
+          duration: 0,
+        },
+        responsive: true,
+        interaction: {
+          intersect: false,
+          mode: "index",
+        },
+        plugins: {
+          verticalLines:
+            balances.startTime === "-" || balances.endTime === "-"
+              ? {
+                  markers: [],
+                  labels: [],
+                  useBinning: useBinning,
+                  isMobile: isMobile,
+                }
+              : {
+                  markers:
+                    balances.startTime === "-" || balances.endTime === "-"
+                      ? []
+                      : [balances.startTime, balances.endTime],
+                  labels:
+                    balances.startTime === "-" || balances.endTime === "-"
+                      ? []
+                      : ["Open", "Close"],
+                  useBinning: useBinning,
+                  isMobile: isMobile,
+                },
+          xAxisLabel: { isMobile: isMobile },
+          nowTime:
+            balances.startTime === "-" || balances.endTime === "-"
+              ? {
+                  marker: [],
+                  values: [[], []],
+                  labels: [],
+                  useBinning: useBinning,
+                  isMobile: isMobile,
+                }
+              : {
+                  marker:
+                    balances.startTime === "-" || balances.endTime === "-"
+                      ? []
+                      : [new Date()],
+                  values: [labels, plotable],
+                  labels:
+                    balances.startTime === "-" || balances.endTime === "-"
+                      ? []
+                      : ["Latest"],
+                  useBinning: useBinning,
+                  isMobile: isMobile,
+                },
+          datalabels: {
+            display: false,
+          },
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const value = context.raw;
+                const endIndex =
+                  balances.eventsOverTime.cumulative.timestamps.find(
+                    (timestamp) =>
+                      shortenTick(timestamp, useBinning) ===
+                      context.chart.data.labels[context.dataIndex]
+                  );
+                const currentTick = parseDateToISO(
+                  balances.eventsOverTime.cumulative.timestamps.find(
+                    (timestamp) =>
+                      shortenTick(timestamp, useBinning) ===
+                      context.chart.data.labels[context.dataIndex]
+                  ),
+                  useBinning
+                );
+                const nowTime = new Date();
+                if (
+                  new Date(currentTick).getTime() > nowTime.getTime() ||
+                  new Date(currentTick).getTime() <
+                    new Date(balances.startTime).getTime() ||
+                  new Date(currentTick).getTime() >
+                    new Date(balances.endTime).getTime() ||
+                  balances.eventsOverTime.cumulative.photon.findIndex(
+                    (value) => value !== 0
+                  ) > context.dataIndex
+                ) {
+                  return ` -`;
+                }
+                return ` ${value.toFixed(0).padStart(2)}% ${
+                  context.datasetIndex === 0 ? "expectation" : "uncertainty"
+                }`;
+              },
+              labelColor: (context) => {
+                const value = context.raw;
+                const limits = [
+                  Math.min(...balances.eventsOverTime.cumulative.photon),
+                  Math.max(...balances.eventsOverTime.cumulative.photon),
+                ];
+                const currentTick = parseDateToISO(
+                  balances.eventsOverTime.cumulative.timestamps.find(
+                    (timestamp) =>
+                      shortenTick(timestamp, useBinning) ===
+                      context.chart.data.labels[context.dataIndex]
+                  ),
+                  useBinning
+                );
+                const nowTime = new Date();
+                // Future segments should be grey
+                if (
+                  new Date(currentTick).getTime() > nowTime.getTime() ||
+                  new Date(currentTick).getTime() <
+                    new Date(balances.startTime).getTime() ||
+                  new Date(currentTick).getTime() >
+                    new Date(balances.endTime).getTime()
+                ) {
+                  return {
+                    backgroundColor: "#808080",
+                    borderColor: "#808080",
+                  };
+                }
+                return {
+                  backgroundColor: generateGradientColor(
+                    value,
+                    context.datasetIndex === 0 ? 0 : limits[0],
+                    context.datasetIndex === 0 ? 100 : limits[1],
+                    context.datasetIndex === 0
+                      ? balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                        ? [128, 128, 128, 1]
+                        : [255, 51, 0, 1]
+                      : balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                      ? [128, 128, 128, 1]
+                      : [66, 255, 214, 1],
+                    context.datasetIndex === 0
+                      ? balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                        ? [128, 128, 128, 1]
+                        : [0, 219, 84, 1]
+                      : balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                      ? [128, 128, 128, 1]
+                      : [3, 173, 252, 1]
+                  ),
+                  borderColor: generateGradientColor(
+                    value,
+                    context.datasetIndex === 0 ? 0 : limits[0],
+                    context.datasetIndex === 0 ? 100 : limits[1],
+                    context.datasetIndex === 0
+                      ? balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                        ? [128, 128, 128, 1]
+                        : [255, 51, 0, 1]
+                      : balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                      ? [128, 128, 128, 1]
+                      : [66, 255, 214, 1],
+                    context.datasetIndex === 0
+                      ? balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                        ? [128, 128, 128, 1]
+                        : [0, 219, 84, 1]
+                      : balances.eventsOverTime.cumulative.photon.findIndex(
+                          (value) => value !== 0
+                        ) > context.dataIndex
+                      ? [128, 128, 128, 1]
+                      : [3, 173, 252, 1]
+                  ),
+                };
+              },
+            },
+            bodyFont: {
+              family: "'SF Mono Round'",
+            },
+            titleFont: {
+              family: "'Space Grotesk'",
+              size: 14,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              display: true,
+              color: "#d3d3d309",
+            },
+            ticks: {
+              font: {
+                family: "'SF Mono Round'",
+                size: isMobile ? 10 : 12,
+              },
+              minRotation: 0,
+              maxRotation: 0,
+              color: "#d3d3d399",
+              padding: isMobile ? 10 : 15,
+            },
+          },
+          y: {
+            grid: {
+              display: true,
+              color: "rgba(255, 255, 255, 0.05)",
+            },
+            ticks: {
+              padding: isMobile ? 5 : 15,
+              callback: function (value) {
+                return value === 0
+                  ? "NO"
+                  : value === 100
+                  ? "YES"
+                  : value.toFixed(0) + "%";
+              },
+              stepSize: function (ctx) {
+                const maxValue = Math.max(
+                  ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
+                );
+                return maxValue * 0.1;
+              },
+              font: {
+                family: "'SF Mono Round'",
+                size: isMobile ? 10 : 12,
+              },
+              color: function (context) {
+                const value = context.tick.value;
+                return generateGradientColor(
+                  value,
+                  0,
+                  100,
+                  [255, 51, 0, 1],
+                  [0, 219, 84, 1]
+                );
+              },
+            },
+            min: 0,
+            max: function (ctx) {
+              const maxValue = Math.max(
+                ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
+              );
+              return maxValue <= 50 ? 50 : 100;
+            },
+          },
+          y2: {
+            position: "right",
+            grid: {
+              display: false,
+              color: "rgba(255, 255, 255, 0.1)",
+            },
+            ticks: {
+              padding: isMobile ? 5 : 15,
+              callback: function (value) {
+                return value === 0
+                  ? "NO"
+                  : value === 100
+                  ? "YES"
+                  : value.toFixed(0) + "%";
+              },
+              stepSize: function (ctx) {
+                const maxValue = Math.max(
+                  ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
+                );
+                return maxValue * 0.1;
+              },
+              font: {
+                family: "'SF Mono Round'",
+                size: isMobile ? 10 : 12,
+              },
+              color: function (context) {
+                const value = context.tick.value;
+                return generateGradientColor(
+                  value,
+                  0,
+                  100,
+                  [255, 51, 0, 1],
+                  [0, 219, 84, 1]
+                );
+              },
+            },
+            min: 0,
+            max: function (ctx) {
+              const maxValue = Math.max(
+                ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
+              );
+              return maxValue <= 50 ? 50 : 100;
+            },
+          },
+        },
+      },
+    };
+    setPredictionHistoryChartData(chartData);
+    // Force a chart update after the initial render
+    const timeoutId = setTimeout(() => {
+      if (chartRef.current) {
+        chartRef.current.update("none"); // Update without animation
+      }
+    }, 0);
+
+    // Cleanup
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [balances]);
+
   return (
     <>
       <section className="min-h-screen pt-16 md:pt-20 flex flex-col items-center relative mt-10 mb-10">
         {/* Hero Section */}
-        <div className="max-w-7xl w-full mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center rounded-md">
-          <div className="flex items-center gap-2">
+        <div className="w-full max-w-7xl px-4 mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center rounded-md">
+          <div className="flex items-center gap-2 flex-wrap md:flex-nowrap justify-center md:justify-start">
             <div>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -465,68 +1153,170 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-[70%,30%] items-center gap-8 max-w-7xl mx-auto px-4">
-          {/* Hero Text */}
-          <div>
-            <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300 font-bold font-outfit">
-              PREDICT WITH
-              <br />
-              <span className="text-accent-primary">$ANTI</span> and{" "}
-              <span className="text-accent-secondary">$PRO</span>
-            </h1>
-            <p className="font-open font-medium text-xl md:text-[1.35rem] text-gray-300 mb-6">
-              Experience the future of prediction markets with Antitoken
-            </p>
-            <button
-              className="bg-accent-primary hover:opacity-90 text-gray-100 px-8 py-3 rounded-full text-lg font-semibold flex items-center gap-2"
-              onClick={() => setShowBuyTokensModal(true)}
-            >
-              <span>Buy Tokens</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-gray-100 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Hero Image */}
-          <div className="flex justify-center relative">
-            <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
-            <img
-              src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
-              alt="Antitoken Logo"
-              className="w-72 h-72 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
-            />
-          </div>
-        </div>
-
-        {/* Collider Sections Toggle */}
-        <div
-          className={
-            process.env.NEXT_PUBLIC_LIGHT
-              ? ``
-              : `grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto`
-          }
-        >
+        <div className={`flex flex-col items-center w-full max-w-7xl px-4`}>
           <div
-            className={
-              process.env.NEXT_PUBLIC_LIGHT
-                ? ``
-                : `lg:col-span-1 xl:col-span-2 mx-2 md:mx-0`
-            }
+            className={`flex flex-col md:flex-row items-center justify-between mb-12 md:mb-0`}
           >
+            {/* Hero Text */}
+            <div className="w-full md:w-1/2 text-center md:text-left">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
+                Predict with <span className="text-accent-primary">$ANTI</span>{" "}
+                and <span className="text-accent-secondary">$PRO</span>
+              </h1>
+              <button
+                className="bg-accent-primary hover:opacity-90 text-gray-100 px-8 py-3 rounded-full text-lg font-semibold flex items-center gap-2"
+                onClick={() => setShowBuyTokensModal(true)}
+              >
+                <span>Buy Tokens</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-gray-100 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Hero Image */}
+            <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0 relative">
+              <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
+              <img
+                src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
+                alt="Antitoken Logo"
+                className="w-48 h-48 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+              />
+            </div>
+          </div>
+          <div
+            className={`w-full mt-4 md:mt-4 lg:mt-8 flex flex-col lg:flex-row lg:gap-4 ${
+              isMetaLoading ? "items-center" : ""
+            }`}
+          >
+            {!isMetaLoading ? (
+              <div className="flex flex-col w-full lg:w-3/4">
+                <div
+                  className={
+                    inactive
+                      ? "hidden"
+                      : "flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card w-full border-x border-b border-t border-gray-800 rounded-t-lg"
+                  }
+                >
+                  {predictionHistoryChartData && (
+                    <div className={`flex justify-between items-center w-full`}>
+                      <h2 className="text-xl text-gray-300 text-left font-medium">
+                        Current Trend&nbsp;
+                        <span className="font-grotesk">
+                          <span className="relative group">
+                            <span className="cursor-pointer text-sm text-gray-500">
+                              &nbsp;&#9432;
+                            </span>
+                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                              {`Displays the global expectation of the outcome over time`}
+                            </span>
+                          </span>
+                        </span>
+                      </h2>
+                      <div
+                        className={`flex gap-1 mt-1 ml-auto font-sfmono ${
+                          loading ? "hidden" : "ml-auto"
+                        }`}
+                      >
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "1H"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">1H</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "6H"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">6H</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "12H"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">12H</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "1D"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">1D</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "1W"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">1W</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "ALL"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs">ALL</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col items-center mb-8 lg:mb-4 border-b border-x border-gray-800 rounded-b-lg w-full bg-black">
+                  <Line
+                    ref={chartRef}
+                    data={predictionHistoryChartData}
+                    options={predictionHistoryChartData.options}
+                    plugins={predictionHistoryChartData.plugins}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center px-4 pt-16 pb-32 lg:py-8 w-1/4 lg:w-3/4">
+                <div className="flex flex-col items-center w-4 lg:w-8">
+                  <BinaryOrbit
+                    size={120}
+                    orbitRadius={40}
+                    particleRadius={15}
+                    padding={5}
+                    invert={false}
+                  />
+                </div>
+              </div>
+            )}
             {showCollider ? (
-              <div className="text-center mt-20">
+              <div>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
                     Collider
@@ -593,13 +1383,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   }}
                   isMobile={isMobile}
                   bags={bags}
-                  balances={balances}
                   inactive={inactive || dead}
                   isMetaLoading={isMetaLoading}
                 />
               </div>
             ) : (
-              <div className="mt-20">
+              <div>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
                     Inverter
@@ -664,78 +1453,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               </div>
             )}
           </div>
-          {showCollider && !process.env.NEXT_PUBLIC_LIGHT && (
-            <div
-              className={`xl:col-span-3 mx-2 md:mx-0 ${
-                isMetaLoading || isMobile
-                  ? "flex justify-center items-center min-h-[600px]"
-                  : ""
-              }`}
-            >
-              {!isMetaLoading ? (
-                <DashboardCollider
-                  emissionsData={balances.emissionsData}
-                  collisionsData={balances.collisionsData}
-                  eventsOverTime={balances.eventsOverTime}
-                  colliderDistribution={balances.colliderDistribution}
-                  totalDistribution={balances.totalDistribution}
-                  onRefresh={onRefresh}
-                  connected={wallet.connected}
-                  dynamics={dynamicsCurrent}
-                  holders={bags.wallets}
-                  isMobile={isMobile}
-                  schedule={[balances.startTime, balances.endTime]}
-                />
-              ) : (
-                <div className="flex justify-center items-center w-full">
-                  <BinaryOrbit
-                    size={isMobile ? 300 : 300}
-                    orbitRadius={isMobile ? 80 : 80}
-                    particleRadius={isMobile ? 20 : 20}
-                    padding={10}
-                    invert={false}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-          {!showCollider && !process.env.NEXT_PUBLIC_LIGHT && (
-            <div
-              className={`xl:col-span-3 mx-2 md:mx-0 ${
-                isMetaLoading || isMobile
-                  ? "flex justify-center items-center min-h-[600px]"
-                  : ""
-              }`}
-            >
-              {!isMetaLoading ? (
-                <DashboardInverter
-                  emissionsData={claims.emissionsData}
-                  collisionsData={claims.collisionsData}
-                  eventsOverTime={claims.eventsOverTime}
-                  colliderDistribution={balances.colliderDistribution}
-                  totalDistribution={balances.totalDistribution}
-                  onRefresh={onRefresh}
-                  connected={wallet.connected}
-                  dynamics={dynamicsFinal}
-                  holders={bags.wallets}
-                  isMobile={isMobile}
-                  schedule={[claims.startTime, claims.endTime]}
-                  start={!inactive}
-                />
-              ) : (
-                <div className="flex justify-center items-center w-full">
-                  <BinaryOrbit
-                    size={isMobile ? 300 : 300}
-                    orbitRadius={isMobile ? 80 : 80}
-                    particleRadius={isMobile ? 20 : 20}
-                    padding={10}
-                    invert={false}
-                  />
-                </div>
-              )}
-            </div>
-          )}
         </div>
+
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">
             Ready to dive in?

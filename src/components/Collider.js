@@ -15,21 +15,13 @@ import {
   emptyMetadata,
   formatCount,
   formatPrecise,
-  generateGradientColor,
   convertToLocaleTime,
-  parseDateToISO,
-  shortenTick,
   defaultToken,
   copyText,
-  detectBinningStrategy,
-  findBinForTimestamp,
-  parseCustomDate,
-  dateToLocal,
 } from "../utils/utils";
 Chart.register(...registerables);
 
 /* Collider Container */
-
 const Collider = ({
   wallet,
   antiBalance,
@@ -47,7 +39,6 @@ const Collider = ({
   config = emptyConfig,
   isMobile = false,
   bags = emptyBags,
-  balances = emptyMetadata,
   inactive = true,
   isMetaLoading = true,
 }) => {
@@ -59,8 +50,6 @@ const Collider = ({
   const [userDistribution, setUserDistribution] = useState(null);
   const [pastDistribution, setPastDistribution] = useState(null);
   const [totalDistribution, setTotalDistribution] = useState(null);
-  const [predictionHistoryChartData, setPredictionHistoryChartData] =
-    useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
   const [dollarBet, setDollarBet] = useState(0);
@@ -68,157 +57,11 @@ const Collider = ({
   const [gain, setGain] = useState(0);
   const [newGain, setNewGain] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
-  const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
-    useState("1D");
   const sliderRef = useRef(null);
 
   useEffect(() => {
     setLoading(isMetaLoading);
   }, [isMetaLoading]);
-
-  const xAxisLabelPlugin = {
-    id: "xAxisLabel",
-    afterDraw: (chart) => {
-      const ctx = chart.ctx;
-      const xAxis = chart.scales.x;
-      // Style settings for the label
-      ctx.font = "8px 'SF Mono Round'";
-      ctx.fillStyle = "#666666";
-      ctx.textBaseline = "middle";
-      // Position calculation
-      // This puts the label near the end of x-axis, slightly above it
-      const x = xAxis.right - 15; // Shift left from the end
-      const y = xAxis.top + 7.5; // Shift up from the axis
-      // Draw the label
-      ctx.fillText("UTC", x, y);
-    },
-  };
-
-  const verticalLinesPlugin = {
-    id: "verticalLines",
-    beforeDatasetsDraw: (chart, _, pluginOptions) => {
-      const { markers, labels, useBinning } = pluginOptions;
-      const ctx = chart.ctx;
-      const xAxis = chart.scales.x;
-      const yAxis = chart.scales.y;
-      const local = new Date();
-      markers.forEach((date, index) => {
-        const localDate = new Date(
-          new Date(date).getTime() + local.getTimezoneOffset() * 60000
-        );
-        const item = dateToLocal(localDate, useBinning);
-        const dateStr = shortenTick(item, useBinning);
-        // Find all occurrences of this date
-        const allIndices = chart.data.labels.reduce((acc, label, i) => {
-          if (label === dateStr) acc.push(i);
-          return acc;
-        }, []);
-        // If we have enough occurrences, use the one matching our index
-        let xPosition;
-        if (allIndices.length > index) {
-          xPosition = xAxis.getPixelForValue(allIndices[index]);
-        } else {
-          // Fallback to first occurrence if we don't have enough matches
-          xPosition = xAxis.getPixelForValue(allIndices[0]);
-        }
-        // Skip if we still don't have a valid position
-        if (!xPosition || isNaN(xPosition)) return;
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(xPosition, yAxis.top);
-        ctx.lineTo(xPosition, yAxis.bottom);
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
-        ctx.stroke();
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillStyle = index === 0 ? "#c4c4c488" : "#c4c4c488";
-        ctx.font = "10px 'SF Mono Round'";
-        ctx.translate(
-          xPosition + 10 * (index > 0 ? 3 / 7 : -13 / 10),
-          yAxis.bottom - 5
-        );
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText(labels[index], 0, 0);
-        ctx.restore();
-      });
-    },
-  };
-
-  const nowTimePlugin = {
-    id: "nowTime",
-    beforeDatasetsDraw: (chart, _, pluginOptions) => {
-      if (!chart?.ctx) return;
-      const { marker, values, labels, useBinning } = pluginOptions;
-      if (!marker) return;
-      const ctx = chart.ctx;
-      const xAxis = chart.scales.x;
-      const yAxis = chart.scales.y;
-      if (!xAxis || !yAxis) return;
-
-      try {
-        marker.forEach((date, index) => {
-          if (!date) return;
-          const localDate = new Date(new Date(date).getTime());
-          const item = dateToLocal(localDate, useBinning);
-          const closestBin = findBinForTimestamp(
-            parseCustomDate(item),
-            values[0].map((value) =>
-              parseCustomDate(
-                value.replace(
-                  /(\w+ \d+), (\d+ [AP]M)/,
-                  `$1, ${new Date(date).getFullYear()}, $2`
-                )
-              )
-            )
-          );
-          const closestBinStr = dateToLocal(closestBin, useBinning);
-          const dateStr = shortenTick(closestBinStr, useBinning);
-          const allIndices =
-            chart.data.labels?.reduce((acc, label, i) => {
-              if (label === dateStr) acc.push(i);
-              return acc;
-            }, []) || [];
-
-          let xPosition;
-          if (allIndices.length > index) {
-            xPosition = xAxis.getPixelForValue(allIndices[index]);
-          } else if (allIndices.length > 0) {
-            xPosition = xAxis.getPixelForValue(allIndices[0]);
-          }
-
-          if (!xPosition || isNaN(xPosition)) return;
-          const yPosition = yAxis.getPixelForValue(
-            values[1][values[0].indexOf(dateStr)]
-          );
-          if (!yPosition || isNaN(yPosition)) return;
-          // Draw marker
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(xPosition, yPosition, 4, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(196, 196, 196, 0.5)";
-          ctx.fill();
-          ctx.strokeStyle = "rgba(196, 196, 196, 0.8)";
-          ctx.stroke();
-
-          // Draw label if exists
-          if (labels?.[index]) {
-            ctx.textAlign = "left";
-            ctx.textBaseline = "top";
-            ctx.fillStyle = "#c4c4c488";
-            ctx.font = "10px 'SF Mono Round'";
-            ctx.translate(xPosition - 18.25, yPosition + 7.5);
-            ctx.rotate(0);
-            ctx.fillText(labels[index], 0, 0);
-          }
-          ctx.restore();
-        });
-      } catch (error) {
-        console.error("Plugin error:", error);
-        ctx?.restore();
-      }
-    },
-  };
 
   useEffect(() => {
     if (sliderRef.current) {
@@ -229,479 +72,6 @@ const Collider = ({
       handleSliderInput(percentage);
     }
   }, []);
-
-  // Create a ref to store the chart instance
-  const chartRef = useRef(null);
-  useEffect(() => {
-    const useBinning = detectBinningStrategy([
-      config.startTime,
-      config.endTime,
-    ]);
-    if (useBinning) {
-      if (useBinning === "hourly") {
-        setPredictionHistoryTimeframe("1H");
-      }
-      if (useBinning === "6-hour") {
-        setPredictionHistoryTimeframe("6H");
-      }
-      if (useBinning === "12-hour") {
-        setPredictionHistoryTimeframe("12H");
-      }
-      if (useBinning === "daily") {
-        setPredictionHistoryTimeframe("1D");
-      }
-      if (useBinning === "unknown") {
-        setPredictionHistoryTimeframe("ALL");
-      }
-    }
-    const getSegmentColor = (context) => {
-      // Ensure we have a valid chart context
-      if (!context.chart?.ctx) {
-        return "rgba(128, 128, 128, 0.5)"; // Fallback color
-      }
-
-      const thisBin =
-        context.p0DataIndex +
-        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
-          parseDateToISO(timestamp, useBinning)
-        );
-      const nextBin =
-        context.p1DataIndex +
-        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
-          parseDateToISO(timestamp, useBinning)
-        );
-      const startValue = balances.eventsOverTime.cumulative.photon[thisBin];
-      const endValue = balances.eventsOverTime.cumulative.photon[nextBin];
-      const limits = [
-        Math.min(...balances.eventsOverTime.cumulative.photon),
-        Math.max(...balances.eventsOverTime.cumulative.photon),
-      ];
-      const currentTick = parseDateToISO(
-        balances.eventsOverTime.cumulative.timestamps[thisBin],
-        useBinning
-      );
-      const nextTick = parseDateToISO(
-        balances.eventsOverTime.cumulative.timestamps[nextBin],
-        useBinning
-      );
-      const nowTime = new Date().toISOString();
-
-      // Past segments should be null
-      if (nextTick <= config.startTime) {
-        return "rgba(128, 128, 128, 0.5)";
-      }
-      // Future segments should be grey
-      if (currentTick > nowTime && nextTick > nowTime) {
-        return "rgba(128, 128, 128, 0.5)";
-      }
-      // Far future segments should be null
-      if (currentTick > config.endTime) {
-        return "rgba(128, 0, 0, 0.0)";
-      }
-
-      // Create gradients only when we have valid coordinates
-      if (context.p0 && context.p1) {
-        // Segment crossing startTime - gradient from null to color
-        if (currentTick < config.startTime && nextTick > config.startTime) {
-          const gradient = context.chart.ctx.createLinearGradient(
-            context.p0.x,
-            context.p0.y,
-            context.p1.x,
-            context.p1.y
-          );
-          gradient.addColorStop(0, "rgba(128, 128, 128, 0.5)");
-          gradient.addColorStop(1, "rgba(3, 173, 252, 1)");
-          return gradient;
-        }
-
-        // Segment crossing nowTime - gradient from color to grey
-        if (currentTick < nowTime && nextTick > nowTime) {
-          const gradient = context.chart.ctx.createLinearGradient(
-            context.p0.x,
-            context.p0.y,
-            context.p1.x,
-            context.p1.y
-          );
-          gradient.addColorStop(
-            0,
-            generateGradientColor(
-              startValue,
-              limits[0],
-              limits[1],
-              [66, 255, 214, 1],
-              [3, 173, 252, 1]
-            )
-          );
-          gradient.addColorStop(1, "rgba(128, 128, 128, 0.5)");
-          return gradient;
-        }
-        // Past segments (both ticks before nowTime)
-        if (currentTick < nowTime && nextTick < nowTime) {
-          const gradient = context.chart.ctx.createLinearGradient(
-            context.p0.x,
-            context.p0.y,
-            context.p1.x,
-            context.p1.y
-          );
-          gradient.addColorStop(
-            0,
-            generateGradientColor(
-              startValue,
-              limits[0],
-              limits[1],
-              balances.eventsOverTime.cumulative.photon.findIndex(
-                (value) => value !== 0
-              ) >= nextBin
-                ? [128, 128, 128, 0.5]
-                : [66, 255, 214, 1],
-              [3, 173, 252, 1]
-            )
-          );
-          gradient.addColorStop(
-            1,
-            generateGradientColor(
-              endValue,
-              limits[0],
-              limits[1],
-              balances.eventsOverTime.cumulative.photon.findIndex(
-                (value) => value !== 0
-              ) >= nextBin
-                ? [128, 128, 128, 0.5]
-                : [66, 255, 214, 1],
-              [3, 173, 252, 1]
-            )
-          );
-          return gradient;
-        }
-      }
-
-      // Fallback
-      return "rgba(128, 128, 128, 0.5)";
-    };
-
-    // Prepare the chart data
-    const plotable = balances.eventsOverTime.cumulative.timestamps
-      .map((timestamp, index) => {
-        const dateISO = parseDateToISO(timestamp, useBinning);
-        if (dateISO) {
-          const pro = balances.eventsOverTime.cumulative.pro[index];
-          const anti = balances.eventsOverTime.cumulative.anti[index];
-          const total = pro + anti;
-          return total === 0 ? 50 : (pro / total) * 100;
-        }
-        return null;
-      })
-      .filter((value) => value !== null);
-    const labels = balances.eventsOverTime.cumulative.timestamps
-      .filter((timestamp) => {
-        const dateISO = parseDateToISO(timestamp, useBinning);
-        return dateISO;
-      })
-      .map((value) => shortenTick(value, useBinning));
-    const chartData = {
-      type: "line",
-      labels: labels,
-      datasets: [
-        {
-          label: "Yes",
-          data: plotable,
-          segment: {
-            borderCapStyle: "round",
-            borderColor: getSegmentColor,
-          },
-          tension: 0,
-          borderWidth: 2,
-          pointRadius: 0,
-          hoverBackgroundColor: "#ffffff55",
-          hoverBorderColor: "#ffffffaa",
-        },
-        {
-          // Add a hidden dataset for the certainty tooltip
-          label: "Certainty",
-          data: balances.eventsOverTime.cumulative.timestamps
-            .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp, useBinning);
-              if (dateISO) {
-                const total =
-                  balances.eventsOverTime.cumulative.photon[index] +
-                  balances.eventsOverTime.cumulative.baryon[index];
-                return total > 0
-                  ? (balances.eventsOverTime.cumulative.photon[index] / total) *
-                      100
-                  : 50;
-              }
-              return null;
-            })
-            .filter((value) => value !== null),
-          display: false,
-          hidden: false,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          borderWidth: 0,
-          hoverBorderWidth: 0,
-          hoverBackgroundColor: "transparent",
-          hoverBorderColor: "transparent",
-        },
-      ],
-      plugins: [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin],
-      options: {
-        layout: {
-          padding: {
-            top: 20,
-          },
-        },
-        animation: {
-          duration: 0,
-        },
-        responsive: true,
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        plugins: {
-          verticalLines:
-            config.startTime === "-" || config.endTime === "-"
-              ? { markers: [], labels: [], useBinning: useBinning }
-              : {
-                  markers:
-                    config.startTime === "-" || config.endTime === "-"
-                      ? []
-                      : [config.startTime, config.endTime],
-                  labels:
-                    config.startTime === "-" || config.endTime === "-"
-                      ? []
-                      : ["Open", "Close"],
-                  useBinning: useBinning,
-                },
-          nowTime:
-            config.startTime === "-" || config.endTime === "-"
-              ? {
-                  marker: [],
-                  values: [[], []],
-                  labels: [],
-                  useBinning: useBinning,
-                }
-              : {
-                  marker:
-                    config.startTime === "-" || config.endTime === "-"
-                      ? []
-                      : [new Date()],
-                  values: [labels, plotable],
-                  labels:
-                    config.startTime === "-" || config.endTime === "-"
-                      ? []
-                      : ["Latest"],
-                  useBinning: useBinning,
-                },
-          datalabels: {
-            display: false,
-          },
-          legend: {
-            display: false,
-          },
-          tooltip: {
-            callbacks: {
-              label: (context) => {
-                const value = context.raw;
-                const endIndex =
-                  balances.eventsOverTime.cumulative.timestamps.find(
-                    (timestamp) =>
-                      shortenTick(timestamp, useBinning) ===
-                      context.chart.data.labels[context.dataIndex]
-                  );
-                const currentTick = parseDateToISO(
-                  balances.eventsOverTime.cumulative.timestamps.find(
-                    (timestamp) =>
-                      shortenTick(timestamp, useBinning) ===
-                      context.chart.data.labels[context.dataIndex]
-                  ),
-                  useBinning
-                );
-                const nowTime = new Date();
-                if (
-                  new Date(currentTick).getTime() > nowTime.getTime() ||
-                  new Date(currentTick).getTime() <
-                    new Date(config.startTime).getTime() ||
-                  new Date(currentTick).getTime() >
-                    new Date(config.endTime).getTime() ||
-                  balances.eventsOverTime.cumulative.photon.findIndex(
-                    (value) => value !== 0
-                  ) > context.dataIndex
-                ) {
-                  return ` -`;
-                }
-                return ` ${value.toFixed(0).padStart(2)}% ${
-                  context.datasetIndex === 0 ? "expectation" : "uncertainty"
-                }`;
-              },
-              labelColor: (context) => {
-                const value = context.raw;
-                const limits = [
-                  Math.min(...balances.eventsOverTime.cumulative.photon),
-                  Math.max(...balances.eventsOverTime.cumulative.photon),
-                ];
-                const currentTick = parseDateToISO(
-                  balances.eventsOverTime.cumulative.timestamps.find(
-                    (timestamp) =>
-                      shortenTick(timestamp, useBinning) ===
-                      context.chart.data.labels[context.dataIndex]
-                  ),
-                  useBinning
-                );
-                const nowTime = new Date();
-                // Future segments should be grey
-                if (
-                  new Date(currentTick).getTime() > nowTime.getTime() ||
-                  new Date(currentTick).getTime() <
-                    new Date(config.startTime).getTime() ||
-                  new Date(currentTick).getTime() >
-                    new Date(config.endTime).getTime()
-                ) {
-                  return {
-                    backgroundColor: "#808080",
-                    borderColor: "#808080",
-                  };
-                }
-                return {
-                  backgroundColor: generateGradientColor(
-                    value,
-                    context.datasetIndex === 0 ? 0 : limits[0],
-                    context.datasetIndex === 0 ? 100 : limits[1],
-                    context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
-                        ? [128, 128, 128, 1]
-                        : [255, 51, 0, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
-                      ? [128, 128, 128, 1]
-                      : [66, 255, 214, 1],
-                    context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
-                        ? [128, 128, 128, 1]
-                        : [0, 219, 84, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
-                      ? [128, 128, 128, 1]
-                      : [3, 173, 252, 1]
-                  ),
-                  borderColor: generateGradientColor(
-                    value,
-                    context.datasetIndex === 0 ? 0 : limits[0],
-                    context.datasetIndex === 0 ? 100 : limits[1],
-                    context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
-                        ? [128, 128, 128, 1]
-                        : [255, 51, 0, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
-                      ? [128, 128, 128, 1]
-                      : [66, 255, 214, 1],
-                    context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
-                        ? [128, 128, 128, 1]
-                        : [0, 219, 84, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
-                      ? [128, 128, 128, 1]
-                      : [3, 173, 252, 1]
-                  ),
-                };
-              },
-            },
-            bodyFont: {
-              family: "'SF Mono Round'",
-            },
-            titleFont: {
-              family: "'Space Grotesk'",
-              size: 14,
-            },
-          },
-        },
-        scales: {
-          x: {
-            grid: {
-              display: false,
-            },
-            ticks: {
-              font: {
-                family: "'SF Mono Round'",
-                size: 10,
-              },
-              minRotation: 0,
-              maxRotation: 0,
-              color: "#d3d3d399",
-            },
-          },
-          y: {
-            grid: {
-              display: true,
-              color: "rgba(255, 255, 255, 0.1)",
-            },
-            ticks: {
-              callback: function (value) {
-                return value === 0
-                  ? "NO"
-                  : value === 100
-                  ? "YES"
-                  : value.toFixed(0) + "%";
-              },
-              stepSize: function (ctx) {
-                const maxValue = Math.max(
-                  ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
-                );
-                return maxValue * 0.1;
-              },
-              font: {
-                family: "'SF Mono Round'",
-                size: 10,
-              },
-              color: function (context) {
-                const value = context.tick.value;
-                return generateGradientColor(
-                  value,
-                  0,
-                  100,
-                  [255, 51, 0, 1],
-                  [0, 219, 84, 1]
-                );
-              },
-            },
-            min: 0,
-            max: function (ctx) {
-              const maxValue = Math.max(
-                ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
-              );
-              return maxValue <= 50 ? 50 : 100;
-            },
-          },
-        },
-      },
-    };
-    setPredictionHistoryChartData(chartData);
-    // Force a chart update after the initial render
-    const timeoutId = setTimeout(() => {
-      if (chartRef.current) {
-        chartRef.current.update("none"); // Update without animation
-      }
-    }, 0);
-
-    // Cleanup
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [balances, config]);
 
   useEffect(() => {
     if (antiData && proData) {
@@ -1312,7 +682,9 @@ const Collider = ({
                   ? convertToLocaleTime(config.startTime, isMobile).split(
                       ","
                     )[0]
-                  : convertToLocaleTime(config.startTime, isMobile)
+                  : convertToLocaleTime(config.startTime, isMobile).split(
+                      ","
+                    )[0]
                 : "-"}
             </span>{" "}
           </div>
@@ -1322,7 +694,7 @@ const Collider = ({
               {config.endTime !== "-"
                 ? isMobile
                   ? convertToLocaleTime(config.endTime, isMobile).split(",")[0]
-                  : convertToLocaleTime(config.endTime, isMobile)
+                  : convertToLocaleTime(config.endTime, isMobile).split(",")[0]
                 : "-"}
             </span>{" "}
             &nbsp;
@@ -1395,112 +767,6 @@ const Collider = ({
             </span>
           </div>
         </div>
-      </div>
-      <div
-        className={inactive ? "hidden" : "mb-4 bg-dark-card p-4 rounded w-full"}
-      >
-        {predictionHistoryChartData && (
-          <div
-            className={`flex flex-col ${
-              loading ? "items-center" : "items-end"
-            } gap-1`}
-          >
-            <div
-              className={`flex gap-1 mt-4 font-sfmono ${
-                loading ? "hidden" : ""
-              }`}
-            >
-              <div
-                className={
-                  predictionHistoryTimeframe === "1H"
-                    ? "timeframe-pill-active"
-                    : "timeframe-pill"
-                }
-                onClick={() => {}}
-              >
-                <span className="text-xs opacity-75">1H</span>
-              </div>
-              <div
-                className={
-                  predictionHistoryTimeframe === "6H"
-                    ? "timeframe-pill-active"
-                    : "timeframe-pill"
-                }
-                onClick={() => {}}
-              >
-                <span className="text-xs opacity-75">6H</span>
-              </div>
-              <div
-                className={
-                  predictionHistoryTimeframe === "12H"
-                    ? "timeframe-pill-active"
-                    : "timeframe-pill"
-                }
-                onClick={() => {}}
-              >
-                <span className="text-xs opacity-75">12H</span>
-              </div>
-              <div
-                className={
-                  predictionHistoryTimeframe === "1D"
-                    ? "timeframe-pill-active"
-                    : "timeframe-pill"
-                }
-                onClick={() => {}}
-              >
-                <span className="text-xs opacity-75">1D</span>
-              </div>
-              <div
-                className={
-                  predictionHistoryTimeframe === "1W"
-                    ? "timeframe-pill-active"
-                    : "timeframe-pill"
-                }
-                onClick={() => {}}
-              >
-                <span className="text-xs opacity-75">1W</span>
-              </div>
-              <div
-                className={
-                  predictionHistoryTimeframe === "ALL"
-                    ? "timeframe-pill-active"
-                    : "timeframe-pill"
-                }
-                onClick={() => {}}
-              >
-                <span className="text-xs">ALL</span>
-              </div>
-              <div className="font-grotesk">
-                <div className="relative group">
-                  <div className="cursor-pointer text-xs text-gray-500">
-                    &nbsp;&#9432;
-                  </div>
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    {`Displays the global expectation of the outcome over time`}
-                  </span>
-                </div>
-              </div>
-            </div>
-            {!isMetaLoading ? (
-              <Line
-                ref={chartRef}
-                data={predictionHistoryChartData}
-                options={predictionHistoryChartData.options}
-                plugins={predictionHistoryChartData.plugins}
-              />
-            ) : (
-              <div className="flex flex-col px-4 py-8">
-                <BinaryOrbit
-                  size={isMobile ? 100 : 100}
-                  orbitRadius={isMobile ? 35 : 35}
-                  particleRadius={isMobile ? 10 : 10}
-                  padding={10}
-                  invert={false}
-                />
-              </div>
-            )}
-          </div>
-        )}
       </div>
       {/* Token Input Fields */}
       <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full">
@@ -1738,125 +1004,27 @@ const Collider = ({
       </div>
 
       {/* User Distribution */}
-      {userDistribution && !process.env.NEXT_PUBLIC_LIGHT && (
-        <div className="bg-dark-card p-4 rounded w-full">
-          <div className="mb-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
-            <div className="flex flex-col items-start gap-1/2 w-full">
-              <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
-                <label
-                  htmlFor="photonTokens"
-                  className="text-gray-300 font-medium text-xs sm:text-sm"
-                >
-                  {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PHOTON`}
-                </label>
-                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
-                <input
-                  id="photonTokens"
-                  type="number"
-                  min="0"
-                  value={
-                    Number(photonTokens) > 0
-                      ? Number(photonTokens).toFixed(2)
-                      : ""
-                  }
-                  disabled={true}
-                  placeholder="-"
-                  className="text-white font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
-                  readOnly
-                />
-              </div>
-              <div
-                className={
-                  inactive ? "hidden" : "text-sm flex flex-row items-center"
-                }
-              >
-                <img
-                  src={`${BASE_URL}/assets/photon.png`}
-                  alt="photon-logo"
-                  className="w-3 h-3 inline-block mr-1 opacity-75"
-                />
-                <span className="text-xs">
-                  <span className="text-gray-500 text-semibold">BAL:</span>{" "}
-                  <span className="font-sfmono text-gray-400">
-                    {Number(photonBalance)
-                      .toFixed(0)
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1/2 items-end w-full">
-              <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
-                <input
-                  id="baryonTokens"
-                  type="number"
-                  min="0"
-                  value={
-                    Number(baryonTokens) > 0
-                      ? Number(baryonTokens).toFixed(2)
-                      : ""
-                  }
-                  disabled={true}
-                  placeholder="-"
-                  className="w-full text-white font-sfmono bg-black text-white text-xs sm:text-sm disabled:cursor-not-allowed text-right"
-                  readOnly
-                />
-                <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
-                <label
-                  htmlFor="baryonTokens"
-                  className="text-gray-300 font-medium text-xs sm:text-sm"
-                >
-                  {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON`}
-                </label>
-              </div>
-              <div
-                className={
-                  inactive ? "hidden" : "text-sm flex flex-row items-center"
-                }
-              >
-                <img
-                  src={`${BASE_URL}/assets/baryon.png`}
-                  alt="baryon-logo"
-                  className="w-3 h-3 inline-block mr-1 opacity-75"
-                />
-                <span className="text-xs">
-                  <span className="text-gray-500 text-semibold">BAL:</span>{" "}
-                  <span className="font-sfmono text-gray-400">
-                    {Number(baryonBalance)
-                      .toFixed(0)
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  </span>
-                </span>
-              </div>
+      {userDistribution && lineChartData && totalInvest > 0 && (
+        <>
+          <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200 -mb-2">
+            <div className="-mb-0">Your Predictions</div>
+            <div className="relative group">
+              <div className="cursor-pointer">&#9432;</div>
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                {`Displays your current, past and net predictions`}
+              </span>
             </div>
           </div>
-
-          {lineChartData && totalInvest > 0 && (
-            <>
-              <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200 -mb-2">
-                <div className="-mb-0">Your Predictions</div>
-                <div className="relative group">
-                  <div className="cursor-pointer">&#9432;</div>
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    {`Displays your current, past and net predictions`}
-                  </span>
-                </div>
-              </div>
-              <div className={inactive ? "hidden" : "h-[400px]"}>
-                <Line data={lineChartData} options={lineChartData.options} />
-              </div>
-            </>
-          )}
-        </div>
+          <div className={inactive ? "hidden" : "h-[400px]"}>
+            <Line data={lineChartData} options={lineChartData.options} />
+          </div>
+        </>
       )}
 
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={disabled || loading || inactive}
+        disabled={disabled || loading || inactive || true}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
           loading ||
