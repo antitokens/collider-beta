@@ -642,8 +642,8 @@ const Collider = ({
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
       <div className="bg-dark-card p-4 rounded w-full mb-4">
         <div className="flex flex-row items-center mb-2">
-          <div className="text-2xl text-white text-center font-medium">
-            &nbsp;Will SOL overtake ETH in 2025?&nbsp;
+          <div className="text-2xl text-white text-left font-medium">
+            Will SOL overtake ETH in 2025?&nbsp;
           </div>
           <span className="relative group">
             <span className="cursor-pointer text-sm text-gray-400">

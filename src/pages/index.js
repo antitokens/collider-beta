@@ -675,7 +675,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             context.p1.y
           );
           gradient.addColorStop(0, "rgba(128, 128, 128, 0.5)");
-          gradient.addColorStop(1, "rgba(3, 173, 252, 1)");
+          gradient.addColorStop(1, "rgba(3, 173, 252, 0.75)");
           return gradient;
         }
 
@@ -693,8 +693,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               startValue,
               limits[0],
               limits[1],
-              [66, 255, 214, 1],
-              [3, 173, 252, 1]
+              [66, 255, 214, 0.75],
+              [3, 173, 252, 0.75]
             )
           );
           gradient.addColorStop(1, "rgba(128, 128, 128, 0.5)");
@@ -718,8 +718,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 (value) => value !== 0
               ) >= nextBin
                 ? [128, 128, 128, 0.5]
-                : [66, 255, 214, 1],
-              [3, 173, 252, 1]
+                : [66, 255, 214, 0.75],
+              [3, 173, 252, 0.75]
             )
           );
           gradient.addColorStop(
@@ -732,8 +732,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 (value) => value !== 0
               ) >= nextBin
                 ? [128, 128, 128, 0.5]
-                : [66, 255, 214, 1],
-              [3, 173, 252, 1]
+                : [66, 255, 214, 0.75],
+              [3, 173, 252, 0.75]
             )
           );
           return gradient;
@@ -952,7 +952,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           (value) => value !== 0
                         ) > context.dataIndex
                       ? [128, 128, 128, 1]
-                      : [66, 255, 214, 1],
+                      : [66, 255, 214, 0.75],
                     context.datasetIndex === 0
                       ? balances.eventsOverTime.cumulative.photon.findIndex(
                           (value) => value !== 0
@@ -963,7 +963,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           (value) => value !== 0
                         ) > context.dataIndex
                       ? [128, 128, 128, 1]
-                      : [3, 173, 252, 1]
+                      : [3, 173, 252, 0.75]
                   ),
                   borderColor: generateGradientColor(
                     value,
@@ -979,7 +979,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           (value) => value !== 0
                         ) > context.dataIndex
                       ? [128, 128, 128, 1]
-                      : [66, 255, 214, 1],
+                      : [66, 255, 214, 0.75],
                     context.datasetIndex === 0
                       ? balances.eventsOverTime.cumulative.photon.findIndex(
                           (value) => value !== 0
@@ -990,7 +990,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           (value) => value !== 0
                         ) > context.dataIndex
                       ? [128, 128, 128, 1]
-                      : [3, 173, 252, 1]
+                      : [3, 173, 252, 0.75]
                   ),
                 };
               },
@@ -1157,6 +1157,17 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           <div
             className={`flex flex-col md:flex-row items-center justify-between mb-12 md:mb-0`}
           >
+            {/* Hero Image */}
+            {isMobile && (
+              <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0 relative">
+                <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
+                <img
+                  src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
+                  alt="Antitoken Logo"
+                  className="w-48 h-48 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+                />
+              </div>
+            )}
             {/* Hero Text */}
             <div className="w-full md:w-1/2 text-center md:text-left">
               <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
@@ -1186,14 +1197,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             </div>
 
             {/* Hero Image */}
-            <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0 relative">
-              <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
-              <img
-                src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
-                alt="Antitoken Logo"
-                className="w-48 h-48 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
-              />
-            </div>
+            {!isMobile && (
+              <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0 relative">
+                <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
+                <img
+                  src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
+                  alt="Antitoken Logo"
+                  className="w-48 h-48 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+                />
+              </div>
+            )}
           </div>
           <div
             className={`w-full mt-4 md:mt-4 lg:mt-8 flex flex-col lg:flex-row lg:gap-4 ${
