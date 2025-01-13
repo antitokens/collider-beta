@@ -501,6 +501,7 @@ export const TimeTicker = ({
   isMobile = false,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [font, setFont] = useState(fontSize);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -536,15 +537,11 @@ export const TimeTicker = ({
       className={`flex items-center bg-transparent rounded-md px-3 py-1 ${className}`}
     >
       <div className="flex items-center space-x-2">
-        <span
-          className={`font-mono text-[${String(fontSize)}px] text-gray-300`}
-        >
-          {formatUTCDateTime(currentTime)}
-          <span
-            className={`ml-1 text-[${String(fontSize - 2)}px] text-gray-500`}
-          >
-            UTC
+        <span className={`font-mono text-gray-300`}>
+          <span className={`text-[${font.toString()}px]`}>
+            {formatUTCDateTime(currentTime)}
           </span>
+          <span className={`ml-1 text-[11px] text-gray-500`}>UTC</span>
         </span>
       </div>
     </div>

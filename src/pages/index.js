@@ -126,8 +126,8 @@ const Home = ({ BASE_URL }) => {
 const LandingPage = ({ BASE_URL, setTrigger }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
-  const [inactive, setInactive] = useState(false);
-  const [dead, setDead] = useState(false);
+  const [started, setStarted] = useState(false);
+  const [isOver, setIsOver] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
   const [antiUsage, setAntiUsage] = useState(0);
@@ -177,7 +177,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       // Position calculation
       // This puts the label near the end of x-axis, slightly above it
       const x = xAxis.right - 15; // Shift left from the end
-      const y = xAxis.top + 7.5; // Shift up from the axis
+      const y = xAxis.top + 10; // Shift up from the axis
       // Draw the label
       ctx.fillText("UTC", x, y);
     },
@@ -362,19 +362,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
   useEffect(() => {
     if (balances !== metadataInit) {
-      setDead(
-        new Date() < new Date(balances.startTime) &&
-          new Date() < new Date(balances.endTime)
-      );
-      setInactive(
-        new Date() < new Date(balances.startTime) ||
-          new Date() > new Date(balances.endTime)
-      );
+      setStarted(new Date() < new Date(balances.startTime));
+      setIsOver(new Date() > new Date(balances.endTime));
     }
   }, [balances]);
 
   useEffect(() => {
-    if (refresh && !dead && !wallet.disconnecting) {
+    if (refresh && !started && !wallet.disconnecting) {
       const fetchBalancesWithClaims = async () => {
         try {
           setRefresh(false);
@@ -499,9 +493,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     photonBalance,
     antiData,
     proData,
-    dead,
+    started,
     truth,
-    inactive,
     wallet,
     wallet.disconnecting,
     wallet.connected,
@@ -512,13 +505,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       startTime: balances.startTime || "-",
       endTime: balances.endTime || "-",
       antiLive:
-        balances.collisionsData.antiTokens -
-          claims.collisionsData.antiTokens || 0,
+        balances.collisionsData.antiTokens - claims.collisionsData.antiTokens ||
+        0,
       proLive:
-        balances.collisionsData.proTokens -
-          claims.collisionsData.proTokens || 0,
+        balances.collisionsData.proTokens - claims.collisionsData.proTokens ||
+        0,
       convertToLocaleTime,
-    })
+    });
   }, [balances, claims]);
 
   useEffect(() => {
@@ -1077,7 +1070,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               },
             },
             min: 0,
-            max: inactive
+            max: started
               ? function (ctx) {
                   const maxValue = Math.max(
                     ...ctx.chart.data.datasets.flatMap(
@@ -1125,7 +1118,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               },
             },
             min: 0,
-            max: inactive
+            max: started
               ? function (ctx) {
                   const maxValue = Math.max(
                     ...ctx.chart.data.datasets.flatMap(
@@ -1151,7 +1144,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [balances]);
+  }, [balances, started]);
 
   return (
     <>
@@ -1183,8 +1176,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         </div>
         <div className={`flex flex-col items-center w-full max-w-7xl px-4`}>
           <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
-            Predict with <span className="text-accent-primary">$ANTI</span>{" "}
-            and <span className="text-accent-secondary">$PRO</span>
+            Predict with <span className="text-accent-primary">$ANTI</span> and{" "}
+            <span className="text-accent-secondary">$PRO</span>
           </h1>
           <div
             className={`w-full mt-4 md:mt-4 lg:mt-8 flex flex-col lg:flex-row lg:gap-4 ${
@@ -1214,7 +1207,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                           {`Prediction market opening date & time: ${
                             predictionConfig.startTime !== "-"
-                              ? convertToLocaleTime(predictionConfig.startTime, isMobile)
+                              ? convertToLocaleTime(
+                                  predictionConfig.startTime,
+                                  isMobile
+                                )
                               : "-"
                           }`}
                         </span>
@@ -1223,7 +1219,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     &nbsp;Start:{" "}
                     <span className="font-sfmono text-gray-400 text-[11px]">
                       {predictionConfig.startTime !== "-"
-                        ? convertToLocaleTime(predictionConfig.startTime, isMobile).split(",")[0]
+                        ? convertToLocaleTime(
+                            predictionConfig.startTime,
+                            isMobile
+                          )
                         : "-"}
                     </span>{" "}
                   </div>
@@ -1231,7 +1230,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     Close:{" "}
                     <span className="font-sfmono text-gray-400 text-[11px]">
                       {predictionConfig.endTime !== "-"
-                        ? convertToLocaleTime(predictionConfig.endTime, isMobile).split(",")[0]
+                        ? convertToLocaleTime(
+                            predictionConfig.endTime,
+                            isMobile
+                          )
                         : "-"}
                     </span>{" "}
                     &nbsp;
@@ -1241,7 +1243,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                           {`Prediction market closing date & time: ${
                             predictionConfig.endTime !== "-"
-                              ? convertToLocaleTime(predictionConfig.endTime, isMobile)
+                              ? convertToLocaleTime(
+                                  predictionConfig.endTime,
+                                  isMobile
+                                )
                               : "-"
                           }`}
                         </span>
@@ -1271,8 +1276,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       <span className="font-sfmono text-gray-300 text-[11px] text-opacity-90">
                         {antiData && proData
                           ? formatCount(
-                              predictionConfig.proLive * Number(proData.priceUsd) +
-                                predictionConfig.antiLive * Number(antiData.priceUsd)
+                              predictionConfig.proLive *
+                                Number(proData.priceUsd) +
+                                predictionConfig.antiLive *
+                                  Number(antiData.priceUsd)
                             )
                           : "-"}
                       </span>
@@ -1282,8 +1289,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   <div className="text-[12px] text-gray-500 text-right">
                     {isMobile ? "Ratio:" : "Token Ratio:"}{" "}
                     <span className="font-sfmono text-gray-400 text-[11px]">
-                      {predictionConfig.antiLive > 0 && predictionConfig.proLive > 0
-                        ? (predictionConfig.proLive / predictionConfig.antiLive).toFixed(3)
+                      {predictionConfig.antiLive > 0 &&
+                      predictionConfig.proLive > 0
+                        ? (
+                            predictionConfig.proLive / predictionConfig.antiLive
+                          ).toFixed(3)
                         : "0.000"}
                     </span>{" "}
                     &nbsp;
@@ -1301,9 +1311,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card w-full border-x border-b border-t border-gray-800 rounded-t-lg">
                 {predictionHistoryChartData && (
                   <div className={`flex flex-col w-full`}>
-                    <div
-                      className={`flex justify-between items-center w-full`}
-                    >
+                    <div className={`flex justify-between items-center w-full`}>
                       <div className="flex flex-row">
                         <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -1396,22 +1404,22 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 )}
               </div>
               <div className="flex flex-col items-center mb-8 lg:mb-4 border-b border-x border-gray-800 rounded-b-lg w-full bg-black">
-    {
-      isMetaLoading
-      ? <BinaryOrbit
-          size={120}
-          orbitRadius={40}
-          particleRadius={15}
-          padding={20}
-          invert={false}
-        />
-      : <Line
-          ref={chartRef}
-          data={predictionHistoryChartData}
-          options={predictionHistoryChartData.options}
-          plugins={predictionHistoryChartData.plugins}
-        />
-    }
+                {isMetaLoading ? (
+                  <BinaryOrbit
+                    size={120}
+                    orbitRadius={40}
+                    particleRadius={15}
+                    padding={20}
+                    invert={false}
+                  />
+                ) : (
+                  <Line
+                    ref={chartRef}
+                    data={predictionHistoryChartData}
+                    options={predictionHistoryChartData.options}
+                    plugins={predictionHistoryChartData.plugins}
+                  />
+                )}
               </div>
               <div className="mb-8 mt-0">
                 <Metadata
@@ -1481,7 +1489,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   proData={proData}
                   isMobile={isMobile}
                   bags={bags}
-                  inactive={inactive || dead}
+                  inactive={isOver}
                   isMetaLoading={isMetaLoading}
                 />
               </div>
@@ -1543,10 +1551,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   proData={proData}
                   isMobile={isMobile}
                   bags={bags}
-                  inactive={!inactive || dead}
-                  truth={!inactive || dead ? [] : truth}
+                  inactive={!isOver}
+                  truth={!isOver ? [] : truth}
                   balances={balances}
-                  claims={claims}
                 />
               </div>
             )}
@@ -1634,6 +1641,5 @@ const App = () => {
     </ConnectionProvider>
   );
 };
-
 
 export default App;

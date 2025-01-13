@@ -40,7 +40,6 @@ const Inverter = ({
   inactive = true,
   truth = [],
   balances = emptyMetadata,
-  claims = emptyMetadata,
 }) => {
   const [loading, setLoading] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
@@ -88,8 +87,8 @@ const Inverter = ({
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
             ? [
-                rewardCurrent.change.photon[myBag],
-                rewardCurrent.change.baryon[myBag],
+                rewardCurrent.change.pro[myBag],
+                rewardCurrent.change.anti[myBag],
                 rewardCurrent.change.gain[myBag],
               ]
             : [0, 0, 0]
@@ -99,11 +98,11 @@ const Inverter = ({
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
             ? [
-                rewardCurrent.invert.photon[myBag],
-                rewardCurrent.invert.baryon[myBag],
+                rewardCurrent.invert.pro[myBag],
+                rewardCurrent.invert.anti[myBag],
               ]
             : !wallet.disconnecting
-            ? [photonBalance, baryonBalance]
+            ? [proBalance, antiBalance]
             : [0, 0]
         );
         setDollarGain(
@@ -329,105 +328,7 @@ const Inverter = ({
 
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
-      <div className="bg-dark-card p-4 rounded w-full mb-4 flex flex-col justify-center">
-        <h2 className="text-xl text-gray-300 text-center font-medium mb-2">
-          Claim your Collider Emissions
-        </h2>
-        <div className="flex flex-row justify-between">
-          <div className="text-[12px] text-gray-500 text-left">
-            <span className="relative group">
-              <span className="cursor-pointer">
-                &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  {isMobile
-                    ? `Reclaim opening date & time: ${
-                        balances.endTime !== "-" && balances.startTime !== "-"
-                          ? convertToLocaleTime(balances.startTime, isMobile)
-                          : "-"
-                      }`
-                    : "Reclaim opening date & time"}
-                </span>
-              </span>
-            </span>{" "}
-            &nbsp;Start:{" "}
-            <span className="font-sfmono text-gray-400 text-[11px]">
-              {balances.endTime !== "-"
-                ? convertToLocaleTime(balances.endTime, isMobile)
-                : "-"}
-            </span>{" "}
-          </div>
-          <div className="text-[12px] text-gray-500 text-right">
-            Close:{" "}
-            <span className="font-sfmono text-gray-400 text-[11px]">
-              {balances.endTime !== "-" ? "Never" : "-"}
-            </span>{" "}
-            &nbsp;
-            <span className="relative group">
-              <span className="cursor-pointer">
-                &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  {isMobile
-                    ? `Reclaim closing date & time: ${
-                        balances.endTime !== "-" ? "Never" : "-"
-                      }`
-                    : "Reclaim closing date & time"}
-                </span>
-              </span>
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-row justify-between">
-          <div className="text-[12px] text-gray-500 text-left">
-            <span className="relative group">
-              <span className="cursor-pointer">&#9432;</span>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Total amount of PHOTON & BARYON in the prediction pool
-              </span>
-            </span>{" "}
-            &nbsp;Total Pool:{" "}
-            <span className="font-sfmono text-accent-steel text-[11px] text-opacity-80">
-              {formatCount(
-                balances.emissionsData.photonTokens -
-                  claims.emissionsData.photonTokens
-              )}
-            </span>
-            {"/"}
-            <span className="font-sfmono text-accent-cement text-[11px] text-opacity-90">
-              {formatCount(
-                balances.emissionsData.baryonTokens -
-                  claims.emissionsData.baryonTokens
-              )}
-            </span>
-          </div>
-          <div className="text-[12px] text-gray-500 text-right">
-            Token Ratio:{" "}
-            <span className="font-sfmono text-gray-400 text-[11px]">
-              {balances.emissionsData.baryonTokens -
-                claims.emissionsData.baryonTokens >
-              0
-                ? (
-                    (balances.emissionsData.photonTokens -
-                      claims.emissionsData.photonTokens) /
-                    (balances.emissionsData.baryonTokens -
-                      claims.emissionsData.baryonTokens)
-                  ).toFixed(3)
-                : "0.000"}
-            </span>{" "}
-            &nbsp;
-            <span className="relative group">
-              <span className="cursor-pointer">
-                &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Ratio PHOTON:BARYON in the prediction pool
-                </span>
-              </span>
-            </span>
-          </div>
-        </div>
-      </div>
-
       <div className="flex flex-col items-center justify-between bg-dark-card w-full p-4 rounded gap-2">
-        <div className="text-lg text-gray-300 mb-2">Reclaim</div>
         <div className="flex flex-row justify-between items-center text-sm text-gray-500 w-full">
           <div className="flex items-center text-left text-xs">
             <div className="relative group flex items-center">
@@ -437,13 +338,13 @@ const Inverter = ({
               </span>
             </div>
             <div className="flex items-center">
-              <div>&nbsp;Your Tokens:&nbsp;</div>
+              <div>&nbsp;Your Claim:&nbsp;</div>
               <div className="flex items-center font-sfmono pt-[0px] lg:pt-[2px]">
-                <div className="text-accent-steel text-[11px] opacity-95">
+                <div className="text-accent-secondary text-[11px] opacity-95">
                   {formatPrecise(updatedBalances[0])}
                 </div>
                 <div>/</div>
-                <div className="text-accent-cement text-[11px] opacity-95">
+                <div className="text-accent-primary text-[11px] opacity-95">
                   {formatPrecise(updatedBalances[1])}
                 </div>
               </div>
@@ -452,7 +353,7 @@ const Inverter = ({
 
           <div className="flex items-center text-[12px]">
             <div className="flex items-center">
-              Realised P/L:&nbsp;
+              Claim P/L:&nbsp;
               <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[2px]">
                 <span className="text-gray-400">$</span>
                 {formatCount(dollarGain.toFixed(2))}
@@ -484,8 +385,25 @@ const Inverter = ({
           </div>
         </div>
         <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full -mt-2">
-          <div className="flex text-left text-md">
-            <div>{isMobile ? "Claim Tokens" : "Claim Tokens from Pool"}</div>
+          <div className="text-[12px] text-gray-500 text-left">
+            <span className="relative group">
+              <span className="cursor-pointer">
+                &#9432;
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  {`Reclaim opening date & time: ${
+                    balances.endTime !== "-" && balances.startTime !== "-"
+                      ? convertToLocaleTime(balances.startTime, isMobile)
+                      : "-"
+                  }`}
+                </span>
+              </span>
+            </span>{" "}
+            &nbsp;Start:{" "}
+            <span className="font-sfmono text-gray-400 text-[11px]">
+              {balances.endTime !== "-"
+                ? convertToLocaleTime(balances.endTime, isMobile).split(",")[0]
+                : "-"}
+            </span>{" "}
           </div>
           <div className="flex flex-row text-right text-[12px]">
             <div>
@@ -512,7 +430,7 @@ const Inverter = ({
                         .toFixed(1)
                         .toString()
                         .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    : "0"}
+                    : "0.0"}
                 </span>
               </span>
               {"/"}
@@ -537,7 +455,7 @@ const Inverter = ({
                       .toFixed(1)
                       .toString()
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  : "0"}
+                  : "0.0"}
               </span>
               &nbsp;&nbsp;
             </div>
@@ -581,7 +499,6 @@ const Inverter = ({
             : "Claim"}
         </button>
       </div>
-
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
         <BinaryOrbit
           size={28}
