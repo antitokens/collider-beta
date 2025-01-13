@@ -10,12 +10,10 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   toastContainerConfig,
   toast,
-  emptyConfig,
   emptyBags,
   emptyMetadata,
   formatCount,
   formatPrecise,
-  convertToLocaleTime,
   defaultToken,
   copyText,
 } from "../utils/utils";
@@ -36,7 +34,6 @@ const Collider = ({
   clearFields,
   antiData = defaultToken,
   proData = defaultToken,
-  config = emptyConfig,
   isMobile = false,
   bags = emptyBags,
   inactive = true,
@@ -640,116 +637,9 @@ const Collider = ({
 
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
-      <div className="bg-dark-card p-4 rounded w-full mb-4">
-        <div className="flex flex-row items-center mb-2">
-          <div className="text-2xl text-white text-left font-medium">
-            Will SOL overtake ETH in 2025?&nbsp;
-          </div>
-          <span className="relative group">
-            <span className="cursor-pointer text-sm text-gray-400">
-              &#9432;
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Truth is measured in terms of Market Capitalisations`}
-              </span>
-            </span>
-          </span>
-        </div>
-        <div className="flex flex-row justify-between">
-          <div className="text-[12px] text-gray-500 text-left">
-            <span className="relative group">
-              <span className="cursor-pointer">
-                &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  {`Prediction market opening date & time: ${
-                    config.startTime !== "-"
-                      ? convertToLocaleTime(config.startTime, isMobile)
-                      : "-"
-                  }`}
-                </span>
-              </span>
-            </span>{" "}
-            &nbsp;Start:{" "}
-            <span className="font-sfmono text-gray-400 text-[11px]">
-              {config.startTime !== "-"
-                ? convertToLocaleTime(config.startTime, isMobile).split(",")[0]
-                : "-"}
-            </span>{" "}
-          </div>
-          <div className="text-[12px] text-gray-500 text-right">
-            Close:{" "}
-            <span className="font-sfmono text-gray-400 text-[11px]">
-              {config.endTime !== "-"
-                ? convertToLocaleTime(config.endTime, isMobile).split(",")[0]
-                : "-"}
-            </span>{" "}
-            &nbsp;
-            <span className="relative group">
-              <span className="cursor-pointer">
-                &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  {`Prediction market closing date & time: ${
-                    config.endTime !== "-"
-                      ? convertToLocaleTime(config.endTime, isMobile)
-                      : "-"
-                  }`}
-                </span>
-              </span>
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-row justify-between">
-          <div className="text-[12px] text-gray-500 text-left">
-            <span className="relative group">
-              <span className="cursor-pointer">&#9432;</span>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Total amount of PRO & ANTI in the prediction pool
-              </span>
-            </span>{" "}
-            &nbsp;Total Pool:{" "}
-            <span className="font-sfmono text-accent-secondary text-[11px] text-opacity-80">
-              {formatCount(config.proLive)}
-            </span>
-            {"/"}
-            <span className="font-sfmono text-accent-primary text-[11px] text-opacity-90">
-              {formatCount(config.antiLive)}
-            </span>
-            {"/"}
-            <span className="font-sfmono text-gray-400 text-opacity-75">
-              {"$"}
-              <span className="font-sfmono text-gray-300 text-[11px] text-opacity-90">
-                {antiData && proData
-                  ? formatCount(
-                      config.proLive * Number(proData.priceUsd) +
-                        config.antiLive * Number(antiData.priceUsd)
-                    )
-                  : "-"}
-              </span>
-              {""}
-            </span>
-          </div>
-          <div className="text-[12px] text-gray-500 text-right">
-            {isMobile ? "Ratio:" : "Token Ratio:"}{" "}
-            <span className="font-sfmono text-gray-400 text-[11px]">
-              {config.antiLive > 0 && config.proLive > 0
-                ? (config.proLive / config.antiLive).toFixed(3)
-                : "0.000"}
-            </span>{" "}
-            &nbsp;
-            <span className="relative group">
-              <span className="cursor-pointer">
-                &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[149px] lg:-translate-x-[40px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Ratio PRO:ANTI in the prediction pool
-                </span>
-              </span>
-            </span>
-          </div>
-        </div>
-      </div>
       {/* Token Input Fields */}
       <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full">
-        <div className="text-lg text-gray-300">Predict</div>
-        <div className="w-full space-y-2 mt-4">
+        <div className="w-full space-y-2">
           <div>
             <div className="flex flex-row justify-between items-center text-sm text-gray-500">
               <div className="flex text-left text-xs">

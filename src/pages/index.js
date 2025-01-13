@@ -36,14 +36,17 @@ import {
   metadataInit,
   emptyGaussian,
   emptyBags,
+  emptyConfig,
   defaultToken,
   detectBinningStrategy,
   generateGradientColor,
   parseDateToISO,
   shortenTick,
   dateToLocal,
+  convertToLocaleTime,
   findBinForTimestamp,
   parseCustomDate,
+  formatCount,
   TimeTicker,
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
@@ -143,6 +146,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
   const [balances, setBalances] = useState(metadataInit);
   const [claims, setClaims] = useState(metadataInit);
+  const [predictionConfig, setPredictionConfig] = useState(emptyConfig);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
@@ -502,6 +506,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     wallet.disconnecting,
     wallet.connected,
   ]);
+
+  useEffect(() => {
+    setPredictionConfig({
+      startTime: balances.startTime || "-",
+      endTime: balances.endTime || "-",
+      antiLive:
+        balances.collisionsData.antiTokens -
+          claims.collisionsData.antiTokens || 0,
+      proLive:
+        balances.collisionsData.proTokens -
+          claims.collisionsData.proTokens || 0,
+      convertToLocaleTime,
+    })
+  }, [balances, claims]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -1164,200 +1182,252 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           </div>
         </div>
         <div className={`flex flex-col items-center w-full max-w-7xl px-4`}>
-          <div
-            className={`flex flex-col md:flex-row items-center justify-between mb-12 md:mb-0`}
-          >
-            {/* Hero Image */}
-            {isMobile && (
-              <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0 relative">
-                <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
-                <img
-                  src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
-                  alt="Antitoken Logo"
-                  className="w-48 h-48 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
-                />
-              </div>
-            )}
-            {/* Hero Text */}
-            <div className="w-full md:w-1/2 text-center md:text-left">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
-                Predict with <span className="text-accent-primary">$ANTI</span>{" "}
-                and <span className="text-accent-secondary">$PRO</span>
-              </h1>
-              <button
-                className="bg-accent-primary hover:opacity-90 text-gray-100 px-8 py-3 rounded-full text-lg font-semibold flex items-center gap-2"
-                onClick={() => setShowBuyTokensModal(true)}
-              >
-                <span>Buy Tokens</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-gray-100 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Hero Image */}
-            {!isMobile && (
-              <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0 relative">
-                <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
-                <img
-                  src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
-                  alt="Antitoken Logo"
-                  className="w-48 h-48 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
-                />
-              </div>
-            )}
-          </div>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
+            Predict with <span className="text-accent-primary">$ANTI</span>{" "}
+            and <span className="text-accent-secondary">$PRO</span>
+          </h1>
           <div
             className={`w-full mt-4 md:mt-4 lg:mt-8 flex flex-col lg:flex-row lg:gap-4 ${
               isMetaLoading ? "items-center" : ""
             }`}
           >
-            {!isMetaLoading ? (
-              <div className="flex flex-col w-full lg:w-3/4">
-                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card w-full border-x border-b border-t border-gray-800 rounded-t-lg">
-                  {predictionHistoryChartData && (
-                    <div className={`flex flex-col w-full`}>
-                      <div
-                        className={`flex justify-between items-center w-full`}
-                      >
-                        <div className="flex flex-row">
-                          <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          </h2>
-                          <div className="flex flex-row items-center">
-                            <TimeTicker
-                              fontSize={isMobile ? 12 : 12}
-                              isMobile={isMobile}
-                            />
-                            <div className="font-grotesk">
-                              <span className="relative group">
-                                <span className="cursor-pointer text-xs text-gray-500">
-                                  &#9432;
-                                </span>
-                                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                                  {`Displays the global expectation of the outcome over time`}
-                                </span>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          className={`flex gap-1 mt-1 ml-auto font-sfmono ${
-                            loading ? "hidden" : "ml-auto"
+            <div className="flex flex-col w-full lg:w-3/4">
+              <div className="bg-dark-card p-4 rounded w-full mb-4 border border-gray-800">
+                <div className="flex flex-row items-center mb-2">
+                  <div className="text-2xl text-gray-300 text-left font-medium">
+                    Will SOL overtake ETH in 2025?&nbsp;
+                  </div>
+                  <span className="relative group">
+                    <span className="cursor-pointer text-sm text-gray-400">
+                      &#9432;
+                      <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        {`Truth is measured in terms of Market Capitalisations`}
+                      </span>
+                    </span>
+                  </span>
+                </div>
+                <div className="flex flex-row justify-between">
+                  <div className="text-[12px] text-gray-500 text-left">
+                    <span className="relative group">
+                      <span className="cursor-pointer">
+                        &#9432;
+                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                          {`Prediction market opening date & time: ${
+                            predictionConfig.startTime !== "-"
+                              ? convertToLocaleTime(predictionConfig.startTime, isMobile)
+                              : "-"
                           }`}
-                        >
-                          <div
-                            className={
-                              predictionHistoryTimeframe === "1H"
-                                ? "timeframe-pill-active"
-                                : "timeframe-pill"
-                            }
-                            onClick={() => {}}
-                          >
-                            <span className="text-xs opacity-75">1H</span>
-                          </div>
-                          <div
-                            className={
-                              predictionHistoryTimeframe === "6H"
-                                ? "timeframe-pill-active"
-                                : "timeframe-pill"
-                            }
-                            onClick={() => {}}
-                          >
-                            <span className="text-xs opacity-75">6H</span>
-                          </div>
-                          <div
-                            className={
-                              predictionHistoryTimeframe === "12H"
-                                ? "timeframe-pill-active"
-                                : "timeframe-pill"
-                            }
-                            onClick={() => {}}
-                          >
-                            <span className="text-xs opacity-75">12H</span>
-                          </div>
-                          <div
-                            className={
-                              predictionHistoryTimeframe === "1D"
-                                ? "timeframe-pill-active"
-                                : "timeframe-pill"
-                            }
-                            onClick={() => {}}
-                          >
-                            <span className="text-xs opacity-75">1D</span>
-                          </div>
-                          <div
-                            className={
-                              predictionHistoryTimeframe === "1W"
-                                ? "timeframe-pill-active"
-                                : "timeframe-pill"
-                            }
-                            onClick={() => {}}
-                          >
-                            <span className="text-xs opacity-75">1W</span>
-                          </div>
-                          <div
-                            className={
-                              predictionHistoryTimeframe === "ALL"
-                                ? "timeframe-pill-active"
-                                : "timeframe-pill"
-                            }
-                            onClick={() => {}}
-                          >
-                            <span className="text-xs">ALL</span>
+                        </span>
+                      </span>
+                    </span>{" "}
+                    &nbsp;Start:{" "}
+                    <span className="font-sfmono text-gray-400 text-[11px]">
+                      {predictionConfig.startTime !== "-"
+                        ? convertToLocaleTime(predictionConfig.startTime, isMobile).split(",")[0]
+                        : "-"}
+                    </span>{" "}
+                  </div>
+                  <div className="text-[12px] text-gray-500 text-right">
+                    Close:{" "}
+                    <span className="font-sfmono text-gray-400 text-[11px]">
+                      {predictionConfig.endTime !== "-"
+                        ? convertToLocaleTime(predictionConfig.endTime, isMobile).split(",")[0]
+                        : "-"}
+                    </span>{" "}
+                    &nbsp;
+                    <span className="relative group">
+                      <span className="cursor-pointer">
+                        &#9432;
+                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                          {`Prediction market closing date & time: ${
+                            predictionConfig.endTime !== "-"
+                              ? convertToLocaleTime(predictionConfig.endTime, isMobile)
+                              : "-"
+                          }`}
+                        </span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-row justify-between">
+                  <div className="text-[12px] text-gray-500 text-left">
+                    <span className="relative group">
+                      <span className="cursor-pointer">&#9432;</span>
+                      <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        Total amount of PRO & ANTI in the prediction pool
+                      </span>
+                    </span>{" "}
+                    &nbsp;Total Pool:{" "}
+                    <span className="font-sfmono text-accent-secondary text-[11px] text-opacity-80">
+                      {formatCount(predictionConfig.proLive)}
+                    </span>
+                    {"/"}
+                    <span className="font-sfmono text-accent-primary text-[11px] text-opacity-90">
+                      {formatCount(predictionConfig.antiLive)}
+                    </span>
+                    {"/"}
+                    <span className="font-sfmono text-gray-400 text-opacity-75">
+                      {"$"}
+                      <span className="font-sfmono text-gray-300 text-[11px] text-opacity-90">
+                        {antiData && proData
+                          ? formatCount(
+                              predictionConfig.proLive * Number(proData.priceUsd) +
+                                predictionConfig.antiLive * Number(antiData.priceUsd)
+                            )
+                          : "-"}
+                      </span>
+                      {""}
+                    </span>
+                  </div>
+                  <div className="text-[12px] text-gray-500 text-right">
+                    {isMobile ? "Ratio:" : "Token Ratio:"}{" "}
+                    <span className="font-sfmono text-gray-400 text-[11px]">
+                      {predictionConfig.antiLive > 0 && predictionConfig.proLive > 0
+                        ? (predictionConfig.proLive / predictionConfig.antiLive).toFixed(3)
+                        : "0.000"}
+                    </span>{" "}
+                    &nbsp;
+                    <span className="relative group">
+                      <span className="cursor-pointer">
+                        &#9432;
+                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[149px] lg:-translate-x-[40px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                          Ratio PRO:ANTI in the prediction pool
+                        </span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card w-full border-x border-b border-t border-gray-800 rounded-t-lg">
+                {predictionHistoryChartData && (
+                  <div className={`flex flex-col w-full`}>
+                    <div
+                      className={`flex justify-between items-center w-full`}
+                    >
+                      <div className="flex flex-row">
+                        <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        </h2>
+                        <div className="flex flex-row items-center">
+                          <TimeTicker
+                            fontSize={isMobile ? 12 : 12}
+                            isMobile={isMobile}
+                          />
+                          <div className="font-grotesk">
+                            <span className="relative group">
+                              <span className="cursor-pointer text-xs text-gray-500">
+                                &#9432;
+                              </span>
+                              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                                {`Displays the global expectation of the outcome over time`}
+                              </span>
+                            </span>
                           </div>
                         </div>
                       </div>
+                      <div
+                        className={`flex gap-1 mt-1 ml-auto font-sfmono ${
+                          loading ? "hidden" : "ml-auto"
+                        }`}
+                      >
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "1H"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">1H</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "6H"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">6H</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "12H"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">12H</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "1D"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">1D</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "1W"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs opacity-75">1W</span>
+                        </div>
+                        <div
+                          className={
+                            predictionHistoryTimeframe === "ALL"
+                              ? "timeframe-pill-active"
+                              : "timeframe-pill"
+                          }
+                          onClick={() => {}}
+                        >
+                          <span className="text-xs">ALL</span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-                <div className="flex flex-col items-center mb-8 lg:mb-4 border-b border-x border-gray-800 rounded-b-lg w-full bg-black">
-                  <Line
-                    ref={chartRef}
-                    data={predictionHistoryChartData}
-                    options={predictionHistoryChartData.options}
-                    plugins={predictionHistoryChartData.plugins}
-                  />
-                </div>
-                <div className="mb-8 mt-0">
-                  <Metadata
-                    type="Binary"
-                    oracle="Milton AI Agent"
-                    truth="Unknown"
-                    tellers="ChatGPT-o1, Claude Sonnet 3.5, Grok 2"
-                    isMobile={isMobile}
-                  />
-                </div>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="flex flex-col items-center px-4 pt-16 pb-32 lg:py-8 w-1/4 lg:w-3/4">
-                <div className="flex flex-col items-center w-4 lg:w-8">
-                  <BinaryOrbit
-                    size={120}
-                    orbitRadius={40}
-                    particleRadius={15}
-                    padding={5}
-                    invert={false}
-                  />
-                </div>
+              <div className="flex flex-col items-center mb-8 lg:mb-4 border-b border-x border-gray-800 rounded-b-lg w-full bg-black">
+    {
+      isMetaLoading
+      ? <BinaryOrbit
+          size={120}
+          orbitRadius={40}
+          particleRadius={15}
+          padding={20}
+          invert={false}
+        />
+      : <Line
+          ref={chartRef}
+          data={predictionHistoryChartData}
+          options={predictionHistoryChartData.options}
+          plugins={predictionHistoryChartData.plugins}
+        />
+    }
               </div>
-            )}
+              <div className="mb-8 mt-0">
+                <Metadata
+                  type="Binary"
+                  oracle="Milton AI Agent"
+                  truth="Unknown"
+                  tellers="ChatGPT-o1, Claude Sonnet 3.5, Grok 2"
+                  isMobile={isMobile}
+                />
+              </div>
+            </div>
             {showCollider ? (
               <div>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
-                    Collider
+                    Predict
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
@@ -1368,7 +1438,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-                      <div className="mr-1">Switch to Inverter</div>
+                      <div className="mr-1">Switch to Claim</div>
                       <svg
                         width="13"
                         height="13"
@@ -1409,16 +1479,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   clearFields={clearFields}
                   antiData={antiData}
                   proData={proData}
-                  config={{
-                    startTime: balances.startTime || "-",
-                    endTime: balances.endTime || "-",
-                    antiLive:
-                      balances.collisionsData.antiTokens -
-                        claims.collisionsData.antiTokens || 0,
-                    proLive:
-                      balances.collisionsData.proTokens -
-                        claims.collisionsData.proTokens || 0,
-                  }}
                   isMobile={isMobile}
                   bags={bags}
                   inactive={inactive || dead}
@@ -1429,7 +1489,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               <div>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
-                    Inverter
+                    Claim
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
@@ -1440,7 +1500,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-                      <div className="mr-1">Switch to Collider</div>
+                      <div className="mr-1">Switch to Predict</div>
                       <svg
                         width="13"
                         height="13"
@@ -1574,5 +1634,6 @@ const App = () => {
     </ConnectionProvider>
   );
 };
+
 
 export default App;
