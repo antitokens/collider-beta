@@ -48,6 +48,8 @@ import {
   parseCustomDate,
   formatCount,
   TimeTicker,
+  parseToUTC,
+  findHourBinForTime,
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { calculateCollision } from "../utils/colliderAlpha";
@@ -171,7 +173,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       const ctx = chart.ctx;
       const xAxis = chart.scales.x;
       // Style settings for the label
-      ctx.font = isMobile ? "10px 'SF Mono Round'" : "12px 'SF Mono Round'";
+      ctx.font = isMobile ? "9px 'SF Mono Round'" : "10px 'SF Mono Round'";
       ctx.fillStyle = "#666666";
       ctx.textBaseline = "middle";
       // Position calculation
@@ -190,11 +192,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       const ctx = chart.ctx;
       const xAxis = chart.scales.x;
       const yAxis = chart.scales.y;
-      const local = new Date();
       markers.forEach((date, index) => {
-        const localDate = new Date(
-          new Date(date).getTime() + local.getTimezoneOffset() * 60000
-        );
+        const localDate = new Date(new Date(date).getTime());
         const item = dateToLocal(localDate, useBinning);
         const dateStr = shortenTick(item, useBinning);
         // Find all occurrences of this date
@@ -249,25 +248,35 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           if (!date) return;
           const localDate = new Date(new Date(date).getTime());
           const item = dateToLocal(localDate, useBinning);
-          const closestBin = findBinForTimestamp(
-            parseCustomDate(item),
-            values[0].map((value) =>
-              parseCustomDate(
-                value.replace(
-                  /(\w+ \d+), (\d+ [AP]M)/,
-                  `$1, ${new Date(date).getFullYear()}, $2`
+          const closestBin =
+            useBinning !== "hourly"
+              ? findBinForTimestamp(
+                  parseCustomDate(item),
+                  values[0].map((value) =>
+                    useBinning !== "daily" && useBinning !== "hourly"
+                      ? parseCustomDate(
+                          value.replace(
+                            /(\w+ \d+), (\d+)/,
+                            `$1, ${new Date(date).getFullYear()}, $2`
+                          )
+                        )
+                      : parseCustomDate(value + ", " + new Date().getFullYear())
+                  )
                 )
-              )
-            )
-          );
-          const closestBinStr = dateToLocal(closestBin, useBinning);
-          const dateStr = shortenTick(closestBinStr, useBinning);
+              : findHourBinForTime(date.toString(), values[0]);
+          const closestBinStr =
+            useBinning !== "hourly"
+              ? dateToLocal(closestBin, useBinning)
+              : closestBin;
+          const dateStr =
+            useBinning !== "hourly"
+              ? shortenTick(closestBinStr, useBinning)
+              : closestBinStr;
           const allIndices =
             chart.data.labels?.reduce((acc, label, i) => {
               if (label === dateStr) acc.push(i);
               return acc;
             }, []) || [];
-
           let xPosition;
           if (allIndices.length > index) {
             xPosition = xAxis.getPixelForValue(allIndices[index]);
@@ -298,7 +307,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               ? "10px 'SF Mono Round'"
               : "12px 'SF Mono Round'";
             ctx.translate(
-              xPosition - (isMobile ? 28.25 : 30.25),
+              xPosition + (isMobile ? 3.25 : 5.25),
               yPosition + 9.5
             );
             ctx.rotate(0);
@@ -652,7 +661,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       const endValue = balances.eventsOverTime.cumulative.photon[nextBin];
       const limits = [
         Math.min(...balances.eventsOverTime.cumulative.photon),
-        Math.max(...balances.eventsOverTime.cumulative.photon),
+        Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+          ? 50
+          : Math.max(...balances.eventsOverTime.cumulative.photon),
       ];
       const currentTick = parseDateToISO(
         balances.eventsOverTime.cumulative.timestamps[thisBin],
@@ -663,7 +674,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         useBinning
       );
       const nowTime = new Date().toISOString();
-
       // Past segments should be null
       if (nextTick <= balances.startTime) {
         return "rgba(128, 128, 128, 0.5)";
@@ -691,7 +701,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           gradient.addColorStop(1, "rgba(3, 173, 252, 0.75)");
           return gradient;
         }
-
         // Segment crossing nowTime - gradient from color to grey
         if (currentTick < nowTime && nextTick > nowTime) {
           const gradient = context.chart.ctx.createLinearGradient(
@@ -706,7 +715,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               startValue,
               limits[0],
               limits[1],
-              [66, 255, 214, 0.75],
+              Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+                ? [128, 128, 128, 0.5]
+                : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
             )
           );
@@ -729,7 +740,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               limits[1],
               balances.eventsOverTime.cumulative.photon.findIndex(
                 (value) => value !== 0
-              ) >= nextBin
+              ) >= nextBin ||
+                Math.max(...balances.eventsOverTime.cumulative.photon) === 0
                 ? [128, 128, 128, 0.5]
                 : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
@@ -743,7 +755,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               limits[1],
               balances.eventsOverTime.cumulative.photon.findIndex(
                 (value) => value !== 0
-              ) >= nextBin
+              ) >= nextBin ||
+                Math.max(...balances.eventsOverTime.cumulative.photon) === 0
                 ? [128, 128, 128, 0.5]
                 : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
@@ -770,12 +783,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         return null;
       })
       .filter((value) => value !== null);
-    const labels = balances.eventsOverTime.cumulative.timestamps
-      .filter((timestamp) => {
-        const dateISO = parseDateToISO(timestamp, useBinning);
-        return dateISO;
-      })
-      .map((value) => shortenTick(value, useBinning));
+    const labels = balances.eventsOverTime.cumulative.timestamps.map((value) =>
+      shortenTick(value, useBinning)
+    );
+
     const chartData = {
       type: "line",
       labels: labels,
@@ -872,10 +883,35 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   marker:
                     balances.startTime === "-" || balances.endTime === "-"
                       ? []
-                      : [new Date()],
+                      : [
+                          useBinning !== "hourly"
+                            ? new Date()
+                            : new Date()
+                                .getUTCHours()
+                                .toString()
+                                .padStart(2, 0) +
+                              ":" +
+                              new Date()
+                                .getUTCMinutes()
+                                .toString()
+                                .padStart(2, 0),
+                        ],
                   values: [labels, plotable],
                   labels:
                     balances.startTime === "-" || balances.endTime === "-"
+                      ? []
+                      : findBinForTimestamp(
+                          new Date().toISOString(),
+                          balances.eventsOverTime.cumulative.timestamps.map(
+                            (value) => parseDateToISO(value)
+                          )
+                        ) ===
+                        findBinForTimestamp(
+                          balances.startTime,
+                          balances.eventsOverTime.cumulative.timestamps.map(
+                            (value) => parseDateToISO(value)
+                          )
+                        )
                       ? []
                       : ["Latest"],
                   useBinning: useBinning,
@@ -891,12 +927,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             callbacks: {
               label: (context) => {
                 const value = context.raw;
-                const endIndex =
-                  balances.eventsOverTime.cumulative.timestamps.find(
-                    (timestamp) =>
-                      shortenTick(timestamp, useBinning) ===
-                      context.chart.data.labels[context.dataIndex]
-                  );
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
@@ -916,11 +946,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     (value) => value !== 0
                   ) > context.dataIndex
                 ) {
-                  return ` -`;
+                  return ` `;
                 }
-                return ` ${value.toFixed(0).padStart(2)}% ${
-                  context.datasetIndex === 0 ? "expectation" : "uncertainty"
-                }`;
+                return Math.max(...balances.eventsOverTime.cumulative.photon) >
+                  0
+                  ? ` ${value.toFixed(0).padStart(2)}% ${
+                      context.datasetIndex === 0 ? "expectation" : "uncertainty"
+                    }`
+                  : ` `;
               },
               labelColor: (context) => {
                 const value = context.raw;
@@ -943,7 +976,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   new Date(currentTick).getTime() <
                     new Date(balances.startTime).getTime() ||
                   new Date(currentTick).getTime() >
-                    new Date(balances.endTime).getTime()
+                    new Date(balances.endTime).getTime() ||
+                  Math.max(...balances.eventsOverTime.cumulative.photon) === 0
                 ) {
                   return {
                     backgroundColor: "#808080",
@@ -1032,6 +1066,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               maxRotation: 90,
               color: "#d3d3d399",
               padding: isMobile ? 10 : 15,
+              callback: function (value, index) {
+                if (
+                  index === 0 &&
+                  useBinning !== "daily" &&
+                  useBinning !== "hourly"
+                ) {
+                  return;
+                }
+                return labels[index];
+              },
             },
           },
           y: {
@@ -1204,50 +1248,66 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     <span className="relative group">
                       <span className="cursor-pointer">
                         &#9432;
-                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        <span
+                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                        >
                           {`Prediction market opening date & time: ${
                             predictionConfig.startTime !== "-"
-                              ? convertToLocaleTime(
+                              ? parseToUTC(
                                   predictionConfig.startTime,
                                   isMobile
-                                )
-                              : "-"
+                                ) + " UTC"
+                              : "..."
                           }`}
                         </span>
                       </span>
                     </span>{" "}
                     &nbsp;Start:{" "}
-                    <span className="font-sfmono text-gray-400 text-[11px]">
+                    <span
+                      className={`font-sfmono text-gray-400 text-[11px] ${
+                        loading ? "animate-pulse" : ""
+                      }`}
+                    >
                       {predictionConfig.startTime !== "-"
-                        ? convertToLocaleTime(
-                            predictionConfig.startTime,
-                            isMobile
-                          )
-                        : "-"}
-                    </span>{" "}
+                        ? parseToUTC(predictionConfig.startTime, isMobile)
+                        : "..."}
+                    </span>
+                    &nbsp;&nbsp;
+                    {predictionConfig.startTime !== "-" && (
+                      <span className="font-sfmono text-gray-600 text-[10px]">
+                        UTC
+                      </span>
+                    )}{" "}
                   </div>
-                  <div className="text-[12px] text-gray-500 text-right">
+                  <div
+                    className={`text-[12px] text-gray-500 text-right ${
+                      loading ? "animate-pulse" : ""
+                    }`}
+                  >
                     Close:{" "}
                     <span className="font-sfmono text-gray-400 text-[11px]">
                       {predictionConfig.endTime !== "-"
-                        ? convertToLocaleTime(
-                            predictionConfig.endTime,
-                            isMobile
-                          )
-                        : "-"}
-                    </span>{" "}
+                        ? parseToUTC(predictionConfig.endTime, isMobile)
+                        : "..."}
+                    </span>
+                    &nbsp;&nbsp;
+                    {predictionConfig.endTime !== "-" && (
+                      <span className="font-sfmono text-gray-600 text-[10px]">
+                        UTC
+                      </span>
+                    )}{" "}
                     &nbsp;
                     <span className="relative group">
                       <span className="cursor-pointer">
                         &#9432;
-                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        <span
+                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                        >
                           {`Prediction market closing date & time: ${
                             predictionConfig.endTime !== "-"
-                              ? convertToLocaleTime(
-                                  predictionConfig.endTime,
-                                  isMobile
-                                )
-                              : "-"
+                              ? parseToUTC(predictionConfig.endTime, isMobile) +
+                                " UTC"
+                              : "..."
                           }`}
                         </span>
                       </span>
@@ -1262,7 +1322,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         Total amount of PRO & ANTI in the prediction pool
                       </span>
                     </span>{" "}
-                    &nbsp;Total Pool:{" "}
+                    &nbsp;Global Pool:{" "}
                     <span className="font-sfmono text-accent-secondary text-[11px] text-opacity-80">
                       {formatCount(predictionConfig.proLive)}
                     </span>
@@ -1281,7 +1341,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                                 predictionConfig.antiLive *
                                   Number(antiData.priceUsd)
                             )
-                          : "-"}
+                          : "0"}
                       </span>
                       {""}
                     </span>

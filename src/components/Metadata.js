@@ -8,7 +8,7 @@ const Metadata = ({
   isMobile = false,
 }) => {
   const tooltips = {
-    type: "Binary outcome prediction",
+    type: "Prediction outcome is binary",
     oracle: "Autonomous AI agent that aggregates the tellers",
     truth: "Final outcome is not yet known",
     tellers: "AI models that provided truths",
@@ -27,7 +27,7 @@ const Metadata = ({
       }`}
     >
       <div
-        className={`px-2 py-1 bg-black bg-opacity-60 rounded text-xs font-mono text-gray-300 hover:bg-opacity-100 transition-colors relative group cursor-help ${className}`}
+        className={`px-2 py-1 bg-black bg-opacity-60 rounded text-xs font-mono text-gray-300 hover:bg-opacity-100 transition-colors relative group cursor-pointer ${className}`}
       >
         {value}
         <span

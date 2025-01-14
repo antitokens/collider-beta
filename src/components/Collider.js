@@ -306,7 +306,7 @@ const Collider = ({
           },
           layout: {
             padding: {
-              top: 15, // Add padding to avoid overlapping
+              top: 0, // Add padding to avoid overlapping
               left: 5,
               right: 5,
               bottom: 0,
@@ -314,9 +314,10 @@ const Collider = ({
           },
           scales: {
             x: {
+              display: false,
               position: "bottom",
               title: {
-                display: true,
+                display: false,
                 text: "Your Prediction", // Label for the X-axis
                 font: {
                   family: "'SF Mono Round'",
@@ -326,7 +327,7 @@ const Collider = ({
                 color: "#999999",
               },
               ticks: {
-                display: totalInvest > 0,
+                display: false,
                 callback: function (value, index) {
                   // Map index to a new labels array for the second axis
                   return userDistribution
@@ -342,13 +343,15 @@ const Collider = ({
                 color: "#ffffffa2",
               },
               grid: {
+                display: false,
                 color: "#d3d3d322",
               },
             },
             x2: {
+              display: false,
               position: "top",
               ticks: {
-                display: totalInvest > 0,
+                display: false,
                 callback: function (value, index) {
                   // Map index to a new labels array for the second axis
                   return userDistribution
@@ -364,13 +367,15 @@ const Collider = ({
                 color: "#fcba03",
               },
               grid: {
+                display: false,
                 color: "#d3d3d300",
               },
             },
             x3: {
+              display: false,
               position: "top",
               ticks: {
-                display: totalInvest > 0,
+                display: false,
                 callback: function (value, index) {
                   // Map index to a new labels array for the second axis
                   return userDistribution
@@ -386,10 +391,13 @@ const Collider = ({
                 color: "#44c1cf",
               },
               grid: {
+                display: false,
                 color: "#d3d3d300",
               },
             },
             y: {
+              display: false,
+              position: "left",
               title: {
                 display: false,
                 text: "Emissions", // Label for the X-axis
@@ -413,6 +421,7 @@ const Collider = ({
               },
             },
             y2: {
+              display: false,
               position: "right",
               title: {
                 display: false,
@@ -647,7 +656,7 @@ const Collider = ({
                   Displays your current tokens in the pool
                 </span>
               </div>
-              <div>&nbsp;{`Your Stake`}:&nbsp;</div>
+              <div>&nbsp;{`Total`}:&nbsp;</div>
               <div className="flex flex-row justify-center font-sfmono pt-[0px] lg:pt-[1px]">
                 <div className={`text-accent-secondary text-[11px] opacity-95`}>
                   {proUsage > 0 ? "+" : ""}
@@ -692,12 +701,10 @@ const Collider = ({
             </div>
           </div>
           <div className="flex flex-row justify-between text-[12px] text-gray-500">
-            <div className="text-sm">
-              {isMobile ? "" : ""}
-            </div>
+            <div className="text-sm">{isMobile ? "" : ""}</div>
             <div className="flex flex-row text-right">
               <div>
-                Current Bet:{" "}
+                Current:{" "}
                 <span className="text-[11px] text-white font-sfmono">
                   <span className="text-gray-400">$</span>
                   {dollarBet >= 1e4
@@ -871,16 +878,24 @@ const Collider = ({
       {/* User Distribution */}
       {userDistribution && lineChartData && totalInvest > 0 && (
         <>
-          <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200 -mb-2">
-            <div className="-mb-0">Your Predictions</div>
+          <div className="flex flex-row justify-center gap-2 items-center font-grotesk text-gray-200 mt-4">
+            <div className="-mt-1">Your Predictions</div>
             <div className="relative group">
-              <div className="cursor-pointer">&#9432;</div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <div className="cursor-pointer text-xs text-gray-400">
+                &#9432;
+              </div>
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block z-50">
                 {`Displays your current, past and net predictions`}
               </span>
             </div>
           </div>
-          <div className={inactive ? "hidden" : "h-[400px]"}>
+          <div
+            className={
+              inactive
+                ? "hidden"
+                : "h-[200px] border border-gray-800 rounded-md px-2 pb-4"
+            }
+          >
             <Line data={lineChartData} options={lineChartData.options} />
           </div>
         </>
@@ -889,9 +904,8 @@ const Collider = ({
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={disabled || loading || inactive || true}
+        disabled={loading || inactive}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
-          disabled ||
           loading ||
           inactive ||
           (antiTokens === 0 && proTokens === 0) ||

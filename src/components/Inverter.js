@@ -12,10 +12,9 @@ import {
   toast,
   emptyBags,
   formatCount,
-  formatPrecise,
   defaultToken,
   emptyMetadata,
-  convertToLocaleTime,
+  parseToUTC,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -37,11 +36,12 @@ const Inverter = ({
   proData = defaultToken,
   isMobile = false,
   bags = emptyBags,
-  inactive = true,
+  inactive,
   truth = [],
   balances = emptyMetadata,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [active, setActive] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
@@ -122,7 +122,7 @@ const Inverter = ({
         );
       }
     }
-  }, [antiData, proData, bags, truth, wallet, wallet.disconnecting]);
+  }, [antiData, proData, bags, truth, wallet, wallet.disconnecting, active]);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
@@ -133,6 +133,10 @@ const Inverter = ({
       setPhotonTokens(0);
     }
   }, [clearFields]);
+
+  useEffect(() => {
+    setActive(!inactive);
+  }, [inactive]);
 
   // Prepare line chart data
   useEffect(() => {
@@ -338,14 +342,14 @@ const Inverter = ({
               </span>
             </div>
             <div className="flex items-center">
-              <div>&nbsp;Your Claim:&nbsp;</div>
+              <div>&nbsp;Claim:&nbsp;</div>
               <div className="flex items-center font-sfmono pt-[0px] lg:pt-[2px]">
                 <div className="text-accent-secondary text-[11px] opacity-95">
-                  {formatPrecise(updatedBalances[0])}
+                  {!active ? "0.0" : formatCount(updatedBalances[0])}
                 </div>
                 <div>/</div>
                 <div className="text-accent-primary text-[11px] opacity-95">
-                  {formatPrecise(updatedBalances[1])}
+                  {!active ? "0.0" : formatCount(updatedBalances[1])}
                 </div>
               </div>
             </div>
@@ -353,7 +357,7 @@ const Inverter = ({
 
           <div className="flex items-center text-[12px]">
             <div className="flex items-center">
-              Claim P/L:&nbsp;
+              P/L:&nbsp;
               <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[2px]">
                 <span className="text-gray-400">$</span>
                 {formatCount(dollarGain.toFixed(2))}
@@ -389,11 +393,13 @@ const Inverter = ({
             <span className="relative group">
               <span className="cursor-pointer">
                 &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <span
+                  className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                >
                   {`Reclaim opening date & time: ${
                     balances.endTime !== "-" && balances.startTime !== "-"
-                      ? convertToLocaleTime(balances.startTime, isMobile)
-                      : "-"
+                      ? parseToUTC(balances.endTime, isMobile) + " UTC"
+                      : "..."
                   }`}
                 </span>
               </span>
@@ -401,13 +407,13 @@ const Inverter = ({
             &nbsp;Start:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {balances.endTime !== "-"
-                ? convertToLocaleTime(balances.endTime, isMobile).split(",")[0]
-                : "-"}
+                ? parseToUTC(balances.endTime, isMobile).split(",")[0]
+                : "..."}
             </span>{" "}
           </div>
           <div className="flex flex-row text-right text-[12px]">
             <div>
-              Token Change:{" "}
+              Change:{" "}
               <span className="text-[11px] text-white font-sfmono">
                 <span
                   className={`font-sfmono text-${
@@ -470,33 +476,25 @@ const Inverter = ({
         {/* Submit Button */}
         <button
           onClick={() => {
-            setBaryonTokens(Number(updatedBalances[1])),
-              setPhotonTokens(Number(updatedBalances[0]));
+            baryonTokens > 0 || photonTokens > 0
+              ? (setBaryonTokens(0), setPhotonTokens(0))
+              : (setBaryonTokens(Number(updatedBalances[1])),
+                setPhotonTokens(Number(updatedBalances[0])));
           }}
-          disabled={
-            disabled ||
-            loading ||
-            inactive ||
-            (baryonTokens <= 0 && photonTokens <= 0)
-          }
+          disabled={loading || !active}
           className={`w-1/4 my-2 py-1 rounded-3xl transition-all ${
-            disabled ||
-            loading ||
-            inactive ||
-            (photonTokens < 1 && photonTokens !== 0) ||
-            baryonTokens !== updatedBalances[1] ||
-            photonTokens !== updatedBalances[0]
-              ? "bg-transparent border border-gray-400 text-gray-400 cursor-not-allowed"
+            loading || !active || baryonTokens > 0 || photonTokens > 0
+              ? "bg-transparent border border-gray-400 text-gray-400 hover:border-white hover:text-white"
               : "bg-transparent border border-accent-primary text-accent-primary hover:border-white hover:text-white"
           }`}
         >
-          {inactive
-            ? "Claim"
+          {!active
+            ? "Closed"
             : baryonTokens > 0 || photonTokens > 0
-            ? "Claim"
+            ? "Clear"
             : loading
-            ? "Claim"
-            : "Claim"}
+            ? "Wait"
+            : "Fill"}
         </button>
       </div>
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
@@ -535,7 +533,7 @@ const Inverter = ({
                   readOnly
                 />
               </div>
-              <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
+              <div className={!active ? "hidden" : "text-xs text-gray-500"}>
                 <img
                   src={`${BASE_URL}/assets/pro.png`}
                   alt="pro-logo"
@@ -573,7 +571,7 @@ const Inverter = ({
                   ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}ANTI
                 </label>
               </div>
-              <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
+              <div className={!active ? "hidden" : "text-xs text-gray-500"}>
                 <img
                   src={`${BASE_URL}/assets/anti.png`}
                   alt="anti-logo"
@@ -598,7 +596,7 @@ const Inverter = ({
       )}
       <div className="flex flex-row justify-between text-sm text-gray-500 w-full mt-4">
         <div>
-          Total Tokens in Reclaim:{" "}
+          Tokens:{" "}
           <span className="text-[12px] text-white font-sfmono">
             {Number(antiTokens) + Number(proTokens)
               ? (Number(antiTokens) + Number(proTokens)).toFixed(2)
@@ -606,7 +604,7 @@ const Inverter = ({
           </span>
         </div>
         <div>
-          USD Value:{" "}
+          USD:{" "}
           <span className="text-[12px] text-white font-sfmono">
             <span className="text-gray-400">$</span>
             {Number(antiTokens) + Number(proTokens)
@@ -622,16 +620,12 @@ const Inverter = ({
       <button
         onClick={handleReclaim}
         disabled={
-          disabled ||
-          loading ||
-          inactive ||
-          (baryonTokens <= 0 && photonTokens <= 0) ||
-          true
+          loading || !active || (baryonTokens <= 0 && photonTokens <= 0)
         }
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
           loading ||
-          inactive ||
+          !active ||
           (photonTokens < 1 && photonTokens !== 0) ||
           baryonTokens !== updatedBalances[1] ||
           photonTokens !== updatedBalances[0]
@@ -639,7 +633,7 @@ const Inverter = ({
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {inactive
+        {!active
           ? "Closed"
           : baryonTokens > 0 || photonTokens > 0
           ? "Submit"
