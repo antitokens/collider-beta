@@ -5,7 +5,7 @@ import {
   getTokenBalance,
   PRO_TOKEN_MINT,
 } from "../utils/solana";
-import { getBalance, getClaim } from "../utils/api";
+import { getBalance } from "../utils/api";
 
 /* Token Balances Navbar */
 
@@ -13,8 +13,6 @@ const TokenBalance = (trigger) => {
   const wallet = useWallet();
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
-  const [baryonBalance, setBaryonBalance] = useState(0);
-  const [photonBalance, setPhotonBalance] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -23,14 +21,10 @@ const TokenBalance = (trigger) => {
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      const blobBalance = await getBalance(wallet.publicKey);
-      const blobClaim = await getClaim(wallet.publicKey);
+      const blobBalance = await getBalance(wallet.publicKey, String(-1));
       const dataBalance = JSON.parse(blobBalance.message);
-      const dataClaim = JSON.parse(blobClaim.message);
-      setAntiBalance(antiBalanceResult - dataBalance.anti - dataClaim.anti);
-      setProBalance(proBalanceResult - dataBalance.pro - dataClaim.pro);
-      setBaryonBalance(dataBalance.baryon - dataClaim.baryon);
-      setPhotonBalance(dataBalance.photon - dataClaim.photon);
+      setAntiBalance(antiBalanceResult - dataBalance.anti);
+      setProBalance(proBalanceResult - dataBalance.pro);
     };
 
     if (wallet.publicKey) checkBalance();
@@ -95,14 +89,6 @@ const TokenBalance = (trigger) => {
                 ? (proBalance / antiBalance).toFixed(2)
                 : "-"}
             </span>
-            <b className="text-accent-steel">
-              &nbsp;&nbsp;&nbsp;&nbsp;$PHOTON:
-            </b>
-            <span>{proBalance ? photonBalance.toFixed(2) : "-"}</span>
-            <b className="text-accent-cement">
-              &nbsp;&nbsp;&nbsp;&nbsp;$BARYON:
-            </b>
-            <span>{proBalance ? baryonBalance.toFixed(2) : "-"}</span>
           </div>
         </div>
       )}

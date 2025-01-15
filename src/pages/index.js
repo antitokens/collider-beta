@@ -13,16 +13,11 @@ import {
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import Collider from "../components/Collider";
-import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
-import {
-  calculateEqualisation,
-  implementEqualisation,
-} from "../utils/equaliserAlpha";
-import Metadata from "../components/Metadata";
 import Navbar from "../components/TopNavbar";
 import Footer from "../components/BottomFooter";
 import BuyTokenModal from "../components/BuyTokenModal";
+import PollMetaModal from "../components/PollMetaModal";
 import BinaryOrbit from "../components/BinaryOrbit";
 import {
   ANTI_TOKEN_MINT,
@@ -34,7 +29,6 @@ import {
   useIsMobile,
   emptyMetadata,
   metadataInit,
-  emptyGaussian,
   emptyBags,
   emptyConfig,
   defaultToken,
@@ -50,9 +44,9 @@ import {
   TimeTicker,
   parseToUTC,
   findHourBinForTime,
+  pollsInit,
 } from "../utils/utils";
-import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
-import { calculateCollision } from "../utils/colliderAlpha";
+import { getBalance, getBalances, getPolls, addPoll } from "../utils/api";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 /* Main Page */
@@ -63,7 +57,7 @@ const Home = ({ BASE_URL }) => {
   return (
     <>
       <Head>
-        <title>Antitoken | Predict</title>
+        <title>Antitoken | Poll</title>
         <meta
           name="description"
           content="Experience the future of prediction markets with $ANTI and $PRO tokens."
@@ -128,14 +122,15 @@ const Home = ({ BASE_URL }) => {
 const LandingPage = ({ BASE_URL, setTrigger }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
+  const [poll, setPoll] = useState(0);
+  const [polls, setPolls] = useState(pollsInit);
+  const [newPoll, setNewPoll] = useState(pollsInit[0]);
   const [started, setStarted] = useState(false);
   const [isOver, setIsOver] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
   const [antiUsage, setAntiUsage] = useState(0);
   const [proUsage, setProUsage] = useState(0);
-  const [baryonBalance, setBaryonBalance] = useState(0);
-  const [photonBalance, setPhotonBalance] = useState(0);
   const [bags, setBags] = useState(emptyBags);
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
@@ -145,22 +140,27 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showAnimation, setShowAnimation] = useState(false);
   const [currentPredictionData, setCurrentPredictionData] =
     useState(emptyMetadata);
-  const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
   const [balances, setBalances] = useState(metadataInit);
-  const [claims, setClaims] = useState(metadataInit);
   const [predictionConfig, setPredictionConfig] = useState(emptyConfig);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [loading, setLoading] = useState(isMetaLoading);
-  const [, setDynamicsCurrent] = useState([]);
-  const [, setDynamicsFinal] = useState([]);
-  const [truth, setTruth] = useState([1, 0]); // ANTI-PRO
+  const [triggerAddPoll, setTriggerAddPoll] = useState(false);
   const isMobile = useIsMobile();
   const [predictionHistoryChartData, setPredictionHistoryChartData] =
     useState(null);
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
     useState("1D");
+
+  useEffect(() => {
+    const fetchBalances = async () => {
+      const blobPolls = await getPolls();
+      const dataPolls = JSON.parse(blobPolls.message);
+      setPolls(JSON.stringify(dataPolls) === "{}" ? pollsInit : dataPolls);
+    };
+    fetchBalances();
+  }, []);
 
   useEffect(() => {
     setLoading(isMetaLoading);
@@ -322,6 +322,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     },
   };
 
+  const handlePollCreation = async (formData) => {
+    setNewPoll(formData);
+    setTriggerAddPoll(false);
+    const blobNewPoll = await addPoll(wallet.publicKey, formData, poll);
+    const dataNewPoll = JSON.parse(blobNewPoll.message);
+    console.log(dataNewPoll);
+  };
+
   const handlePredictionSubmitted = (state, event) => {
     if (state) {
       // Store the submitted event data
@@ -330,22 +338,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     } else {
       // Handle error case
       console.error("Prediction submission failed:", event.error);
-    }
-    setDataUpdated(state);
-    setTrigger(state);
-    // Trigger field clearing
-    setClearFields(true);
-    setTimeout(() => setClearFields(false), 100);
-    setTimeout(() => setShowAnimation(state), 100);
-  };
-
-  const handleClaimSubmitted = (state, claim) => {
-    if (state) {
-      setCurrentClaimData(claim);
-      setRefresh(true);
-    } else {
-      // Handle error case
-      console.error("Reclaim submission failed:", claim.error);
     }
     setDataUpdated(state);
     setTrigger(state);
@@ -371,42 +363,25 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
   useEffect(() => {
     if (balances !== metadataInit) {
-      setStarted(new Date() < new Date(balances.startTime));
+      setStarted(new Date() > new Date(balances.startTime));
       setIsOver(new Date() > new Date(balances.endTime));
     }
   }, [balances]);
 
   useEffect(() => {
-    if (refresh && !started && !wallet.disconnecting) {
-      const fetchBalancesWithClaims = async () => {
+    if (refresh && started && !wallet.disconnecting && poll) {
+      const fetchBalances = async () => {
         try {
           setRefresh(false);
           setIsMetaLoading(true);
-          const blobBalance = await getBalances();
-          const blobClaim = await getClaims();
+          const blobBalance = await getBalances(String(poll));
           const dataBalance = JSON.parse(blobBalance.message);
-          const dataClaim = JSON.parse(blobClaim.message);
-
-          const colliderDistribution =
-            baryonBalance >= 0 || photonBalance >= 0
-              ? calculateCollision(baryonBalance, photonBalance, true)
-              : emptyGaussian;
-
-          const totalDistribution =
-            dataBalance.totalDistribution.u >= 0 &&
-            dataBalance.totalDistribution.s >= 0
-              ? calculateCollision(
-                  dataBalance.emissionsData.baryonTokens,
-                  dataBalance.emissionsData.photonTokens,
-                  true
-                )
-              : emptyGaussian;
 
           setBalances({
             startTime: dataBalance.startTime,
             endTime: dataBalance.endTime,
-            colliderDistribution: colliderDistribution,
-            totalDistribution: totalDistribution,
+            colliderDistribution: {},
+            totalDistribution: {},
             emissionsData: dataBalance.emissionsData,
             collisionsData: dataBalance.collisionsData,
             eventsOverTime: dataBalance.eventsOverTime,
@@ -423,65 +398,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             proPool: dataBalance.collisionsData.proTokens,
             wallets: dataBalance.totalDistribution.wallets,
           });
-
-          const thisAntiUsage = wallet.publicKey
-            ? dataBalance.totalDistribution.bags.anti[
-                dataBalance.totalDistribution.wallets.indexOf(
-                  wallet.publicKey.toString()
-                )
-              ]
-            : 0;
-          const thisProUsage = wallet.publicKey
-            ? dataBalance.totalDistribution.bags.pro[
-                dataBalance.totalDistribution.wallets.indexOf(
-                  wallet.publicKey.toString()
-                )
-              ]
-            : 0;
-
-          const rewardCurrent = calculateEqualisation(
-            dataBalance.totalDistribution.bags.baryon,
-            dataBalance.totalDistribution.bags.photon,
-            dataBalance.totalDistribution.bags.anti,
-            dataBalance.totalDistribution.bags.pro,
-            dataBalance.collisionsData.antiTokens,
-            dataBalance.collisionsData.proTokens,
-            antiData && proData
-              ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-              : [1, 1],
-            dataBalance.totalDistribution.wallets,
-            [
-              thisAntiUsage > thisProUsage ? 1 : 0,
-              thisAntiUsage < thisProUsage ? 1 : 0,
-            ]
-          );
-
-          const rewardFinal = implementEqualisation(
-            dataBalance.totalDistribution.bags.baryon,
-            dataBalance.totalDistribution.bags.photon,
-            dataBalance.totalDistribution.bags.anti,
-            dataBalance.totalDistribution.bags.pro,
-            dataBalance.collisionsData.antiTokens,
-            dataBalance.collisionsData.proTokens,
-            antiData && proData
-              ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-              : [1, 1],
-            dataBalance.totalDistribution.wallets,
-            truth
-          );
-
-          setDynamicsCurrent(rewardCurrent ? rewardCurrent.normalised : []);
-          setDynamicsFinal(rewardFinal ? rewardFinal.normalised : []);
-
-          setClaims({
-            startTime: dataClaim.startTime,
-            endTime: dataClaim.endTime,
-            colliderDistribution: colliderDistribution,
-            totalDistribution: totalDistribution,
-            emissionsData: dataClaim.emissionsData,
-            collisionsData: dataClaim.collisionsData,
-            eventsOverTime: dataClaim.eventsOverTime,
-          });
         } catch (err) {
           console.error("Error fetching metadata:", err);
           setMetaError(err);
@@ -490,20 +406,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setRefresh(false);
         }
       };
-      fetchBalancesWithClaims();
-    }
-    if (wallet.disconnecting) {
-      setDynamicsCurrent([]);
-      setDynamicsFinal([]);
+      fetchBalances();
     }
   }, [
+    poll,
     refresh,
-    baryonBalance,
-    photonBalance,
     antiData,
     proData,
     started,
-    truth,
     wallet,
     wallet.disconnecting,
     wallet.connected,
@@ -513,15 +423,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setPredictionConfig({
       startTime: balances.startTime || "-",
       endTime: balances.endTime || "-",
-      antiLive:
-        balances.collisionsData.antiTokens - claims.collisionsData.antiTokens ||
-        0,
-      proLive:
-        balances.collisionsData.proTokens - claims.collisionsData.proTokens ||
-        0,
+      antiLive: balances.collisionsData.antiTokens || 0,
+      proLive: balances.collisionsData.proTokens || 0,
       convertToLocaleTime,
     });
-  }, [balances, claims]);
+  }, [balances]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -568,54 +474,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      const _balance = await getBalance(wallet.publicKey);
+      const _balance = await getBalance(wallet.publicKey, String(poll));
       const balance = JSON.parse(_balance.message);
-      const _claim = await getClaim(wallet.publicKey);
-      const claim = JSON.parse(_claim.message);
       setAntiBalance(
-        !wallet.disconnecting
-          ? antiBalanceResult - balance.anti + claim.anti
-          : 0
+        !wallet.disconnecting ? antiBalanceResult - balance.anti : 0
       );
-      setProBalance(
-        !wallet.disconnecting ? proBalanceResult - balance.pro + claim.pro : 0
-      );
-      setAntiUsage(
-        !wallet.disconnecting
-          ? claim.anti + claim.pro > 0
-            ? claim.anti - balance.anti
-            : balance.anti
-          : 0
-      );
-      setProUsage(
-        !wallet.disconnecting
-          ? claim.anti + claim.pro > 0
-            ? claim.pro - balance.pro
-            : balance.pro
-          : 0
-      );
-
-      setBaryonBalance(
-        !wallet.disconnecting
-          ? claim.baryon + claim.photon > 0
-            ? 0
-            : balance.baryon
-          : 0
-      );
-      setPhotonBalance(
-        !wallet.disconnecting
-          ? claim.photon + claim.baryon > 0
-            ? 0
-            : balance.photon
-          : 0
-      );
+      setProBalance(!wallet.disconnecting ? proBalanceResult - balance.pro : 0);
+      setAntiUsage(!wallet.disconnecting ? balance.anti : 0);
+      setProUsage(!wallet.disconnecting ? balance.pro : 0);
     };
 
-    if (wallet.publicKey || dataUpdated) {
+    if ((wallet.publicKey || dataUpdated) && poll) {
       checkBalance();
       setRefresh(true);
     }
-  }, [wallet, dataUpdated, wallet.disconnecting]);
+  }, [wallet, dataUpdated, wallet.disconnecting, poll]);
 
   // Create a ref to store the chart instance
   const chartRef = useRef(null);
@@ -1194,7 +1067,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     <>
       <section className="min-h-screen pt-16 md:pt-20 flex flex-col items-center relative mt-10 mb-10">
         {/* Hero Section */}
-        <div className="w-full max-w-7xl px-4 mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center rounded-md">
+        <div className="w-full max-w-4xl px-4 mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center rounded-md">
           <div className="flex items-center gap-2 flex-wrap md:flex-nowrap justify-center md:justify-start">
             <div>
               <svg
@@ -1213,14 +1086,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               </svg>
             </div>
             <p className="text-left">
-              The prediction program is built off-chain for demonstration
-              purposes. No funds will be deducted from your wallet.
+              The voting program is entirely off-chain. No funds will be
+              deducted from your wallet.
             </p>
           </div>
         </div>
         <div className={`flex flex-col items-center w-full max-w-7xl px-4`}>
           <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
-            Predict with <span className="text-accent-primary">$ANTI</span> and{" "}
+            Vote with <span className="text-accent-primary">$ANTI</span> and{" "}
             <span className="text-accent-secondary">$PRO</span>
           </h1>
           <div
@@ -1230,18 +1103,26 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           >
             <div className="flex flex-col w-full lg:w-3/4">
               <div className="bg-dark-card p-4 rounded w-full mb-4 border border-gray-800">
-                <div className="flex flex-row items-center mb-2">
-                  <div className="text-2xl text-gray-300 text-left font-medium">
-                    Will SOL overtake ETH in 2025?&nbsp;
-                  </div>
-                  <span className="relative group">
-                    <span className="cursor-pointer text-sm text-gray-400">
-                      &#9432;
-                      <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                        {`Truth is measured in terms of Market Capitalisations`}
+                <div className="flex flex-row justify-between items-center mb-2">
+                  <div className="flex flex-row items-center mb-2">
+                    <div className="text-2xl text-gray-300 text-left font-medium">
+                      {polls[poll].title}&nbsp;
+                    </div>
+                    <span className="relative group">
+                      <span className="cursor-pointer text-sm text-gray-400">
+                        &#9432;
+                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                          {`Truth is measured in terms of Market Capitalisations`}
+                        </span>
                       </span>
                     </span>
-                  </span>
+                  </div>
+                  <button
+                    className="bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal"
+                    onClick={() => setTriggerAddPoll(true)}
+                  >
+                    Add Poll
+                  </button>
                 </div>
                 <div className="flex flex-row justify-between">
                   <div className="text-[12px] text-gray-500 text-left">
@@ -1481,66 +1362,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   />
                 )}
               </div>
-              <div className="mb-8 mt-0">
-                <Metadata
-                  type="Binary"
-                  oracle="Milton AI Agent"
-                  truth="Unknown"
-                  tellers="ChatGPT-o1, Claude Sonnet 3.5, Grok 2"
-                  isMobile={isMobile}
-                />
-              </div>
             </div>
-            {showCollider ? (
+            {showCollider && (
               <div>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
-                    Predict
+                    Vote
                   </h2>
-                  <button
-                    className="text-sm text-accent-primary hover:text-gray-300"
-                    onClick={() => {
-                      setShowCollider(false),
-                        setDataUpdated(false),
-                        setRefresh(false);
-                    }}
-                  >
-                    <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-                      <div className="mr-1">Switch to Claim</div>
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="rotate-90 hover:rotate-180 transition-transform duration-200 ease-in-out"
-                      >
-                        <path
-                          d="M6 2L6 14L2 10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="square"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M10 14L10 2L14 6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="square"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                  </button>
                 </div>
                 <Collider
+                  poll={poll}
                   wallet={wallet}
                   antiBalance={antiBalance}
                   proBalance={proBalance}
                   antiUsage={antiUsage}
                   proUsage={proUsage}
-                  baryonBalance={baryonBalance}
-                  photonBalance={photonBalance}
                   disabled={!wallet.connected}
                   BASE_URL={BASE_URL}
                   onPredictionSubmitted={handlePredictionSubmitted}
@@ -1551,69 +1387,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   bags={bags}
                   inactive={isOver}
                   isMetaLoading={isMetaLoading}
-                />
-              </div>
-            ) : (
-              <div>
-                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
-                  <h2 className="text-xl text-gray-300 text-left font-medium">
-                    Claim
-                  </h2>
-                  <button
-                    className="text-sm text-accent-primary hover:text-gray-300"
-                    onClick={() => {
-                      setShowCollider(true),
-                        setDataUpdated(false),
-                        setRefresh(false);
-                    }}
-                  >
-                    <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-                      <div className="mr-1">Switch to Predict</div>
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="rotate-90 hover:rotate-180 transition-transform duration-200 ease-in-out"
-                      >
-                        <path
-                          d="M6 2L6 14L2 10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="square"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M10 14L10 2L14 6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="square"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                </div>
-                <Inverter
-                  wallet={wallet}
-                  antiBalance={antiBalance}
-                  proBalance={proBalance}
-                  antiUsage={antiUsage}
-                  proUsage={proUsage}
-                  baryonBalance={baryonBalance}
-                  photonBalance={photonBalance}
-                  disabled={!wallet.connected}
-                  BASE_URL={BASE_URL}
-                  onClaimSubmitted={handleClaimSubmitted}
-                  clearFields={clearFields}
-                  antiData={antiData}
-                  proData={proData}
-                  isMobile={isMobile}
-                  bags={bags}
-                  inactive={!isOver}
-                  truth={!isOver ? [] : truth}
-                  balances={balances}
                 />
               </div>
             )}
@@ -1639,6 +1412,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         isVisible={showBuyTokensModal}
         setIsVisible={setShowBuyTokensModal}
       />
+      <PollMetaModal
+        isVisible={triggerAddPoll}
+        setIsVisible={setTriggerAddPoll}
+        onSubmit={handlePollCreation}
+      />
       {/* Animation */}
       {showAnimation && (
         <div className="w-screen h-screen fixed top-0 left-0 z-50">
@@ -1651,11 +1429,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             maxLoops={2}
             inverse={!showCollider}
             isMobile={isMobile}
-            metadata={
-              showCollider
-                ? JSON.stringify(currentPredictionData)
-                : JSON.stringify(currentClaimData)
-            }
+            metadata={JSON.stringify(currentPredictionData)}
             onComplete={() => {
               setShowAnimation(false);
             }}

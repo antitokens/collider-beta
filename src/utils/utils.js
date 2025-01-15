@@ -37,6 +37,18 @@ export const monthsReverse = {
 };
 
 /* Global Constants */
+// Polls init
+export const pollsInit = [
+  {
+    poll: 0,
+    title: "Some Empty Poll",
+    description: "Just Some Description",
+    schedule: ["0", "1"],
+    wallet: "",
+    signature: "",
+    timestamp: "",
+  },
+];
 
 // Metadata init
 export const metadataInit = {

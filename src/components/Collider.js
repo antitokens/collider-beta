@@ -1,19 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { recordPrediction } from "../utils/api";
-import { calculateCollision } from "../utils/colliderAlpha";
-import { calculateEqualisation } from "../utils/equaliserAlpha";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
-import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
 import {
   toastContainerConfig,
   toast,
-  emptyBags,
-  emptyMetadata,
   formatCount,
-  formatPrecise,
   defaultToken,
   copyText,
 } from "../utils/utils";
@@ -21,13 +15,12 @@ Chart.register(...registerables);
 
 /* Collider Container */
 const Collider = ({
+  poll = 0,
   wallet,
   antiBalance,
   proBalance,
   antiUsage,
   proUsage,
-  baryonBalance,
-  photonBalance,
   disabled,
   BASE_URL,
   onPredictionSubmitted,
@@ -35,24 +28,13 @@ const Collider = ({
   antiData = defaultToken,
   proData = defaultToken,
   isMobile = false,
-  bags = emptyBags,
   inactive = true,
   isMetaLoading = true,
 }) => {
   const [loading, setLoading] = useState(isMetaLoading);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
-  const [baryonTokens, setBaryonTokens] = useState(0);
-  const [photonTokens, setPhotonTokens] = useState(0);
-  const [userDistribution, setUserDistribution] = useState(null);
-  const [pastDistribution, setPastDistribution] = useState(null);
-  const [totalDistribution, setTotalDistribution] = useState(null);
-  const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
-  const [dollarBet, setDollarBet] = useState(0);
-  const [dollarStake, setDollarStake] = useState(0);
-  const [gain, setGain] = useState(0);
-  const [newGain, setNewGain] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
   const sliderRef = useRef(null);
 
@@ -70,407 +52,16 @@ const Collider = ({
     }
   }, []);
 
-  useEffect(() => {
-    if (antiData && proData) {
-      setDollarStake(
-        proUsage * proData.priceUsd + antiUsage * antiData.priceUsd
-      );
-    }
-  }, [proUsage, antiUsage, antiData, proData]);
-
   // Clear input fields when `clearFields` changes
   useEffect(() => {
     if (clearFields) {
       setAntiTokens(0);
       setProTokens(0);
-      setBaryonTokens(0);
-      setPhotonTokens(0);
       setTotalInvest(0);
-      setDollarBet(0);
       setSplitPercentage(50);
       handleSliderInput(50);
     }
   }, [clearFields]);
-
-  // Prepare line chart data
-  useEffect(() => {
-    // Calculate expected rewardCurrents
-    let myBag = -1;
-    if (wallet.publicKey) {
-      const rewardCurrent =
-        bags !== emptyBags
-          ? calculateEqualisation(
-              bags.baryon,
-              bags.photon,
-              bags.anti,
-              bags.pro,
-              bags.antiPool,
-              bags.proPool,
-              antiData && proData
-                ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                : [1, 1],
-              bags.wallets,
-              [antiUsage > proUsage ? 1 : 0, antiUsage < proUsage ? 1 : 0]
-            )
-          : undefined;
-      myBag = rewardCurrent
-        ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
-        : -1;
-      if (proData && antiData && myBag >= 0) {
-        const originalPosition =
-          proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
-        if (!wallet.disconnecting) {
-          setGain(
-            originalPosition !== 0 && (baryonBalance > 0 || photonBalance > 0)
-              ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
-              : 0
-          );
-        } else {
-          setGain(0);
-        }
-      } else if (proData && antiData && myBag < 0 && totalInvest > 0) {
-        let myFutureBag = -1;
-        let pseudoBags = {
-          baryon: [...bags.baryon],
-          photon: [...bags.photon],
-          baryonPool: bags.baryonPool + baryonTokens,
-          photonPool: bags.photonPool + photonTokens,
-          anti: [...bags.anti],
-          pro: [...bags.pro],
-          antiPool: bags.antiPool + antiTokens,
-          proPool: bags.proPool + proTokens,
-          wallets: [...bags.wallets],
-        };
-        pseudoBags.anti.push(antiTokens);
-        pseudoBags.pro.push(proTokens);
-        pseudoBags.baryon.push(baryonTokens);
-        pseudoBags.photon.push(photonTokens);
-        pseudoBags.wallets.push(wallet.publicKey.toString());
-
-        const rewardFuture =
-          pseudoBags !== emptyBags
-            ? calculateEqualisation(
-                pseudoBags.baryon,
-                pseudoBags.photon,
-                pseudoBags.anti,
-                pseudoBags.pro,
-                pseudoBags.antiPool,
-                pseudoBags.proPool,
-                antiData && proData
-                  ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                  : [1, 1],
-                pseudoBags.wallets,
-                [antiTokens > proTokens ? 1 : 0, antiTokens < proTokens ? 1 : 0]
-              )
-            : undefined;
-        myFutureBag = rewardFuture
-          ? rewardFuture.change.wallets.indexOf(wallet.publicKey.toString())
-          : -1;
-        const originalPosition =
-          proTokens * proData.priceUsd + antiTokens * antiData.priceUsd;
-
-        if (!wallet.disconnecting) {
-          setNewGain(
-            originalPosition !== 0 && (baryonTokens > 0 || photonTokens > 0)
-              ? (rewardFuture.change.gain[myFutureBag] / originalPosition) * 100
-              : 0
-          );
-        } else {
-          setNewGain(0);
-        }
-      }
-    }
-
-    if (userDistribution && totalDistribution && dollarStake) {
-      // Trial
-      const F = 1;
-      const G = 1;
-      setBaryonTokens(totalInvest > 0 ? F * totalDistribution.u : 0);
-      setPhotonTokens(totalInvest > 0 ? G * totalDistribution.s : 0);
-
-      // Create new arrays with updated values
-      const updatedBaryonBags = [...bags.baryon];
-      const updatedPhotonBags = [...bags.photon];
-      const updatedAntiBags = [...bags.anti];
-      const updatedProBags = [...bags.pro];
-
-      if (myBag >= 0) {
-        updatedBaryonBags[myBag] =
-          totalInvest > 0 ? F * totalDistribution.u : baryonTokens;
-        updatedPhotonBags[myBag] =
-          totalInvest > 0 ? F * totalDistribution.u : photonTokens;
-        updatedAntiBags[myBag] += antiTokens;
-        updatedProBags[myBag] += proTokens;
-      }
-
-      const rewardUpdated =
-        bags !== emptyBags
-          ? calculateEqualisation(
-              updatedBaryonBags,
-              updatedPhotonBags,
-              updatedAntiBags,
-              updatedProBags,
-              bags.antiPool + antiTokens,
-              bags.proPool + proTokens,
-              antiData && proData
-                ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-                : [1, 1],
-              bags.wallets,
-              [
-                antiUsage + antiTokens > proUsage + proTokens ? 1 : 0,
-                antiUsage + antiTokens < proUsage + proTokens ? 1 : 0,
-              ]
-            )
-          : undefined;
-
-      if (myBag >= 0) {
-        setNewGain(
-          dollarStake !== 0 &&
-            !inactive &&
-            !wallet.disconnecting &&
-            totalInvest > 0
-            ? (rewardUpdated.change.gain[myBag] / dollarStake) * 100
-            : 0
-        );
-      }
-
-      setLineChartData({
-        type: "line",
-        labels: userDistribution.short.map((value) =>
-          value > 0 ? formatPrecise(value) : ""
-        ),
-        datasets: [
-          {
-            label: "Current",
-            data:
-              totalInvest <= 0
-                ? []
-                : userDistribution.curve.map((item) => item.value),
-            borderColor: "#ffffff",
-            backgroundColor: "#ffffff",
-            pointStyle: "line",
-            hidden: totalInvest <= 0,
-          },
-          {
-            label: "Past",
-            data:
-              totalInvest <= 0
-                ? []
-                : pastDistribution
-                ? pastDistribution.curve.map((item) => item.value)
-                : [],
-            borderColor: "#44c1cf",
-            backgroundColor: "#44c1cf",
-            pointStyle: "line",
-            hidden: totalInvest <= 0,
-          },
-          {
-            label: "Net",
-            data:
-              totalInvest <= 0
-                ? []
-                : totalDistribution
-                ? totalDistribution.curve.map((item) => item.value)
-                : [],
-            borderColor: "#fcba03",
-            backgroundColor: "#fcba03",
-            pointStyle: "line",
-            hidden: totalInvest <= 0,
-          },
-        ],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: {
-                font: {
-                  family: "'SF Mono Round'",
-                },
-                color: "#ffffffa2",
-                pointStyle: "circle",
-                usePointStyle: true,
-                boxWidth: 7,
-                boxHeight: 7,
-              },
-              display: true,
-              position: "top",
-              align: "center",
-            },
-            datalabels: {
-              display: false,
-            },
-            tooltip: {
-              enabled: false,
-            },
-          },
-          layout: {
-            padding: {
-              top: 0, // Add padding to avoid overlapping
-              left: 5,
-              right: 5,
-              bottom: 0,
-            },
-          },
-          scales: {
-            x: {
-              display: false,
-              position: "bottom",
-              title: {
-                display: false,
-                text: "Your Prediction", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#999999",
-              },
-              ticks: {
-                display: false,
-                callback: function (value, index) {
-                  // Map index to a new labels array for the second axis
-                  return userDistribution
-                    ? userDistribution.short[index]
-                      ? formatCount(userDistribution.short[index], false)
-                      : undefined
-                    : undefined;
-                },
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: "#ffffffa2",
-              },
-              grid: {
-                display: false,
-                color: "#d3d3d322",
-              },
-            },
-            x2: {
-              display: false,
-              position: "top",
-              ticks: {
-                display: false,
-                callback: function (value, index) {
-                  // Map index to a new labels array for the second axis
-                  return userDistribution
-                    ? totalDistribution.short[index]
-                      ? formatCount(totalDistribution.short[index], false)
-                      : undefined
-                    : undefined;
-                },
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: "#fcba03",
-              },
-              grid: {
-                display: false,
-                color: "#d3d3d300",
-              },
-            },
-            x3: {
-              display: false,
-              position: "top",
-              ticks: {
-                display: false,
-                callback: function (value, index) {
-                  // Map index to a new labels array for the second axis
-                  return userDistribution
-                    ? pastDistribution.short[index]
-                      ? formatCount(pastDistribution.short[index], false)
-                      : undefined
-                    : undefined;
-                },
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: "#44c1cf",
-              },
-              grid: {
-                display: false,
-                color: "#d3d3d300",
-              },
-            },
-            y: {
-              display: false,
-              position: "left",
-              title: {
-                display: false,
-                text: "Emissions", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#999999",
-              },
-              grid: { color: "#d3d3d322" },
-              ticks: {
-                callback: function (value) {
-                  return totalInvest > 0 ? value.toFixed(1) : "";
-                },
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: "#999999",
-              },
-            },
-            y2: {
-              display: false,
-              position: "right",
-              title: {
-                display: false,
-                text: "Emissions", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#999999",
-              },
-              grid: { color: "#d3d3d322" },
-              ticks: {
-                callback: function (value) {
-                  return totalInvest > 0 ? value.toFixed(1) : "";
-                },
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: "#999999",
-              },
-            },
-          },
-        },
-      });
-    }
-  }, [
-    userDistribution,
-    pastDistribution,
-    totalDistribution,
-    antiTokens,
-    proTokens,
-    antiData,
-    proData,
-    dollarStake,
-    antiUsage,
-    proUsage,
-    dollarBet,
-    totalInvest,
-    wallet,
-    bags,
-    wallet.disconnecting,
-    antiBalance,
-    proBalance,
-    splitPercentage,
-    baryonTokens,
-    photonTokens,
-  ]);
 
   const handlePrediction = async () => {
     if (disabled || loading) return;
@@ -480,7 +71,7 @@ const Collider = ({
 
       // Validate input
       if (antiTokens <= 0 && proTokens <= 0) {
-        toast.error("You must predict with at least some tokens!");
+        toast.error("You must vote with at least some tokens!");
         return;
       }
 
@@ -498,17 +89,15 @@ const Collider = ({
       }
 
       if (antiTokens > antiBalance || proTokens > proBalance) {
-        toast.error("You cannot predict with more tokens than you have!");
+        toast.error("You cannot vote with more tokens than you have!");
         return;
       }
 
       // Prompt for Solana signature
-      const message = `Requesting signature to predict with:
+      const message = `Requesting signature to vote with:
         ${antiTokens.toFixed(2)} $ANTI,
         ${proTokens.toFixed(2)} $PRO,
-        for
-        ${baryonTokens.toFixed(2)} $BARYON,
-        ${photonTokens.toFixed(2)} $PHOTON
+        on '${poll}',
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
@@ -516,71 +105,38 @@ const Collider = ({
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
       const timestamp = new Date().toISOString();
       // Record the prediction
-      await recordPrediction(wallet.publicKey.toString(), {
-        antiTokens: antiTokens + antiUsage,
-        proTokens: proTokens + proUsage,
-        baryonTokens: baryonTokens,
-        photonTokens: photonTokens,
-        signature,
-        timestamp,
-      });
+      await recordPrediction(
+        wallet.publicKey.toString(),
+        {
+          antiTokens: antiTokens + antiUsage,
+          proTokens: proTokens + proUsage,
+          baryonTokens: 0,
+          photonTokens: 0,
+          signature,
+          timestamp,
+        },
+        poll
+      );
       // Create prediction data object
       const prediction = {
         antiTokens: antiTokens + antiUsage,
         proTokens: proTokens + proUsage,
-        baryonTokens: baryonTokens,
-        photonTokens: photonTokens,
+        baryonTokens: 0,
+        photonTokens: 0,
         signature,
         timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
       };
-      setGain(newGain);
       onPredictionSubmitted(true, prediction);
-      toast.success("Your prediction has been recorded!");
+      toast.success("Your vote has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
-      toast.error("An error occurred while recording your prediction");
+      toast.error("An error occurred while recording your vote");
       onPredictionSubmitted(false, { error: error.message });
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    setPastDistribution(calculateCollision(baryonBalance, photonBalance, true));
-    if (totalInvest > 0) {
-      setTotalDistribution(
-        calculateCollision(antiUsage + antiTokens, proUsage + proTokens)
-      );
-      setUserDistribution(calculateCollision(antiTokens, proTokens));
-    } else {
-      setUserDistribution({
-        u: 0,
-        s: 0,
-        range: [0, 1],
-        distribution: [
-          { x: 0, value: 0 },
-          { x: 1, value: 0 },
-        ],
-        short: [0, 1],
-        curve: [
-          { x: 0, value: 0 },
-          { x: 1, value: 0 },
-        ],
-      });
-      setTotalDistribution(
-        calculateCollision(baryonBalance, photonBalance, true)
-      );
-    }
-  }, [
-    antiTokens,
-    proTokens,
-    baryonTokens,
-    photonTokens,
-    baryonBalance,
-    photonBalance,
-    totalInvest,
-  ]);
 
   const handleTimeframeChange = (timeframe) => {
     setPredictionHistoryTimeframe(timeframe);
@@ -593,11 +149,6 @@ const Collider = ({
     if (!proData || !antiData) {
       return;
     }
-    setDollarBet(pro * proData.priceUsd + anti * antiData.priceUsd);
-    setDollarStake(
-      (proUsage + pro) * proData.priceUsd +
-        (antiUsage + anti) * antiData.priceUsd
-    );
     setProTokens(pro);
     setAntiTokens(anti);
   };
@@ -653,7 +204,7 @@ const Collider = ({
               <div className="relative group">
                 <div className="cursor-pointer">&#9432;&nbsp;</div>
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Displays your current tokens in the pool
+                  Displays your total tokens in the poll
                 </span>
               </div>
               <div>&nbsp;{`Total`}:&nbsp;</div>
@@ -669,70 +220,24 @@ const Collider = ({
                 </div>
               </div>
             </div>
-            <div className="flex flex-row text-right text-[12px]">
-              <div>
-                USD:{" "}
-                <span className="text-[11px] text-white font-sfmono">
-                  <span className="text-gray-400">$</span>
-                  {dollarStake >= 1e4
-                    ? formatCount(dollarStake.toFixed(2))
-                    : dollarStake.toFixed(2)}
-                </span>{" "}
-              </div>
-              &nbsp;
-              <div className="flex flex-row text-right">
-                <span>&nbsp;P/L:&nbsp;</span>
-                <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[1px]">
-                  <span
-                    className={`text-${
-                      gain >= 0 ? "accent-secondary" : "accent-primary"
-                    } opacity-95`}
-                  >
-                    {formatCount(gain.toFixed(2))}%&nbsp;
-                  </span>
-                </span>
-                <span className="relative group">
-                  <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    {`Displays your current maximum gain`}
-                  </span>
+            <div className="flex flex-row items-left text-[12px] text-gray-500">
+              <div className="relative group">
+                <div className="cursor-pointer">&#9432;&nbsp;</div>
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  Displays your current tokens in the poll
                 </span>
               </div>
-            </div>
-          </div>
-          <div className="flex flex-row justify-between text-[12px] text-gray-500">
-            <div className="text-sm">{isMobile ? "" : ""}</div>
-            <div className="flex flex-row text-right">
-              <div>
-                Current:{" "}
-                <span className="text-[11px] text-white font-sfmono">
-                  <span className="text-gray-400">$</span>
-                  {dollarBet >= 1e4
-                    ? formatCount(dollarBet.toFixed(2))
-                    : dollarBet.toFixed(2)}
-                </span>
-              </div>
-              &nbsp;
-              <div className="flex flex-row text-right">
-                <div>
-                  &nbsp;P/L:{" "}
-                  <span className="text-[11px] text-white font-sfmono pt-[2px]">
-                    <span
-                      className={`text-${
-                        newGain >= 0 ? "accent-secondary" : "accent-primary"
-                      } opacity-95`}
-                    >
-                      {formatCount(newGain.toFixed(2))}
-                      %&nbsp;
-                    </span>
-                  </span>
+              <div>&nbsp;{`Current`}:&nbsp;</div>
+              <div className="flex flex-row justify-center font-sfmono pt-[0px] lg:pt-[1px]">
+                <div className={`text-accent-secondary text-[11px] opacity-95`}>
+                  {proUsage > 0 ? "+" : ""}
+                  {formatCount(proTokens.toFixed(2))}
                 </div>
-                <span className="relative group">
-                  <div className="cursor-pointer text-xs mt-[1px]">&#9432;</div>
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    {`Displays your updated maximum gain`}
-                  </span>
-                </span>
+                <div>/</div>
+                <div className={`text-accent-primary text-[11px] opacity-95`}>
+                  {antiUsage > 0 ? "+" : ""}
+                  {formatCount(antiTokens.toFixed(2))}
+                </div>
               </div>
             </div>
           </div>
@@ -874,32 +379,6 @@ const Collider = ({
           invert={false}
         />
       </div>
-
-      {/* User Distribution */}
-      {userDistribution && lineChartData && totalInvest > 0 && (
-        <>
-          <div className="flex flex-row justify-center gap-2 items-center font-grotesk text-gray-200 mt-4">
-            <div className="-mt-1">Your Predictions</div>
-            <div className="relative group">
-              <div className="cursor-pointer text-xs text-gray-400">
-                &#9432;
-              </div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block z-50">
-                {`Displays your current, past and net predictions`}
-              </span>
-            </div>
-          </div>
-          <div
-            className={
-              inactive
-                ? "hidden"
-                : "h-[200px] border border-gray-800 rounded-md px-2 pb-4"
-            }
-          >
-            <Line data={lineChartData} options={lineChartData.options} />
-          </div>
-        </>
-      )}
 
       {/* Submit Button */}
       <button
