@@ -481,14 +481,14 @@ const Inverter = ({
               : (setBaryonTokens(Number(updatedBalances[1])),
                 setPhotonTokens(Number(updatedBalances[0])));
           }}
-          disabled={loading || !active}
+          disabled={loading || !active || true}
           className={`w-1/4 my-2 py-1 rounded-3xl transition-all ${
-            loading || !active || baryonTokens > 0 || photonTokens > 0
+            loading || !active || baryonTokens > 0 || photonTokens > 0 || true
               ? "bg-transparent border border-gray-400 text-gray-400 hover:border-white hover:text-white"
               : "bg-transparent border border-accent-primary text-accent-primary hover:border-white hover:text-white"
           }`}
         >
-          {!active
+          {!active || true
             ? "Closed"
             : baryonTokens > 0 || photonTokens > 0
             ? "Clear"
@@ -620,7 +620,7 @@ const Inverter = ({
       <button
         onClick={handleReclaim}
         disabled={
-          loading || !active || (baryonTokens <= 0 && photonTokens <= 0)
+          loading || !active || (baryonTokens <= 0 && photonTokens <= 0) || true
         }
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
@@ -628,12 +628,13 @@ const Inverter = ({
           !active ||
           (photonTokens < 1 && photonTokens !== 0) ||
           baryonTokens !== updatedBalances[1] ||
-          photonTokens !== updatedBalances[0]
+          photonTokens !== updatedBalances[0] ||
+          true
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {!active
+        {!active || true
           ? "Closed"
           : baryonTokens > 0 || photonTokens > 0
           ? "Submit"

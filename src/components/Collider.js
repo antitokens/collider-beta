@@ -904,19 +904,20 @@ const Collider = ({
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={loading || inactive}
+        disabled={loading || inactive || true}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           loading ||
           inactive ||
           (antiTokens === 0 && proTokens === 0) ||
           (Math.abs(antiTokens - proTokens) < 1 &&
             Math.abs(antiTokens - proTokens) !== 0) ||
-          (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
+          (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0) ||
+          true
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {inactive
+        {inactive || true
           ? "Closed"
           : (Math.abs(antiTokens - proTokens) < 1 &&
               Math.abs(antiTokens - proTokens) !== 0) ||
