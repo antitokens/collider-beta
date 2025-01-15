@@ -1279,13 +1279,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       </span>
                     )}{" "}
                   </div>
-                  <div
-                    className={`text-[12px] text-gray-500 text-right ${
-                      loading ? "animate-pulse" : ""
-                    }`}
-                  >
+                  <div className={`text-[12px] text-gray-500 text-right`}>
                     Close:{" "}
-                    <span className="font-sfmono text-gray-400 text-[11px]">
+                    <span
+                      className={`font-sfmono text-gray-400 text-[11px] ${
+                        loading ? "animate-pulse" : ""
+                      }`}
+                    >
                       {predictionConfig.endTime !== "-"
                         ? parseToUTC(predictionConfig.endTime, isMobile)
                         : "..."}
