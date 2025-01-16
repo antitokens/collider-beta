@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { recordClaim } from "../utils/api";
-import { calculateInversion } from "../utils/inverterAlpha";
 import { implementEqualisation } from "../utils/equaliserAlpha";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "./BinaryOrbit";
-import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
 import {
   toastContainerConfig,
@@ -105,6 +103,20 @@ const Inverter = ({
             ? [photonBalance, baryonBalance]
             : [0, 0]
         );
+        setAntiTokens(
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonTokens > 0 || baryonTokens > 0)
+            ? rewardCurrent.invert.anti[myBag]
+            : 0
+        );
+        setProTokens(
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonTokens > 0 || baryonTokens > 0)
+            ? rewardCurrent.invert.pro[myBag]
+            : 0
+        );
         setDollarGain(
           truth.length > 0 &&
             !wallet.disconnecting &&
@@ -122,7 +134,16 @@ const Inverter = ({
         );
       }
     }
-  }, [antiData, proData, bags, truth, wallet, wallet.disconnecting]);
+  }, [
+    antiData,
+    proData,
+    bags,
+    truth,
+    wallet,
+    wallet.disconnecting,
+    photonTokens,
+    baryonTokens,
+  ]);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
