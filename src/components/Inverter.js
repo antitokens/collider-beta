@@ -395,7 +395,7 @@ const Inverter = ({
             <span className="relative group">
               <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays your current realised changes in PHOTON & BARYON`}
+                {`Displays your current realised changes in PRO & ANTI`}
               </span>
             </span>
           </div>
