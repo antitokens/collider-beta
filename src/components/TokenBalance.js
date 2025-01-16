@@ -27,10 +27,10 @@ const TokenBalance = (trigger) => {
       const blobClaim = await getClaim(wallet.publicKey);
       const dataBalance = JSON.parse(blobBalance.message);
       const dataClaim = JSON.parse(blobClaim.message);
-      setAntiBalance(antiBalanceResult - dataBalance.anti - dataClaim.anti);
-      setProBalance(proBalanceResult - dataBalance.pro - dataClaim.pro);
-      setBaryonBalance(dataBalance.baryon - dataClaim.baryon);
-      setPhotonBalance(dataBalance.photon - dataClaim.photon);
+      setAntiBalance(antiBalanceResult - dataBalance.anti + dataClaim.anti);
+      setProBalance(proBalanceResult - dataBalance.pro + dataClaim.pro);
+      setBaryonBalance(dataClaim.baryon ? 0 : dataBalance.baryon);
+      setPhotonBalance(dataClaim.photon ? 0 : dataBalance.photon);
     };
 
     if (wallet.publicKey) checkBalance();

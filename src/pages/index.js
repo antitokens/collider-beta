@@ -377,7 +377,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [balances]);
 
   useEffect(() => {
-    if (refresh && !started && !wallet.disconnecting) {
+    if (refresh && !wallet.disconnecting) {
       const fetchBalancesWithClaims = async () => {
         try {
           setRefresh(false);
@@ -594,7 +594,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             : balance.pro
           : 0
       );
-
       setBaryonBalance(
         !wallet.disconnecting
           ? claim.baryon + claim.photon > 0
@@ -1306,7 +1305,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       <span className="cursor-pointer">
                         &#9432;
                         <span
-                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[41px] lg:translate-x-[31px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                         >
                           {`Prediction market closing date & time: ${
                             predictionConfig.endTime !== "-"

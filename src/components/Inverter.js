@@ -49,9 +49,8 @@ const Inverter = ({
   const [change, setChange] = useState([0, 0, 0]);
   const [updatedBalances, setUpdatedBalances] = useState([0, 0]);
   const [gain, setGain] = useState(0);
+  const [fill, setFill] = useState(false);
   const [dollarGain, setDollarGain] = useState(0);
-  const [userDistribution, setUserDistribution] = useState(null);
-  const [lineChartData, setLineChartData] = useState(null);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
@@ -93,6 +92,7 @@ const Inverter = ({
               ]
             : [0, 0, 0]
         );
+
         setUpdatedBalances(
           truth.length > 0 &&
             !wallet.disconnecting &&
@@ -102,8 +102,45 @@ const Inverter = ({
                 rewardCurrent.invert.anti[myBag],
               ]
             : !wallet.disconnecting
-            ? [proBalance, antiBalance]
+            ? [0, 0]
             : [0, 0]
+        );
+        setAntiTokens(
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonBalance > 0 || baryonBalance > 0)
+            ? rewardCurrent.invert.anti[myBag]
+            : !wallet.disconnecting
+            ? 0
+            : 0
+        );
+        setProTokens(
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonBalance > 0 || baryonBalance > 0)
+            ? rewardCurrent.invert.pro[myBag]
+            : !wallet.disconnecting
+            ? 0
+            : 0
+        );
+
+        setBaryonTokens(
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonBalance > 0 || baryonBalance > 0)
+            ? rewardCurrent.invert.baryon[myBag]
+            : !wallet.disconnecting
+            ? 0
+            : 0
+        );
+        setPhotonTokens(
+          truth.length > 0 &&
+            !wallet.disconnecting &&
+            (photonBalance > 0 || baryonBalance > 0)
+            ? rewardCurrent.invert.photon[myBag]
+            : !wallet.disconnecting
+            ? 0
+            : 0
         );
         setDollarGain(
           truth.length > 0 &&
@@ -138,102 +175,6 @@ const Inverter = ({
     setActive(!inactive);
   }, [inactive]);
 
-  // Prepare line chart data
-  useEffect(() => {
-    // Set Graphs
-    if (userDistribution) {
-      // Trial
-      const iF = 1;
-      const iG = 1;
-      setAntiTokens(iF * userDistribution.anti);
-      setProTokens(iG * userDistribution.pro);
-      setLineChartData({
-        type: "line",
-        labels: [],
-        datasets: [],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: {
-                font: {
-                  family: "'SF Mono Round'",
-                },
-                color: "#ffffffa2",
-                pointStyle: "circle",
-                usePointStyle: true,
-                boxWidth: 7,
-                boxHeight: 7,
-              },
-              display: true,
-              position: "top",
-              align: "center",
-            },
-            datalabels: {
-              display: false,
-            },
-            tooltip: {
-              enabled: false,
-            },
-          },
-          layout: {
-            padding: {
-              top: 15, // Add padding to avoid overlapping
-              left: 5,
-              right: 5,
-              bottom: 0,
-            },
-          },
-          scales: {
-            x: {
-              position: "bottom",
-              title: {
-                display: true,
-                text: "Probability Range", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#999999",
-              },
-              ticks: {
-                display: photonTokens > 0,
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: "#ffffffa2",
-              },
-              grid: {
-                color: "#d3d3d322",
-              },
-            },
-            y: {
-              title: {
-                display: false,
-                text: "Reclaim", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#999999",
-              },
-              grid: { color: "#d3d3d322" },
-              ticks: {
-                callback: function (value) {
-                  return ""; // Format y-axis
-                },
-              },
-            },
-          },
-        },
-      });
-    }
-  }, [userDistribution, baryonTokens, photonTokens]);
-
   const handleReclaim = async () => {
     if (disabled || loading) return;
 
@@ -246,28 +187,25 @@ const Inverter = ({
       }
 
       if (
-        baryonTokens !== updatedBalances[1] ||
-        photonTokens !== updatedBalances[0]
+        antiTokens !== updatedBalances[1] ||
+        proTokens !== updatedBalances[0]
       ) {
         toast.error("You can only claim maximum available balance!");
         return;
       }
 
-      if (
-        baryonTokens > updatedBalances[1] ||
-        photonTokens > updatedBalances[0]
-      ) {
+      if (antiTokens > updatedBalances[1] || proTokens > updatedBalances[0]) {
         toast.error("You cannot claim with more tokens than you have!");
         return;
       }
 
-      if (photonTokens < 1 && photonTokens !== 0) {
-        toast.error("Photons must be larger than 1, or exactly 0!");
+      if (photonTokens < 0) {
+        toast.error("Photons must be larger 0!");
         return;
       }
 
-      if (baryonTokens < 1 && baryonTokens !== 0) {
-        toast.error("Baryons must be larger than 1, or exactly 0!");
+      if (baryonTokens < 0) {
+        toast.error("Baryons must be larger 0!");
         return;
       }
 
@@ -311,24 +249,13 @@ const Inverter = ({
       toast.error("An error occurred while recording your claim");
     } finally {
       setLoading(false);
+      setUpdatedBalances([0, 0]);
+      setAntiTokens(0);
+      setProTokens(0);
+      setBaryonTokens(0);
+      setPhotonTokens(0);
     }
   };
-
-  useEffect(() => {
-    if (baryonTokens || photonTokens) {
-      const distribution = calculateInversion(
-        baryonTokens,
-        photonTokens,
-        gain > 0 ? 1 : -1
-      );
-      setUserDistribution(distribution);
-    } else {
-      setUserDistribution({
-        anti: 0,
-        pro: 0,
-      });
-    }
-  }, [baryonTokens, photonTokens, gain]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
@@ -404,7 +331,7 @@ const Inverter = ({
                 </span>
               </span>
             </span>{" "}
-            &nbsp;Start:{" "}
+            <span>&nbsp;Start: </span>
             <span className="font-sfmono text-gray-400 text-[11px]">
               {balances.endTime !== "-"
                 ? parseToUTC(balances.endTime, isMobile).split(",")[0]
@@ -413,14 +340,14 @@ const Inverter = ({
           </div>
           <div className="flex flex-row text-right text-[12px]">
             <div>
-              Change:{" "}
+              <span>Change:&nbsp;</span>
               <span className="text-[11px] text-white font-sfmono">
                 <span
                   className={`font-sfmono text-${
                     Number(change[0]) > 0
                       ? "accent-secondary"
                       : Number(change[0]) < 0
-                      ? "accent-primary"
+                      ? "accent-secondary"
                       : "gray-300"
                   }`}
                 >
@@ -443,7 +370,7 @@ const Inverter = ({
               <span
                 className={`text-[11px] font-sfmono text-${
                   Number(change[1]) > 0
-                    ? "accent-secondary"
+                    ? "accent-primary"
                     : Number(change[1]) < 0
                     ? "accent-primary"
                     : "gray-300"
@@ -475,26 +402,15 @@ const Inverter = ({
         </div>
         {/* Submit Button */}
         <button
-          onClick={() => {
-            baryonTokens > 0 || photonTokens > 0
-              ? (setBaryonTokens(0), setPhotonTokens(0))
-              : (setBaryonTokens(Number(updatedBalances[1])),
-                setPhotonTokens(Number(updatedBalances[0])));
-          }}
+          onClick={() => setFill(!fill)}
           disabled={loading || !active}
           className={`w-1/4 my-2 py-1 rounded-3xl transition-all ${
-            loading || !active || baryonTokens > 0 || photonTokens > 0
+            loading || !active || fill
               ? "bg-transparent border border-gray-400 text-gray-400 hover:border-white hover:text-white"
               : "bg-transparent border border-accent-primary text-accent-primary hover:border-white hover:text-white"
           }`}
         >
-          {!active
-            ? "Closed"
-            : baryonTokens > 0 || photonTokens > 0
-            ? "Clear"
-            : loading
-            ? "Wait"
-            : "Fill"}
+          {!active ? "Closed" : fill ? "Clear" : loading ? "Wait" : "Fill"}
         </button>
       </div>
       <div className="border-[3px] border-black bg-dark-card rounded-full p-2 -my-[0.7rem] z-10">
@@ -508,7 +424,7 @@ const Inverter = ({
       </div>
 
       {/* Token Output Fields */}
-      {userDistribution && (
+      {active && (
         <div className="bg-dark-card p-4 rounded w-full">
           <div className="mb-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
             <div className="flex flex-col items-start justify-between w-full">
@@ -526,7 +442,11 @@ const Inverter = ({
                   min="0"
                   disabled={true}
                   value={
-                    Number(proTokens) > 0 ? Number(proTokens).toFixed(2) : ""
+                    fill
+                      ? Number(proTokens) > 0
+                        ? Number(proTokens).toFixed(2)
+                        : ""
+                      : ""
                   }
                   placeholder="-"
                   className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
@@ -556,7 +476,11 @@ const Inverter = ({
                   type="number"
                   min="0"
                   value={
-                    Number(antiTokens) > 0 ? Number(antiTokens).toFixed(2) : ""
+                    fill
+                      ? Number(antiTokens) > 0
+                        ? Number(antiTokens).toFixed(2)
+                        : ""
+                      : ""
                   }
                   placeholder="-"
                   disabled={true}
@@ -587,18 +511,13 @@ const Inverter = ({
               </div>
             </div>
           </div>
-          {lineChartData && false && (
-            <div style={{ height: "300px" }}>
-              <Line data={lineChartData} options={lineChartData.options} />
-            </div>
-          )}
         </div>
       )}
       <div className="flex flex-row justify-between text-sm text-gray-500 w-full mt-4">
         <div>
           Tokens:{" "}
           <span className="text-[12px] text-white font-sfmono">
-            {Number(antiTokens) + Number(proTokens)
+            {Number(antiTokens) + Number(proTokens) > 0 && fill
               ? (Number(antiTokens) + Number(proTokens)).toFixed(2)
               : "0"}
           </span>
@@ -607,7 +526,7 @@ const Inverter = ({
           USD:{" "}
           <span className="text-[12px] text-white font-sfmono">
             <span className="text-gray-400">$</span>
-            {Number(antiTokens) + Number(proTokens)
+            {Number(antiTokens) + Number(proTokens) > 0 && fill
               ? (
                   antiData.priceUsd * Number(antiTokens) +
                   proData.priceUsd * Number(proTokens)
@@ -619,24 +538,21 @@ const Inverter = ({
       {/* Submit Button */}
       <button
         onClick={handleReclaim}
-        disabled={
-          loading || !active || (baryonTokens <= 0 && photonTokens <= 0)
-        }
+        disabled={loading || !active || !fill}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
           loading ||
           !active ||
-          (photonTokens < 1 && photonTokens !== 0) ||
-          baryonTokens !== updatedBalances[1] ||
-          photonTokens !== updatedBalances[0]
+          !fill ||
+          (photonTokens < 1 && photonTokens !== 0)
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
         {!active
           ? "Closed"
-          : baryonTokens > 0 || photonTokens > 0
-          ? "Submit"
+          : !fill
+          ? "Please Fill"
           : loading
           ? "Submitting..."
           : "Submit"}
