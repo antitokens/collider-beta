@@ -236,6 +236,11 @@ const Inverter = ({
       toast.error("An error occurred while recording your claim");
     } finally {
       setLoading(false);
+      setUpdatedBalances([0, 0]);
+      setAntiTokens(0);
+      setProTokens(0);
+      setBaryonTokens(0);
+      setPhotonTokens(0);
     }
   };
 
