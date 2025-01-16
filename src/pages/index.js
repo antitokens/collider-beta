@@ -13,6 +13,7 @@ import {
 } from "@solana/wallet-adapter-wallets";
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
+import Metadata from "../components/Metadata";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
 import { calculateEqualisation } from "../utils/equaliserAlpha";
 import Navbar from "../components/TopNavbar";
@@ -138,7 +139,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [dynamics, setDynamics] = useState([]);
-  const [truth, setTruth] = useState([0, 1]);
+  const [truth, setTruth] = useState([0, 1]); // ANTI-PRO
   const isMobile = useIsMobile();
 
   const onRefresh = (state) => {
@@ -678,6 +679,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 </div>
               </div>
             )}
+            <div className="my-4"></div>
+            <Metadata
+              type="Binary"
+              oracle="Milton AI Agent"
+              truth={
+                truth.join(",") === "0,1"
+                  ? "Yes"
+                  : truth.join(",") === "1,0"
+                  ? "No"
+                  : "Unknown"
+              }
+              tellers="ChatGPT-o1, Claude Sonnet 3.5, Grok 2"
+              isMobile={isMobile}
+            />
           </div>
           {showCollider && (
             <div
