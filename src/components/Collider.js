@@ -540,6 +540,7 @@ const Collider = ({
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
       toast.error("An error occurred while recording your prediction");
+      setDollarBet(0);
       onPredictionSubmitted(false, { error: error.message });
     } finally {
       setLoading(false);
@@ -904,20 +905,19 @@ const Collider = ({
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={loading || inactive || true}
+        disabled={loading || inactive}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           loading ||
           inactive ||
           (antiTokens === 0 && proTokens === 0) ||
           (Math.abs(antiTokens - proTokens) < 1 &&
             Math.abs(antiTokens - proTokens) !== 0) ||
-          (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0) ||
-          true
+          (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {inactive || true
+        {inactive
           ? "Closed"
           : (Math.abs(antiTokens - proTokens) < 1 &&
               Math.abs(antiTokens - proTokens) !== 0) ||

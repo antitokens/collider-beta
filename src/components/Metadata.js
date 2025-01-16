@@ -10,7 +10,12 @@ const Metadata = ({
   const tooltips = {
     type: "Prediction outcome is binary",
     oracle: "Autonomous AI agent that aggregates the tellers",
-    truth: "Final outcome is not yet known",
+    truth:
+      truth === "Unknown"
+        ? "Final outcome is not yet known"
+        : truth === "Yes"
+        ? "Final outcome is Yes"
+        : "Final outcome is No",
     tellers: "AI models that provided truths",
   };
 
@@ -27,11 +32,23 @@ const Metadata = ({
       }`}
     >
       <div
-        className={`px-2 py-1 bg-black bg-opacity-60 rounded text-xs font-mono text-gray-300 hover:bg-opacity-100 transition-colors relative group cursor-pointer ${className}`}
+        className={`px-2 py-1 bg-black bg-opacity-60 rounded text-xs font-mono ${
+          truth === "Yes" && value === truth
+            ? "text-accent-secondary"
+            : truth === "No" && value === truth
+            ? "text-accent-primary"
+            : "text-gray-300"
+        } hover:bg-opacity-100 transition-colors relative group cursor-pointer ${className}`}
       >
         {value}
         <span
-          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-grotesk`}
+          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center ${
+            truth === "Yes" && value === truth
+              ? "text-accent-secondary"
+              : truth === "No" && value === truth
+              ? "text-accent-primary"
+              : "text-gray-300"
+          } hidden group-hover:block font-grotesk`}
         >
           {tooltip}
         </span>

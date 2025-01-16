@@ -155,7 +155,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [loading, setLoading] = useState(isMetaLoading);
   const [, setDynamicsCurrent] = useState([]);
   const [, setDynamicsFinal] = useState([]);
-  const [truth, setTruth] = useState([1, 0]); // ANTI-PRO
+  const [truth, setTruth] = useState([0, 1]); // ANTI-PRO
   const isMobile = useIsMobile();
   const [predictionHistoryChartData, setPredictionHistoryChartData] =
     useState(null);
@@ -913,6 +913,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           )
                         )
                       ? []
+                      : isMobile
+                      ? []
+                      : new Date().toISOString() > balances.endTime ||
+                        new Date().toISOString() < balances.startTime
+                      ? []
                       : ["Latest"],
                   useBinning: useBinning,
                   isMobile: isMobile,
@@ -1485,7 +1490,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 <Metadata
                   type="Binary"
                   oracle="Milton AI Agent"
-                  truth="Unknown"
+                  truth={
+                    truth.join(",") === "0,1" && isOver
+                      ? "Yes"
+                      : truth.join(",") === "1,0" && isOver
+                      ? "No"
+                      : "Unknown"
+                  }
                   tellers="ChatGPT-o1, Claude Sonnet 3.5, Grok 2"
                   isMobile={isMobile}
                 />
