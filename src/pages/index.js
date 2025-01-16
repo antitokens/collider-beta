@@ -629,125 +629,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     </div>
                   </button>
                 </div>
-                <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
-                  <div className="bg-dark-card p-4 rounded w-full mb-4 flex flex-col justify-center">
-                    <h2 className="text-xl text-gray-300 text-center font-medium mb-2">
-                      Claim your Collider Emissions
-                    </h2>
-                    <div className="flex flex-row justify-between">
-                      <div className="text-[12px] text-gray-500 text-left">
-                        <span className="relative group">
-                          <span className="cursor-pointer">
-                            &#9432;
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              {isMobile
-                                ? `Reclaim opening date & time: ${
-                                    balances.endTime
-                                      ? isMobile
-                                        ? convertToLocaleTime(
-                                            balances.startTime,
-                                            isMobile
-                                          ).split(",")[0]
-                                        : convertToLocaleTime(
-                                            balances.startTime,
-                                            isMobile
-                                          )
-                                      : "-"
-                                  }`
-                                : "Reclaim opening date & time"}
-                            </span>
-                          </span>
-                        </span>{" "}
-                        &nbsp;Open:{" "}
-                        <span className="font-sfmono text-gray-400 text-[11px]">
-                          {balances.endTime
-                            ? isMobile
-                              ? convertToLocaleTime(
-                                  balances.endTime,
-                                  isMobile
-                                ).split(",")[0]
-                              : convertToLocaleTime(balances.endTime, isMobile)
-                            : "-"}
-                        </span>{" "}
-                      </div>
-                      <div className="text-[12px] text-gray-500 text-right">
-                        Close:{" "}
-                        <span className="font-sfmono text-gray-400 text-[11px]">
-                          {balances.endTime
-                            ? isMobile
-                              ? "Never"
-                              : "Never"
-                            : "-"}
-                        </span>{" "}
-                        &nbsp;
-                        <span className="relative group">
-                          <span className="cursor-pointer">
-                            &#9432;
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              {isMobile
-                                ? `Reclaim closing date & time: ${
-                                    balances.endTime
-                                      ? !isMobile
-                                        ? "Never"
-                                        : "Never"
-                                      : "-"
-                                  }`
-                                : "Reclaim closing date & time"}
-                            </span>
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-row justify-between">
-                      <div className="text-[12px] text-gray-500 text-left">
-                        <span className="relative group">
-                          <span className="cursor-pointer">&#9432;</span>
-                          <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                            Total amount of PHOTON & BARYON in the prediction
-                            pool
-                          </span>
-                        </span>{" "}
-                        &nbsp;Total Pool:{" "}
-                        <span className="font-sfmono text-accent-steel text-[11px] text-opacity-80">
-                          {formatCount(
-                            balances.emissionsData.photonTokens -
-                              claims.emissionsData.photonTokens
-                          )}
-                        </span>
-                        {"/"}
-                        <span className="font-sfmono text-accent-cement text-[11px] text-opacity-90">
-                          {formatCount(
-                            balances.emissionsData.baryonTokens -
-                              claims.emissionsData.baryonTokens
-                          )}
-                        </span>
-                      </div>
-                      <div className="text-[12px] text-gray-500 text-right">
-                        Token Ratio:{" "}
-                        <span className="font-sfmono text-gray-400 text-[11px]">
-                          {balances.emissionsData.baryonTokens -
-                            claims.emissionsData.baryonTokens >
-                          0
-                            ? (
-                                (balances.emissionsData.photonTokens -
-                                  claims.emissionsData.photonTokens) /
-                                (balances.emissionsData.baryonTokens -
-                                  claims.emissionsData.baryonTokens)
-                              ).toFixed(3)
-                            : "0.000"}
-                        </span>{" "}
-                        &nbsp;
-                        <span className="relative group">
-                          <span className="cursor-pointer">
-                            &#9432;
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                              Ratio PHOTON:BARYON in the prediction pool
-                            </span>
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">      
                   <Inverter
                     wallet={wallet}
                     antiBalance={antiBalance}
@@ -766,6 +648,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     bags={bags}
                     inactive={!inactive || dead}
                     truth={!inactive || dead ? [] : truth}
+                    balances={balances}
+                    claims={claims}
                   />
                   <p
                     className={`mt-1 text-sm font-sfmono ${

@@ -16,13 +16,14 @@ import {
   formatCount,
   formatPrecise,
   generateGradientColor,
-  convertToLocaleTime,
+  parseToUTC,
   parseDateToISO,
   shortenTick,
   defaultToken,
   copyText,
   detectBinningStrategy,
   findBinForTimestamp,
+  findHourBinForTime,
   parseCustomDate,
   dateToLocal,
 } from "../utils/utils";
@@ -161,19 +162,30 @@ const Collider = ({
           if (!date) return;
           const localDate = new Date(new Date(date).getTime());
           const item = dateToLocal(localDate, useBinning);
-          const closestBin = findBinForTimestamp(
-            parseCustomDate(item),
-            values[0].map((value) =>
-              parseCustomDate(
-                value.replace(
-                  /(\w+ \d+), (\d+ [AP]M)/,
-                  `$1, ${new Date(date).getFullYear()}, $2`
+          const closestBin =
+            useBinning !== "hourly"
+              ? findBinForTimestamp(
+                  parseCustomDate(item),
+                  values[0].map((value) =>
+                    useBinning !== "daily" && useBinning !== "hourly"
+                      ? parseCustomDate(
+                          value.replace(
+                            /(\w+ \d+), (\d+)/,
+                            `$1, ${new Date(date).getFullYear()}, $2`
+                          )
+                        )
+                      : parseCustomDate(value + ", " + new Date().getFullYear())
+                  )
                 )
-              )
-            )
-          );
-          const closestBinStr = dateToLocal(closestBin, useBinning);
-          const dateStr = shortenTick(closestBinStr, useBinning);
+              : findHourBinForTime(date.toString(), values[0]);
+          const closestBinStr =
+            useBinning !== "hourly"
+              ? dateToLocal(closestBin, useBinning)
+              : closestBin;
+          const dateStr =
+            useBinning !== "hourly"
+              ? shortenTick(closestBinStr, useBinning)
+              : closestBinStr;
           const allIndices =
             chart.data.labels?.reduce((acc, label, i) => {
               if (label === dateStr) acc.push(i);
@@ -380,24 +392,30 @@ const Collider = ({
     };
 
     // Prepare the chart data
-    const plotable = balances.eventsOverTime.cumulative.timestamps
-      .map((timestamp, index) => {
-        const dateISO = parseDateToISO(timestamp, useBinning);
-        if (dateISO) {
-          const pro = balances.eventsOverTime.cumulative.pro[index];
-          const anti = balances.eventsOverTime.cumulative.anti[index];
-          const total = pro + anti;
-          return total === 0 ? 50 : (pro / total) * 100;
-        }
-        return null;
-      })
-      .filter((value) => value !== null);
-    const labels = balances.eventsOverTime.cumulative.timestamps
-      .filter((timestamp) => {
-        const dateISO = parseDateToISO(timestamp, useBinning);
-        return dateISO;
-      })
-      .map((value) => shortenTick(value, useBinning));
+    const plotable =
+      balances === !emptyMetadata
+        ? balances.eventsOverTime.cumulative.timestamps
+            .map((timestamp, index) => {
+              const dateISO = parseDateToISO(timestamp, useBinning);
+              if (dateISO) {
+                const pro = balances.eventsOverTime.cumulative.pro[index];
+                const anti = balances.eventsOverTime.cumulative.anti[index];
+                const total = pro + anti;
+                return total === 0 ? 50 : (pro / total) * 100;
+              }
+              return null;
+            })
+            .filter((value) => value !== null)
+        : [];
+    const labels =
+      balances === !emptyMetadata
+        ? balances.eventsOverTime.cumulative.timestamps
+            .filter((timestamp) => {
+              const dateISO = parseDateToISO(timestamp, useBinning);
+              return dateISO;
+            })
+            .map((value) => shortenTick(value, useBinning))
+        : [];
     const chartData = {
       type: "line",
       labels: labels,
@@ -418,21 +436,25 @@ const Collider = ({
         {
           // Add a hidden dataset for the certainty tooltip
           label: "Certainty",
-          data: balances.eventsOverTime.cumulative.timestamps
-            .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp, useBinning);
-              if (dateISO) {
-                const total =
-                  balances.eventsOverTime.cumulative.photon[index] +
-                  balances.eventsOverTime.cumulative.baryon[index];
-                return total > 0
-                  ? (balances.eventsOverTime.cumulative.photon[index] / total) *
-                      100
-                  : 50;
-              }
-              return null;
-            })
-            .filter((value) => value !== null),
+          data:
+            balances === !emptyMetadata
+              ? balances.eventsOverTime.cumulative.timestamps
+                  .map((timestamp, index) => {
+                    const dateISO = parseDateToISO(timestamp, useBinning);
+                    if (dateISO) {
+                      const total =
+                        balances.eventsOverTime.cumulative.photon[index] +
+                        balances.eventsOverTime.cumulative.baryon[index];
+                      return total > 0
+                        ? (balances.eventsOverTime.cumulative.photon[index] /
+                            total) *
+                            100
+                        : 50;
+                    }
+                    return null;
+                  })
+                  .filter((value) => value !== null)
+              : [],
           display: false,
           hidden: false,
           pointRadius: 0,
@@ -443,7 +465,10 @@ const Collider = ({
           hoverBorderColor: "transparent",
         },
       ],
-      plugins: [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin],
+      plugins:
+        balances === !emptyMetadata
+          ? [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin]
+          : [],
       options: {
         layout: {
           padding: {
@@ -1294,12 +1319,11 @@ const Collider = ({
                     ? `Prediction market opening date & time: ${
                         config.startTime !== "-"
                           ? !isMobile
-                            ? convertToLocaleTime(
-                                config.startTime,
-                                isMobile
-                              ).split(",")[0]
-                            : convertToLocaleTime(config.startTime, isMobile)
-                          : "-"
+                            ? parseToUTC(config.startTime, isMobile).split(
+                                ","
+                              )[0]
+                            : parseToUTC(config.startTime, isMobile) + " UTC"
+                          : "..."
                       }`
                     : "Prediction market opening date & time"}
                 </span>
@@ -1309,11 +1333,9 @@ const Collider = ({
             <span className="font-sfmono text-gray-400 text-[11px]">
               {config.startTime !== "-"
                 ? isMobile
-                  ? convertToLocaleTime(config.startTime, isMobile).split(
-                      ","
-                    )[0]
-                  : convertToLocaleTime(config.startTime, isMobile)
-                : "-"}
+                  ? parseToUTC(config.startTime, isMobile).split(",")[0]
+                  : parseToUTC(config.startTime, isMobile) + " UTC"
+                : "..."}
             </span>{" "}
           </div>
           <div className="text-[12px] text-gray-500 text-right">
@@ -1321,9 +1343,9 @@ const Collider = ({
             <span className="font-sfmono text-gray-400 text-[11px]">
               {config.endTime !== "-"
                 ? isMobile
-                  ? convertToLocaleTime(config.endTime, isMobile).split(",")[0]
-                  : convertToLocaleTime(config.endTime, isMobile)
-                : "-"}
+                  ? parseToUTC(config.endTime, isMobile).split(",")[0]
+                  : parseToUTC(config.endTime, isMobile) + " UTC"
+                : "..."}
             </span>{" "}
             &nbsp;
             <span className="relative group">
@@ -1334,12 +1356,9 @@ const Collider = ({
                     ? `Prediction market closing date & time: ${
                         config.endTime !== "-"
                           ? !isMobile
-                            ? convertToLocaleTime(
-                                config.endTime,
-                                isMobile
-                              ).split(",")[0]
-                            : convertToLocaleTime(config.endTime, isMobile)
-                          : "-"
+                            ? parseToUTC(config.endTime, isMobile).split(",")[0]
+                            : parseToUTC(config.endTime, isMobile) + " UTC"
+                          : "..."
                       }`
                     : "Prediction market closing date & time"}
                 </span>

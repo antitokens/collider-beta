@@ -1,51 +1,40 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import { BadgeCheck, CircleAlert } from "lucide-react";
 import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
-export function parseCustomDate(dateStr) {
-  // Check if date includes time
-  const parts = dateStr.split(", ");
-  const hasTime = parts.length > 2;
+// Convert month abbreviation to number
+export const months = {
+  Jan: 0,
+  Feb: 1,
+  Mar: 2,
+  Apr: 3,
+  May: 4,
+  Jun: 5,
+  Jul: 6,
+  Aug: 7,
+  Sep: 8,
+  Oct: 9,
+  Nov: 10,
+  Dec: 11,
+};
 
-  const monthDay = parts[0];
-  const year = parts[1];
-  const time = hasTime ? parts[2] : null;
-
-  const [month, day] = monthDay.split(" ");
-
-  // Convert month abbreviation to number
-  const months = {
-    Jan: 0,
-    Feb: 1,
-    Mar: 2,
-    Apr: 3,
-    May: 4,
-    Jun: 5,
-    Jul: 6,
-    Aug: 7,
-    Sep: 8,
-    Oct: 9,
-    Nov: 10,
-    Dec: 11,
-  };
-
-  if (hasTime) {
-    // Parse time if present
-    const [hour, period] = time.split(" ");
-
-    // Convert hour to 24-hour format
-    let hour24 = parseInt(hour);
-    if (period === "PM" && hour24 !== 12) hour24 += 12;
-    if (period === "AM" && hour24 === 12) hour24 = 0;
-
-    return new Date(parseInt(year), months[month], parseInt(day), hour24);
-  }
-
-  // Return date without time
-  return new Date(parseInt(year), months[month], parseInt(day));
-}
+// Convert number to month abbreviation
+export const monthsReverse = {
+  1: "Jan",
+  2: "Feb",
+  3: "Mar",
+  4: "Apr",
+  5: "May",
+  6: "Jun",
+  7: "Jul",
+  8: "Aug",
+  9: "Sep",
+  10: "Oct",
+  11: "Nov",
+  12: "Dec",
+};
 
 /* Global Constants */
 
@@ -249,6 +238,24 @@ export function randomiseTextEffect(
   requestAnimationFrame(animate);
 }
 
+export function parseToUTC(timeString, isMobile = false, locale = "en-US") {
+  if (!isValidTime(timeString)) {
+    throw new Error("Invalid time string format");
+  }
+
+  const date = new Date(timeString);
+
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: "UTC",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
 export function convertToLocaleTime(
   timeString,
   isMobile = false,
@@ -374,38 +381,54 @@ export const generateGradientColor = (
 };
 
 export const parseDateToISO = (dateStr, useBinning) => {
-  const local = new Date();
   if (useBinning) {
     if (useBinning !== "daily") {
       const [month, day, year, time] = dateStr
-        .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+\s+[AP]M)/)
+        .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+):(\d+)/)
         .slice(1);
-      const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-11)
-      const [hours, period] = time.split(/\s+/);
-      const hour12 = hours % 12 || 12;
-      // Reconstruct date in local timezone
-      const hour24 =
-        period === "PM" && hour12 !== 12
-          ? hour12 + 12
-          : period === "AM" && hour12 === 12
-          ? 0
-          : hour12;
-      // Create new date with local components
-      const date = new Date(year, monthIndex, day, hour24);
-      // Convert to ISO string
-      const localDate = new Date(
-        date.getTime() - local.getTimezoneOffset() * 60000
-      );
-      return localDate.toISOString();
+      const monthIndex = new Date(`${month} 1, 2000`).getMonth();
+      const [hours, minutes] = time.split(":");
+
+      return new Date(
+        Date.UTC(
+          parseInt(year),
+          monthIndex,
+          parseInt(day),
+          parseInt(hours),
+          parseInt(minutes || 0)
+        )
+      ).toISOString();
     }
   }
-  // For non-hourly format, convert UTC to local time before creating ISO string
-  const date = parseCustomDate(dateStr);
-  const localDate = new Date(
-    date.getTime() - local.getTimezoneOffset() * 60000
-  );
-  return localDate.toISOString();
+  return parseCustomDate(dateStr).toISOString();
 };
+
+export function parseCustomDate(dateStr) {
+  const parts = dateStr.split(", ");
+  const hasTime = parts.length > 2;
+
+  const monthDay = parts[0];
+  const year = parts[1];
+  const time = hasTime ? parts[2] : null;
+
+  const [month, day] = monthDay.split(" ");
+
+  if (hasTime) {
+    const [hours, minutes] = time.split(":");
+
+    return new Date(
+      Date.UTC(
+        parseInt(year),
+        months[month],
+        parseInt(day),
+        parseInt(hours),
+        parseInt(minutes)
+      )
+    );
+  }
+
+  return new Date(Date.UTC(parseInt(year), months[month], parseInt(day)));
+}
 
 export const shortenTick = (tick, useBinning) => {
   if (useBinning) {
@@ -413,14 +436,14 @@ export const shortenTick = (tick, useBinning) => {
       return (
         tick.split(" ").slice(0, 2).join(" ").slice(0, -1) +
         ", " +
-        tick.split(" ").slice(-2).join(" ")
+        tick.split(" ").slice(-1).join(" ")
       );
     }
     if (useBinning === "daily") {
       return tick.split(" ").slice(0, 2).join(" ").slice(0, -1);
     }
     if (useBinning === "hourly") {
-      return tick.split(" ").slice(-2).join(" ");
+      return tick.split(" ").slice(-1).join(" ");
     }
   }
   return tick;
@@ -429,13 +452,16 @@ export const shortenTick = (tick, useBinning) => {
 export const dateToLocal = (date, useBinning) => {
   return useBinning !== "daily"
     ? date.toLocaleDateString("en-US", {
+        timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
         hour: "numeric",
-        hour12: true,
+        minute: "numeric",
+        hour12: false,
       })
     : date.toLocaleDateString("en-US", {
+        timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -459,7 +485,7 @@ export function detectBinningStrategy(dates) {
   const date2 = new Date(schedule[1]);
   const hourDiff = (date2 - date1) / (1000 * 60 * 60);
   if (hourDiff <= 24) return "hourly";
-  if (hourDiff <= 48) return "6-hour";
+  if (hourDiff <= 72) return "6-hour";
   if (hourDiff <= 144) return "12-hour";
   return "daily";
 }
@@ -473,7 +499,94 @@ export const findBinForTimestamp = (timestamp, bins) => {
   ); // Default to first bin if timestamp is before all bins
 };
 
+export const findHourBinForTime = (timestamp, bins) => {
+  // Convert timestamp to comparable format
+  const [timestampHour, timestampMinute] = timestamp.split(":").map(Number);
+  // Find the appropriate bin
+  for (let i = 0; i < bins.length - 1; i++) {
+    const [currentHour] = bins[i].split(":").map(Number);
+    const [nextHour] = bins[i + 1].split(":").map(Number);
+    // Handle normal case
+    if (timestampHour === currentHour) {
+      return bins[i];
+    }
+    // Handle day wraparound
+    if (currentHour > nextHour) {
+      // This indicates we're crossing midnight
+      if (timestampHour >= currentHour || timestampHour < nextHour) {
+        return bins[i];
+      }
+    }
+  }
+  // If no bin found, return the first bin
+  return bins[0];
+};
+
 export const defaultToken = {
   priceUsd: 1.0,
   marketCap: 1e9,
+};
+
+export function formatUTCTime(date) {
+  const hours = date.getUTCHours().toString().padStart(2, "0");
+  const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+  const year = date.getUTCFullYear();
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+  const day = date.getUTCDate().toString().padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes} UTC`;
+}
+
+export const TimeTicker = ({
+  showSeconds = true,
+  className = "",
+  fontSize = 12,
+  isMobile = false,
+}) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [font, setFont] = useState(fontSize);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatUTCDateTime = (date) => {
+    // Format date
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    const day = date.getUTCDate().toString().padStart(2, "0");
+
+    // Format time
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+    const seconds = date.getUTCSeconds().toString().padStart(2, "0");
+
+    const dateStr = isMobile
+      ? `${monthsReverse[Number(month)]} ${day}`
+      : `${year} ${monthsReverse[Number(month)]} ${day}`;
+    const timeStr = showSeconds
+      ? `${hours}:${minutes}:${seconds}`
+      : `${hours}:${minutes}`;
+
+    return `${dateStr} ${timeStr}`;
+  };
+
+  return (
+    <div
+      className={`flex items-center bg-transparent rounded-md px-3 py-1 ${className}`}
+    >
+      <div className="flex items-center space-x-2">
+        <span className={`font-mono text-gray-300`}>
+          <span className={`text-[${font.toString()}px]`}>
+            {formatUTCDateTime(currentTime)}
+          </span>
+          <span className={`ml-1 text-[11px] text-gray-500`}>UTC</span>
+        </span>
+      </div>
+    </div>
+  );
 };

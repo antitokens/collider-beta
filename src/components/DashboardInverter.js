@@ -297,7 +297,7 @@ const DashboardInverter = ({
     const nowTime = new Date();
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
-        shortenTick(value, useBinning)
+        value ? shortenTick(value, useBinning) : ""
       ),
       datasets: [
         {
