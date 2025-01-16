@@ -1423,9 +1423,7 @@ const Collider = ({
           </div>
         </div>
       </div>
-      <div
-        className={inactive ? "hidden" : "mb-4 bg-dark-card p-4 rounded w-full"}
-      >
+      <div className={`mb-4 bg-dark-card p-4 rounded w-full`}>
         {predictionHistoryChartData && (
           <div
             className={`flex flex-col ${
@@ -1508,7 +1506,7 @@ const Collider = ({
                 </div>
               </div>
             </div>
-            {!isMetaLoading ? (
+            {!loading ? (
               <Line
                 ref={chartRef}
                 data={predictionHistoryChartData}
@@ -1903,9 +1901,7 @@ const Collider = ({
             (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
           ? "Submit"
           : loading
-          ? isMetaLoading
-            ? "Loading..."
-            : "Submitting..."
+          ? "Loading..."
           : "Submit"}
       </button>
       <ToastContainer {...toastContainerConfig} />

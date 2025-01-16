@@ -589,7 +589,7 @@ const DashboardInverter = ({
     );
     setWinnerDistribution({
       labels: winnerRanks,
-      datasets: start
+      datasets: !start
         ? [
             {
               label: "Ranking Metric",
@@ -681,7 +681,7 @@ const DashboardInverter = ({
                 size: 10,
               },
               callback: function (value) {
-                return !start ? value : ""; // Format x-axis
+                return start ? value : ""; // Format x-axis
               },
             },
             title: {
@@ -692,7 +692,7 @@ const DashboardInverter = ({
                 size: 12,
               },
             },
-            grid: { display: !start, color: "#d3d3d322" },
+            grid: { display: start, color: "#d3d3d322" },
           },
           y: {
             type: "logarithmic",
@@ -702,7 +702,7 @@ const DashboardInverter = ({
               callback: function (value) {
                 return value > 0 &&
                   Number.isInteger(-Math.log10(value)) &&
-                  !start
+                  start
                   ? value.toFixed(2)
                   : ""; // Format y-axis
               },
