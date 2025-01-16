@@ -351,7 +351,7 @@ const Inverter = ({
                 </span>
               </span>
             </span>{" "}
-            &nbsp;Open:{" "}
+            &nbsp;Start:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
               {balances.endTime !== "-"
                 ? isMobile

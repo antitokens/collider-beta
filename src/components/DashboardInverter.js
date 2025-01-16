@@ -724,6 +724,7 @@ const DashboardInverter = ({
     totalDistribution,
     dynamics,
     schedule,
+    connected,
   ]);
 
   return (

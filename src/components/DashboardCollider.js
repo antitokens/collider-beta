@@ -710,6 +710,7 @@ const DashboardCollider = ({
     totalDistribution,
     dynamics,
     schedule,
+    connected,
   ]);
 
   return (

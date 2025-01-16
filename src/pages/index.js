@@ -37,8 +37,7 @@ import {
   metadataInit,
   emptyGaussian,
   emptyBags,
-  convertToLocaleTime,
-  formatCount,
+  TimeTicker,
   defaultToken,
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
@@ -118,8 +117,8 @@ const Home = ({ BASE_URL }) => {
 const LandingPage = ({ BASE_URL, setTrigger }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
-  const [inactive, setInactive] = useState(false);
-  const [dead, setDead] = useState(false);
+  const [started, setStarted] = useState(false);
+  const [isOver, setIsOver] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
   const [antiUsage, setAntiUsage] = useState(0);
@@ -199,22 +198,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
   useEffect(() => {
     if (balances !== metadataInit) {
-      setDead(
-        new Date() < new Date(balances.startTime) &&
-          new Date() < new Date(balances.endTime)
-      );
-      setInactive(
-        new Date() < new Date(balances.startTime) ||
-          new Date() > new Date(balances.endTime)
-      );
+      setStarted(new Date() < new Date(balances.startTime));
+      setIsOver(new Date() > new Date(balances.endTime));
     }
   }, [balances]);
 
   useEffect(() => {
-    if (refresh && !dead && !wallet.disconnecting) {
+    if (refresh && !wallet.disconnecting) {
       const fetchBalancesWithClaims = async () => {
         try {
-          setRefresh(false);
           setIsMetaLoading(true);
           const blobBalance = await getBalances();
           const blobClaim = await getClaims();
@@ -235,7 +227,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   true
                 )
               : emptyGaussian;
-
+          
           setBalances({
             startTime: dataBalance.startTime,
             endTime: dataBalance.endTime,
@@ -336,9 +328,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     photonBalance,
     antiData,
     proData,
-    dead,
+    isOver,
     truth,
-    inactive,
+    started,
     wallet,
     wallet.disconnecting,
     wallet.connected,
@@ -517,9 +509,18 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             {showCollider ? (
               <div className="text-center mt-20">
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
-                  <h2 className="text-xl text-gray-300 text-left font-medium">
-                    Collider
-                  </h2>
+                  <div className="flex flex-row items-center">
+                    <div
+                      className={`w-2 h-2 ${
+                        !isOver ? "bg-green-500 animate-pulse" : "bg-gray-500"
+                      } rounded-full`}
+                    ></div>
+                    &nbsp;&nbsp;
+                    <div className="text-xl text-gray-300 text-left font-medium">
+                      Collider
+                    </div>
+                    <TimeTicker />
+                  </div>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
                     onClick={() => {
@@ -583,16 +584,25 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   isMobile={isMobile}
                   bags={bags}
                   balances={balances}
-                  inactive={inactive || dead}
+                  inactive={isOver}
                   isMetaLoading={isMetaLoading}
                 />
               </div>
             ) : (
               <div className="mt-20">
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
-                  <h2 className="text-xl text-gray-300 text-left font-medium">
-                    Inverter
-                  </h2>
+                  <div className="flex flex-row items-center">
+                    <div
+                      className={`w-2 h-2 ${
+                        isOver ? "bg-green-500 animate-pulse" : "bg-gray-500"
+                      } rounded-full`}
+                    ></div>
+                    &nbsp;&nbsp;
+                    <div className="text-xl text-gray-300 text-left font-medium">
+                      Inverter
+                    </div>
+                    <TimeTicker />
+                  </div>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
                     onClick={() => {
@@ -629,7 +639,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     </div>
                   </button>
                 </div>
-                <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">      
+                <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
                   <Inverter
                     wallet={wallet}
                     antiBalance={antiBalance}
@@ -646,8 +656,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     proData={proData}
                     isMobile={isMobile}
                     bags={bags}
-                    inactive={!inactive || dead}
-                    truth={!inactive || dead ? [] : truth}
+                    inactive={!isOver}
+                    truth={!isOver ? [] : truth}
                     balances={balances}
                     claims={claims}
                   />
@@ -670,9 +680,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               type="Binary"
               oracle="Milton AI Agent"
               truth={
-                truth.join(",") === "0,1"
+                truth.join(",") === "0,1" && isOver
                   ? "Yes"
-                  : truth.join(",") === "1,0"
+                  : truth.join(",") === "1,0" && isOver
                   ? "No"
                   : "Unknown"
               }
@@ -736,7 +746,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   holders={bags.wallets}
                   isMobile={isMobile}
                   schedule={[claims.startTime, claims.endTime]}
-                  start={!inactive}
+                  start={isOver}
                 />
               ) : (
                 <div className="flex justify-center items-center w-full">
