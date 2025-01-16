@@ -672,11 +672,6 @@ const Inverter = ({
               </div>
             </div>
           </div>
-          {lineChartData && baryonTokens > 0 && false && (
-            <div style={{ height: "300px" }}>
-              <Line data={lineChartData} options={lineChartData.options} />
-            </div>
-          )}
         </div>
       )}
       <div className="flex flex-row justify-between text-sm text-gray-500 w-full mt-4">
