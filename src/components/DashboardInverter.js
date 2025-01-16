@@ -8,6 +8,7 @@ import {
   generateGradientColor,
   shortenTick,
   detectBinningStrategy,
+  parseCustomDate,
 } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);

@@ -47,7 +47,7 @@ const Inverter = ({
   const [baryonTokens, setBaryonTokens] = useState(0);
   const [photonTokens, setPhotonTokens] = useState(0);
   const [change, setChange] = useState([0, 0, 0]);
-  const [updatedBalances, setUpdatedBalances] = useState([0, 0]);
+  const [updatedBalances, setUpdatedBalances] = useState([0, 0, 0, 0]); // PRO-ANTI-PHOTON-BARYON
   const [gain, setGain] = useState(0);
   const [dollarGain, setDollarGain] = useState(0);
 
@@ -85,8 +85,8 @@ const Inverter = ({
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
             ? [
-                rewardCurrent.change.photon[myBag],
-                rewardCurrent.change.baryon[myBag],
+                rewardCurrent.change.pro[myBag],
+                rewardCurrent.change.anti[myBag],
                 rewardCurrent.change.gain[myBag],
               ]
             : [0, 0, 0]
@@ -96,12 +96,14 @@ const Inverter = ({
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
             ? [
+                rewardCurrent.invert.pro[myBag],
+                rewardCurrent.invert.anti[myBag],
                 rewardCurrent.invert.photon[myBag],
                 rewardCurrent.invert.baryon[myBag],
               ]
             : !wallet.disconnecting
-            ? [photonBalance, baryonBalance]
-            : [0, 0]
+            ? [0, 0, 0, 0]
+            : [0, 0, 0, 0]
         );
         setAntiTokens(
           truth.length > 0 &&
@@ -171,17 +173,14 @@ const Inverter = ({
       }
 
       if (
-        baryonTokens !== updatedBalances[1] ||
-        photonTokens !== updatedBalances[0]
+        antiTokens !== updatedBalances[1] ||
+        proTokens !== updatedBalances[0]
       ) {
         toast.error("You can only claim maximum available balance!");
         return;
       }
 
-      if (
-        baryonTokens > updatedBalances[1] ||
-        photonTokens > updatedBalances[0]
-      ) {
+      if (antiTokens > updatedBalances[1] || proTokens > updatedBalances[0]) {
         toast.error("You cannot claim with more tokens than you have!");
         return;
       }
@@ -236,7 +235,7 @@ const Inverter = ({
       toast.error("An error occurred while recording your claim");
     } finally {
       setLoading(false);
-      setUpdatedBalances([0, 0]);
+      setUpdatedBalances([0, 0, 0, 0]);
       setAntiTokens(0);
       setProTokens(0);
       setBaryonTokens(0);
@@ -312,35 +311,25 @@ const Inverter = ({
             <span className="relative group">
               <span className="cursor-pointer">&#9432;</span>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Total amount of PHOTON & BARYON in the prediction pool
+                Total reclaimed amount of PRO & ANTI
               </span>
             </span>{" "}
-            &nbsp;Total Pool:{" "}
-            <span className="font-sfmono text-accent-steel text-[11px] text-opacity-80">
-              {formatCount(
-                balances.emissionsData.photonTokens -
-                  claims.emissionsData.photonTokens
-              )}
+            &nbsp;Total Claims:{" "}
+            <span className="font-sfmono text-accent-secondary text-[11px] text-opacity-80">
+              {formatCount(claims.collisionsData.proTokens)}
             </span>
             {"/"}
-            <span className="font-sfmono text-accent-cement text-[11px] text-opacity-90">
-              {formatCount(
-                balances.emissionsData.baryonTokens -
-                  claims.emissionsData.baryonTokens
-              )}
+            <span className="font-sfmono text-accent-primary text-[11px] text-opacity-90">
+              {formatCount(claims.collisionsData.antiTokens)}
             </span>
           </div>
           <div className="text-[12px] text-gray-500 text-right">
-            Token Ratio:{" "}
+            Claims Ratio:{" "}
             <span className="font-sfmono text-gray-400 text-[11px]">
-              {balances.emissionsData.baryonTokens -
-                claims.emissionsData.baryonTokens >
-              0
+              {claims.collisionsData.antiTokens > 0
                 ? (
-                    (balances.emissionsData.photonTokens -
-                      claims.emissionsData.photonTokens) /
-                    (balances.emissionsData.baryonTokens -
-                      claims.emissionsData.baryonTokens)
+                    claims.collisionsData.proTokens /
+                    claims.collisionsData.antiTokens
                   ).toFixed(3)
                 : "0.000"}
             </span>{" "}
@@ -349,7 +338,7 @@ const Inverter = ({
               <span className="cursor-pointer">
                 &#9432;
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Ratio PHOTON:BARYON in the prediction pool
+                  Ratio PRO:ANTI in total reclaims
                 </span>
               </span>
             </span>
@@ -364,17 +353,17 @@ const Inverter = ({
             <div className="relative group flex items-center">
               <div className="cursor-pointer">&#9432;&nbsp;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays your current tokens in the pool
+                Displays your current tokens in claim
               </span>
             </div>
             <div className="flex items-center">
-              <div>&nbsp;Your Tokens:&nbsp;</div>
+              <div>&nbsp;Your Claim:&nbsp;</div>
               <div className="flex items-center font-sfmono pt-[0px] lg:pt-[2px]">
-                <div className="text-accent-steel text-[11px] opacity-95">
+                <div className="text-accent-secondary text-[11px] opacity-95">
                   {formatPrecise(updatedBalances[0])}
                 </div>
                 <div>/</div>
-                <div className="text-accent-cement text-[11px] opacity-95">
+                <div className="text-accent-primary text-[11px] opacity-95">
                   {formatPrecise(updatedBalances[1])}
                 </div>
               </div>
@@ -427,7 +416,7 @@ const Inverter = ({
                     Number(change[0]) > 0
                       ? "accent-secondary"
                       : Number(change[0]) < 0
-                      ? "accent-primary"
+                      ? "accent-secondary"
                       : "gray-300"
                   }`}
                 >
@@ -443,14 +432,14 @@ const Inverter = ({
                         .toFixed(1)
                         .toString()
                         .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    : "0"}
+                    : "0.0"}
                 </span>
               </span>
               {"/"}
               <span
                 className={`text-[11px] font-sfmono text-${
                   Number(change[1]) > 0
-                    ? "accent-secondary"
+                    ? "accent-primary"
                     : Number(change[1]) < 0
                     ? "accent-primary"
                     : "gray-300"
@@ -468,14 +457,14 @@ const Inverter = ({
                       .toFixed(1)
                       .toString()
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  : "0"}
+                  : "0.0"}
               </span>
               &nbsp;&nbsp;
             </div>
             <span className="relative group">
               <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays your current realised changes in PHOTON & BARYON`}
+                {`Displays your current realised changes in PRO & ANTI`}
               </span>
             </span>
           </div>
@@ -493,10 +482,10 @@ const Inverter = ({
               <input
                 id="photonTokens"
                 type="number"
-                min={updatedBalances[0]}
-                max={updatedBalances[0]}
+                min={updatedBalances[2]}
+                max={updatedBalances[2]}
                 value={Math.abs(photonTokens) || ""}
-                disabled={inactive}
+                disabled={!active}
                 onChange={(e) =>
                   setPhotonTokens(Math.abs(Number(e.target.value)))
                 }
@@ -506,7 +495,7 @@ const Inverter = ({
               />
             </div>
             <div className="flex flex-row justify-between items-center w-full">
-              <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
+              <div className={!active ? "hidden" : "text-xs text-gray-500"}>
                 <img
                   src={`${BASE_URL}/assets/photon.png`}
                   alt="photon-logo"
@@ -514,7 +503,7 @@ const Inverter = ({
                 />
                 BAL:&nbsp;
                 <span className="font-sfmono text-gray-400">
-                  {Number(updatedBalances[0])
+                  {Number(updatedBalances[2])
                     .toFixed(2)
                     .toString()
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
@@ -522,12 +511,12 @@ const Inverter = ({
               </div>
               <div
                 className={`flex flex-row justify-between gap-1 ${
-                  inactive ? "hidden" : ""
+                  !active ? "hidden" : ""
                 }`}
               >
                 <div
                   className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer animate-pulse duration-1000"
-                  onClick={() => setPhotonTokens(Number(updatedBalances[0]))}
+                  onClick={() => setPhotonTokens(Number(updatedBalances[2]))}
                 >
                   MAX
                 </div>
@@ -548,9 +537,9 @@ const Inverter = ({
                 <input
                   id="baryonTokens"
                   type="number"
-                  min={updatedBalances[1]}
-                  max={updatedBalances[1]}
-                  disabled={inactive}
+                  min={updatedBalances[3]}
+                  max={updatedBalances[3]}
+                  disabled={!active}
                   value={Math.abs(baryonTokens) || ""}
                   onChange={(e) =>
                     setBaryonTokens(Math.abs(Number(e.target.value)))
@@ -569,13 +558,13 @@ const Inverter = ({
               </div>
               <div
                 className={`flex flex-row justify-between items-center w-full ${
-                  inactive ? "hidden" : ""
+                  !active ? "hidden" : ""
                 }`}
               >
                 <div className="flex flex-row justify-between gap-1">
                   <div
                     className="font-grotesk text-[10px] text-gray-400 hover:text-white hover:cursor-pointer animate-pulse duration-1000"
-                    onClick={() => setBaryonTokens(Number(updatedBalances[1]))}
+                    onClick={() => setBaryonTokens(Number(updatedBalances[3]))}
                   >
                     MAX
                   </div>
@@ -588,7 +577,7 @@ const Inverter = ({
                     </span>
                   </div>
                 </div>
-                <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
+                <div className={!active ? "hidden" : "text-xs text-gray-500"}>
                   <img
                     src={`${BASE_URL}/assets/baryon.png`}
                     alt="baryon-logo"
@@ -596,7 +585,7 @@ const Inverter = ({
                   />
                   BAL:&nbsp;
                   <span className="font-sfmono text-gray-400">
-                    {Number(updatedBalances[1])
+                    {Number(updatedBalances[3])
                       .toFixed(2)
                       .toString()
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
@@ -644,7 +633,7 @@ const Inverter = ({
                   readOnly
                 />
               </div>
-              <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
+              <div className={!active ? "hidden" : "text-xs text-gray-500"}>
                 <img
                   src={`${BASE_URL}/assets/pro.png`}
                   alt="pro-logo"
@@ -682,7 +671,7 @@ const Inverter = ({
                   ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}ANTI
                 </label>
               </div>
-              <div className={inactive ? "hidden" : "text-xs text-gray-500"}>
+              <div className={!active ? "hidden" : "text-xs text-gray-500"}>
                 <img
                   src={`${BASE_URL}/assets/anti.png`}
                   alt="anti-logo"
@@ -726,23 +715,25 @@ const Inverter = ({
       <button
         onClick={handleReclaim}
         disabled={
-          disabled ||
           loading ||
-          inactive ||
-          (baryonTokens <= 0 && photonTokens <= 0)
+          !active ||
+          (baryonTokens <= 0 && photonTokens <= 0) ||
+          baryonTokens !== updatedBalances[3] ||
+          photonTokens !== updatedBalances[2] ||
+          antiTokens + proTokens <= 0
         }
         className={`w-full mt-4 py-3 rounded-full transition-all ${
-          disabled ||
           loading ||
-          inactive ||
-          (photonTokens < 1 && photonTokens !== 0) ||
-          baryonTokens !== updatedBalances[1] ||
-          photonTokens !== updatedBalances[0]
+          !active ||
+          (baryonTokens <= 0 && photonTokens <= 0) ||
+          baryonTokens !== updatedBalances[3] ||
+          photonTokens !== updatedBalances[2] ||
+          antiTokens + proTokens <= 0
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {inactive
+        {!active
           ? "Closed"
           : baryonTokens > 0 || photonTokens > 0
           ? "Reclaim"

@@ -712,12 +712,16 @@ const Collider = ({
               },
             },
             min: 0,
-            max: function (ctx) {
-              const maxValue = Math.max(
-                ...ctx.chart.data.datasets.flatMap((dataset) => dataset.data)
-              );
-              return maxValue <= 50 ? 50 : 100;
-            },
+            max: inactive
+              ? function (ctx) {
+                  const maxValue = Math.max(
+                    ...ctx.chart.data.datasets.flatMap(
+                      (dataset) => dataset.data
+                    )
+                  );
+                  return maxValue <= 50 ? 50 : 100;
+                }
+              : 100,
           },
         },
       },
