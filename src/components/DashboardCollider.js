@@ -7,6 +7,8 @@ import {
   truncateMiddle,
   generateGradientColor,
   shortenTick,
+  detectBinningStrategy,
+  parseCustomDate,
 } from "../utils/utils";
 import plugin from "@tailwindcss/typography";
 
@@ -45,10 +47,10 @@ const DashboardCollider = ({
       ctx.textBaseline = "middle";
       // Position calculation
       // This puts the label near the end of x-axis, slightly above it
-      const x = xAxis.right - 50; // Shift left from the end
-      const y = xAxis.top - 5; // Shift up from the axis
+      const x = xAxis.right - 15; // Shift left from the end
+      const y = xAxis.top + 7.5; // Shift up from the axis
       // Draw the label
-      ctx.fillText("Time (UTC)", x, y);
+      ctx.fillText("UTC", x, y);
     },
   };
 
@@ -292,19 +294,22 @@ const DashboardCollider = ({
     });
 
     // Prepare line chart data
-    const timeDiffHours =
-      (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
-    const useHourly = schedule.length > 0 ? timeDiffHours < 24 : false;
+    const useBinning = detectBinningStrategy(schedule);
+    const nowTime = new Date();
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
-        shortenTick(value, useHourly)
+        shortenTick(value, useBinning)
       ),
       datasets: [
         {
           label: "Pro",
-          data: eventsOverTime.events.pro.every((value) => value === 0)
+          data: eventsOverTime.cumulative.pro.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.pro,
+            : eventsOverTime.cumulative.pro.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "#00bb7a",
           backgroundColor: "#00bb7a",
           fill: false,
@@ -312,9 +317,13 @@ const DashboardCollider = ({
         },
         {
           label: "Anti",
-          data: eventsOverTime.events.anti.every((value) => value === 0)
+          data: eventsOverTime.cumulative.anti.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.anti,
+            : eventsOverTime.cumulative.anti.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "#c12f00",
           backgroundColor: "#c12f00",
           fill: false,
@@ -322,9 +331,13 @@ const DashboardCollider = ({
         },
         {
           label: "Photon",
-          data: eventsOverTime.events.photon.every((value) => value === 0)
+          data: eventsOverTime.cumulative.photon.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.photon,
+            : eventsOverTime.cumulative.photon.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "rgb(123, 191, 255)",
           backgroundColor: "rgb(123, 191, 255)",
           fill: false,
@@ -332,9 +345,13 @@ const DashboardCollider = ({
         },
         {
           label: "Baryon",
-          data: eventsOverTime.events.baryon.every((value) => value === 0)
+          data: eventsOverTime.cumulative.baryon.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.baryon,
+            : eventsOverTime.cumulative.baryon.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "rgb(58, 182, 193)",
           backgroundColor: "rgb(58, 182, 193)",
           fill: false,
@@ -397,6 +414,8 @@ const DashboardCollider = ({
                 family: "'SF Mono Round'",
                 size: 10,
               },
+              minRotation: 0,
+              maxRotation: 0,
             },
             grid: { color: "#d3d3d322" },
           },
@@ -485,6 +504,20 @@ const DashboardCollider = ({
             display: connected,
             ticks: {
               maxTicksLimit: 10,
+              callback: function (value, index) {
+                // Map index to a new labels array for the second axis
+                return colliderDistribution.short[index]
+                  ? formatCount(
+                      colliderDistribution.short[index],
+                      false,
+                      colliderDistribution.short[index] > 1e6
+                        ? 10
+                        : colliderDistribution.short[index] > 1e3
+                        ? 7
+                        : 0
+                    )
+                  : null;
+              },
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
@@ -498,7 +531,15 @@ const DashboardCollider = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? formatCount(totalDistribution.short[index], false)
+                  ? formatCount(
+                      totalDistribution.short[index],
+                      false,
+                      totalDistribution.short[index] > 1e6
+                        ? 10
+                        : totalDistribution.short[index] > 1e3
+                        ? 7
+                        : 0
+                    )
                   : null;
               },
               font: {
@@ -559,8 +600,8 @@ const DashboardCollider = ({
                 value,
                 Math.min(...dynamics),
                 Math.max(...dynamics),
-                [255, 51, 0],
-                [0, 219, 84]
+                [255, 51, 0, 1],
+                [0, 219, 84, 1]
               )
             )
             .map((color) =>
@@ -571,8 +612,8 @@ const DashboardCollider = ({
               value,
               Math.min(...dynamics),
               Math.max(...dynamics),
-              [255, 51, 0],
-              [0, 219, 84]
+              [255, 51, 0, 1],
+              [0, 219, 84, 1]
             )
           ),
           pointStyle: "line",
@@ -632,7 +673,7 @@ const DashboardCollider = ({
               },
             },
             title: {
-              display: !dynamics.every((item) => item === 0),
+              display: true,
               text: "Rank",
               font: {
                 family: "'SF Mono Round'",
@@ -656,6 +697,7 @@ const DashboardCollider = ({
                 size: 10,
               },
             },
+            max: 1,
           },
         },
       },
@@ -702,11 +744,11 @@ const DashboardCollider = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-black border-x border-b border-gray-800 rounded-b-lg">
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{"Token Emissions"}</div>
+            <div>{"Token Collisions"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of BARYON & PHOTON emissions in the pool`}
+                {`Displays the distribution of PRO & ANTI collisions in the pool`}
               </span>
             </div>
           </div>
@@ -719,11 +761,11 @@ const DashboardCollider = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{"Token Collisions"}</div>
+            <div>{"Token Emissions"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of PRO & ANTI collisions in the pool`}
+                {`Displays the distribution of BARYON & PHOTON emissions in the pool`}
               </span>
             </div>
           </div>

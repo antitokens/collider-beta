@@ -4,6 +4,49 @@ import { BadgeCheck, CircleAlert } from "lucide-react";
 import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
+export function parseCustomDate(dateStr) {
+  // Check if date includes time
+  const parts = dateStr.split(", ");
+  const hasTime = parts.length > 2;
+
+  const monthDay = parts[0];
+  const year = parts[1];
+  const time = hasTime ? parts[2] : null;
+
+  const [month, day] = monthDay.split(" ");
+
+  // Convert month abbreviation to number
+  const months = {
+    Jan: 0,
+    Feb: 1,
+    Mar: 2,
+    Apr: 3,
+    May: 4,
+    Jun: 5,
+    Jul: 6,
+    Aug: 7,
+    Sep: 8,
+    Oct: 9,
+    Nov: 10,
+    Dec: 11,
+  };
+
+  if (hasTime) {
+    // Parse time if present
+    const [hour, period] = time.split(" ");
+
+    // Convert hour to 24-hour format
+    let hour24 = parseInt(hour);
+    if (period === "PM" && hour24 !== 12) hour24 += 12;
+    if (period === "AM" && hour24 === 12) hour24 = 0;
+
+    return new Date(parseInt(year), months[month], parseInt(day), hour24);
+  }
+
+  // Return date without time
+  return new Date(parseInt(year), months[month], parseInt(day));
+}
+
 /* Global Constants */
 
 // Metadata init
@@ -253,6 +296,7 @@ export const formatCount = (_value, _flag = undefined, _fill = 4) => {
     // For millions, fill-2 digits (accounting for 'm' and one leading zero + decimal)
     const digits = _fill - Math.abs(_value).toString().split(".")[0].length;
     const scaled = value / 1e6;
+    console.log(_fill);
     const formatted = scaled
       .toFixed(digits >= 0 ? digits : 1)
       .replace(/^0+/, "0");
@@ -317,53 +361,85 @@ export const generateGradientColor = (
     return `rgba(128, 128, 128, 1)`;
   }
   const intensity = (value - min) / (max - min); // Normalize value between 0 and 1
-  const [r1, g1, b1] = startColor; // Start RGB color
-  const [r2, g2, b2] = endColor; // End RGB color
+  const [r1, g1, b1, a1] = startColor; // Start RGB color
+  const [r2, g2, b2, a2] = endColor; // End RGB color
 
   // Interpolate each color channel based on intensity
   const r = Math.round(r1 + intensity * (r2 - r1));
   const g = Math.round(g1 + intensity * (g2 - g1));
   const b = Math.round(b1 + intensity * (b2 - b1));
+  const a = Math.round(a1 + intensity * (a2 - a1));
 
-  return `rgb(${r}, ${g}, ${b})`;
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
 
-export const parseDateToISO = (dateStr, useHourly) => {
+export const parseDateToISO = (dateStr, useBinning) => {
   const local = new Date();
-  if (useHourly) {
-    const [month, day, year, time] = dateStr
-      .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+\s+[AP]M)/)
-      .slice(1);
-    const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-11)
-    const [hours, period] = time.split(/\s+/);
-    const hour12 = hours % 12 || 12;
-    // Reconstruct date in local timezone
-    const hour24 =
-      period === "PM" && hour12 !== 12
-        ? hour12 + 12
-        : period === "AM" && hour12 === 12
-        ? 0
-        : hour12;
-    // Create new date with local components
-    const date = new Date(year, monthIndex, day, hour24);
-    // Convert to ISO string
-    const localDate = new Date(
-      date.getTime() - local.getTimezoneOffset() * 60000
-    );
-    return localDate.toISOString();
+  if (useBinning) {
+    if (useBinning !== "daily") {
+      const [month, day, year, time] = dateStr
+        .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+\s+[AP]M)/)
+        .slice(1);
+      const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index (0-11)
+      const [hours, period] = time.split(/\s+/);
+      const hour12 = hours % 12 || 12;
+      // Reconstruct date in local timezone
+      const hour24 =
+        period === "PM" && hour12 !== 12
+          ? hour12 + 12
+          : period === "AM" && hour12 === 12
+          ? 0
+          : hour12;
+      // Create new date with local components
+      const date = new Date(year, monthIndex, day, hour24);
+      // Convert to ISO string
+      const localDate = new Date(
+        date.getTime() - local.getTimezoneOffset() * 60000
+      );
+      return localDate.toISOString();
+    }
   }
   // For non-hourly format, convert UTC to local time before creating ISO string
-  const date = new Date(dateStr);
+  const date = parseCustomDate(dateStr);
   const localDate = new Date(
     date.getTime() - local.getTimezoneOffset() * 60000
   );
   return localDate.toISOString();
 };
 
-export const shortenTick = (tick, useHourly) => {
-  return !useHourly
-    ? tick.split(" ").slice(0, 2).join(" ").slice(0, -1)
-    : tick.split(" ").slice(-2).join(" ");
+export const shortenTick = (tick, useBinning) => {
+  if (useBinning) {
+    if (useBinning.endsWith("-hour")) {
+      return (
+        tick.split(" ").slice(0, 2).join(" ").slice(0, -1) +
+        ", " +
+        tick.split(" ").slice(-2).join(" ")
+      );
+    }
+    if (useBinning === "daily") {
+      return tick.split(" ").slice(0, 2).join(" ").slice(0, -1);
+    }
+    if (useBinning === "hourly") {
+      return tick.split(" ").slice(-2).join(" ");
+    }
+  }
+  return tick;
+};
+
+export const dateToLocal = (date, useBinning) => {
+  return useBinning !== "daily"
+    ? date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        hour12: true,
+      })
+    : date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
 };
 
 export const copyText = debounce(async (text) => {
@@ -375,6 +451,27 @@ export const copyText = debounce(async (text) => {
     toast.error("Failed to copy");
   }
 }, 300);
+
+export function detectBinningStrategy(dates) {
+  if (dates.length < 2) return "unknown";
+  const schedule = dates.slice(0, 2);
+  const date1 = new Date(schedule[0]);
+  const date2 = new Date(schedule[1]);
+  const hourDiff = (date2 - date1) / (1000 * 60 * 60);
+  if (hourDiff <= 24) return "hourly";
+  if (hourDiff <= 48) return "6-hour";
+  if (hourDiff <= 144) return "12-hour";
+  return "daily";
+}
+
+export const findBinForTimestamp = (timestamp, bins) => {
+  // Find the first bin whose date is less than or equal to our timestamp
+  return (
+    bins.findLast((bin) => {
+      return bin <= timestamp;
+    }) || bins[0]
+  ); // Default to first bin if timestamp is before all bins
+};
 
 export const defaultToken = {
   priceUsd: 1.0,

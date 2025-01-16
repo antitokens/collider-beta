@@ -7,6 +7,7 @@ import {
   truncateMiddle,
   generateGradientColor,
   shortenTick,
+  detectBinningStrategy,
 } from "../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
@@ -25,6 +26,7 @@ const DashboardInverter = ({
   holders = [],
   isMobile = false,
   schedule = [],
+  start = false,
 }) => {
   const [pieChartDataEmissions, setPieChartDataEmissions] = useState(null);
   const [pieChartDataTokens, setPieChartDataTokens] = useState(null);
@@ -44,10 +46,10 @@ const DashboardInverter = ({
       ctx.textBaseline = "middle";
       // Position calculation
       // This puts the label near the end of x-axis, slightly above it
-      const x = xAxis.right - 50; // Shift left from the end
-      const y = xAxis.top - 5; // Shift up from the axis
+      const x = xAxis.right - 15; // Shift left from the end
+      const y = xAxis.top + 7.5; // Shift up from the axis
       // Draw the label
-      ctx.fillText("Time (UTC)", x, y);
+      ctx.fillText("UTC", x, y);
     },
   };
 
@@ -291,19 +293,22 @@ const DashboardInverter = ({
     });
 
     // Prepare line chart data
-    const timeDiffHours =
-      (new Date(schedule[1]) - new Date(schedule[0])) / (1000 * 60 * 60);
-    const useHourly = timeDiffHours < 24;
+    const useBinning = detectBinningStrategy(schedule);
+    const nowTime = new Date();
     setLineChartData({
       labels: eventsOverTime.timestamps.map((value) =>
-        shortenTick(value, useHourly)
+        shortenTick(value, useBinning)
       ),
       datasets: [
         {
           label: "Pro",
-          data: eventsOverTime.events.pro.every((value) => value === 0)
+          data: eventsOverTime.cumulative.pro.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.pro,
+            : eventsOverTime.cumulative.pro.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "#00bb7a",
           backgroundColor: "#00bb7a",
           fill: false,
@@ -311,9 +316,13 @@ const DashboardInverter = ({
         },
         {
           label: "Anti",
-          data: eventsOverTime.events.anti.every((value) => value === 0)
+          data: eventsOverTime.cumulative.anti.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.anti,
+            : eventsOverTime.cumulative.anti.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "#c12f00",
           backgroundColor: "#c12f00",
           fill: false,
@@ -321,9 +330,13 @@ const DashboardInverter = ({
         },
         {
           label: "Photon",
-          data: eventsOverTime.events.photon.every((value) => value === 0)
+          data: eventsOverTime.cumulative.photon.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.photon,
+            : eventsOverTime.cumulative.photon.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "rgb(123, 191, 255)",
           backgroundColor: "rgb(123, 191, 255)",
           fill: false,
@@ -331,9 +344,13 @@ const DashboardInverter = ({
         },
         {
           label: "Baryon",
-          data: eventsOverTime.events.baryon.every((value) => value === 0)
+          data: eventsOverTime.cumulative.baryon.every((value) => value === 0)
             ? []
-            : eventsOverTime.events.baryon,
+            : eventsOverTime.cumulative.baryon.map((value, index) =>
+                parseCustomDate(eventsOverTime.timestamps[index]) > nowTime
+                  ? 0
+                  : value
+              ),
           borderColor: "rgb(58, 182, 193)",
           backgroundColor: "rgb(58, 182, 193)",
           fill: false,
@@ -396,6 +413,8 @@ const DashboardInverter = ({
                 family: "'SF Mono Round'",
                 size: 10,
               },
+              minRotation: 0,
+              maxRotation: 0,
             },
             grid: { color: "#d3d3d322" },
           },
@@ -484,6 +503,20 @@ const DashboardInverter = ({
             display: connected,
             ticks: {
               maxTicksLimit: 10,
+              callback: function (value, index) {
+                // Map index to a new labels array for the second axis
+                return colliderDistribution.short[index]
+                  ? formatCount(
+                      colliderDistribution.short[index],
+                      false,
+                      colliderDistribution.short[index] > 1e6
+                        ? 10
+                        : colliderDistribution.short[index] > 1e3
+                        ? 7
+                        : 0
+                    )
+                  : null;
+              },
               font: {
                 family: "'SF Mono Round'",
                 size: 10,
@@ -497,7 +530,15 @@ const DashboardInverter = ({
               callback: function (value, index) {
                 // Map index to a new labels array for the second axis
                 return totalDistribution.short[index]
-                  ? formatCount(totalDistribution.short[index], false)
+                  ? formatCount(
+                      totalDistribution.short[index],
+                      false,
+                      totalDistribution.short[index] > 1e6
+                        ? 10
+                        : totalDistribution.short[index] > 1e3
+                        ? 7
+                        : 0
+                    )
                   : null;
               },
               font: {
@@ -548,35 +589,45 @@ const DashboardInverter = ({
     );
     setWinnerDistribution({
       labels: winnerRanks,
-      datasets: [
-        {
-          label: "Ranking Metric",
-          data: dynamics,
-          borderColor: dynamics
-            .map((value) =>
-              generateGradientColor(
-                value,
-                Math.min(...dynamics),
-                Math.max(...dynamics),
-                [255, 51, 0],
-                [0, 219, 84]
-              )
-            )
-            .map((color) =>
-              color.replace(/rgba\((.+), (\d+\.\d+)\)/, "rgba($1, 1)")
-            ),
-          backgroundColor: dynamics.map((value) =>
-            generateGradientColor(
-              value,
-              Math.min(...dynamics),
-              Math.max(...dynamics),
-              [255, 51, 0],
-              [0, 219, 84]
-            )
-          ),
-          pointStyle: "line",
-        },
-      ],
+      datasets: start
+        ? [
+            {
+              label: "Ranking Metric",
+              data: [],
+              borderColor: "#c4c4c4",
+              backgroundColor: "#c4c4c4",
+              pointStyle: "line",
+            },
+          ]
+        : [
+            {
+              label: "Ranking Metric",
+              data: dynamics,
+              borderColor: dynamics
+                .map((value) =>
+                  generateGradientColor(
+                    value,
+                    Math.min(...dynamics),
+                    Math.max(...dynamics),
+                    [255, 51, 0, 1],
+                    [0, 219, 84, 1]
+                  )
+                )
+                .map((color) =>
+                  color.replace(/rgba\((.+), (\d+\.\d+)\)/, "rgba($1, 1)")
+                ),
+              backgroundColor: dynamics.map((value) =>
+                generateGradientColor(
+                  value,
+                  Math.min(...dynamics),
+                  Math.max(...dynamics),
+                  [255, 51, 0, 1],
+                  [0, 219, 84, 1]
+                )
+              ),
+              pointStyle: "line",
+            },
+          ],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -629,16 +680,19 @@ const DashboardInverter = ({
                 family: "'SF Mono Round'",
                 size: 10,
               },
+              callback: function (value) {
+                return !start ? value : ""; // Format x-axis
+              },
             },
             title: {
-              display: !dynamics.every((item) => item === 0),
+              display: true,
               text: "Rank",
               font: {
                 family: "'SF Mono Round'",
                 size: 12,
               },
             },
-            grid: { color: "#d3d3d322" },
+            grid: { display: !start, color: "#d3d3d322" },
           },
           y: {
             type: "logarithmic",
@@ -646,7 +700,9 @@ const DashboardInverter = ({
             ticks: {
               display: !dynamics.every((item) => item === 0),
               callback: function (value) {
-                return value > 0 && Number.isInteger(-Math.log10(value))
+                return value > 0 &&
+                  Number.isInteger(-Math.log10(value)) &&
+                  !start
                   ? value.toFixed(2)
                   : ""; // Format y-axis
               },
@@ -655,6 +711,7 @@ const DashboardInverter = ({
                 size: 10,
               },
             },
+            max: 1,
           },
         },
       },
