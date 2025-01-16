@@ -43,6 +43,7 @@ const Inverter = ({
   claims = metadataInit,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [active, setActive] = useState(false);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [baryonTokens, setBaryonTokens] = useState(0);
@@ -51,8 +52,6 @@ const Inverter = ({
   const [updatedBalances, setUpdatedBalances] = useState([0, 0]);
   const [gain, setGain] = useState(0);
   const [dollarGain, setDollarGain] = useState(0);
-  const [userDistribution, setUserDistribution] = useState(null);
-  const [lineChartData, setLineChartData] = useState(null);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
@@ -135,101 +134,9 @@ const Inverter = ({
     }
   }, [clearFields]);
 
-  // Prepare line chart data
   useEffect(() => {
-    // Set Graphs
-    if (userDistribution) {
-      // Trial
-      const iF = 1;
-      const iG = 1;
-      setAntiTokens(iF * userDistribution.anti);
-      setProTokens(iG * userDistribution.pro);
-      setLineChartData({
-        type: "line",
-        labels: [],
-        datasets: [],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: {
-                font: {
-                  family: "'SF Mono Round'",
-                },
-                color: "#ffffffa2",
-                pointStyle: "circle",
-                usePointStyle: true,
-                boxWidth: 7,
-                boxHeight: 7,
-              },
-              display: true,
-              position: "top",
-              align: "center",
-            },
-            datalabels: {
-              display: false,
-            },
-            tooltip: {
-              enabled: false,
-            },
-          },
-          layout: {
-            padding: {
-              top: 15, // Add padding to avoid overlapping
-              left: 5,
-              right: 5,
-              bottom: 0,
-            },
-          },
-          scales: {
-            x: {
-              position: "bottom",
-              title: {
-                display: true,
-                text: "Probability Range", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#999999",
-              },
-              ticks: {
-                display: photonTokens > 0,
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 10,
-                },
-                color: "#ffffffa2",
-              },
-              grid: {
-                color: "#d3d3d322",
-              },
-            },
-            y: {
-              title: {
-                display: false,
-                text: "Reclaim", // Label for the X-axis
-                font: {
-                  family: "'SF Mono Round'",
-                  size: 12,
-                  weight: "bold",
-                },
-                color: "#999999",
-              },
-              grid: { color: "#d3d3d322" },
-              ticks: {
-                callback: function (value) {
-                  return ""; // Format y-axis
-                },
-              },
-            },
-          },
-        },
-      });
-    }
-  }, [userDistribution, baryonTokens, photonTokens]);
+    setActive(!inactive);
+  }, [inactive]);
 
   const handleReclaim = async () => {
     if (disabled || loading) return;
@@ -258,13 +165,13 @@ const Inverter = ({
         return;
       }
 
-      if (photonTokens < 1 && photonTokens !== 0) {
-        toast.error("Photons must be larger than 1, or exactly 0!");
+      if (photonTokens < 0) {
+        toast.error("Photons must be larger 0!");
         return;
       }
 
-      if (baryonTokens < 1 && baryonTokens !== 0) {
-        toast.error("Baryons must be larger than 1, or exactly 0!");
+      if (baryonTokens < 0) {
+        toast.error("Baryons must be larger 0!");
         return;
       }
 
@@ -311,22 +218,6 @@ const Inverter = ({
     }
   };
 
-  useEffect(() => {
-    if (baryonTokens || photonTokens) {
-      const distribution = calculateInversion(
-        baryonTokens,
-        photonTokens,
-        gain > 0 ? 1 : -1
-      );
-      setUserDistribution(distribution);
-    } else {
-      setUserDistribution({
-        anti: 0,
-        pro: 0,
-      });
-    }
-  }, [baryonTokens, photonTokens, gain]);
-
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <div className="bg-dark-card p-4 rounded w-full mb-4 flex flex-col justify-center">
@@ -344,7 +235,9 @@ const Inverter = ({
                         balances.endTime !== "-"
                           ? isMobile
                             ? parseToUTC(balances.endTime, isMobile) + " UTC"
-                            : parseToUTC(balances.endTime, isMobile).split(",")[0]
+                            : parseToUTC(balances.endTime, isMobile).split(
+                                ","
+                              )[0]
                           : "..."
                       }`
                     : "Reclaim opening date & time"}
@@ -700,7 +593,7 @@ const Inverter = ({
       </div>
 
       {/* Token Output Fields */}
-      {userDistribution && (
+      {active && (
         <div className="bg-dark-card p-4 rounded w-full">
           <div className="mb-4 flex flex-row items-center justify-between space-x-2 sm:space-x-10">
             <div className="flex flex-col items-start justify-between w-full">
