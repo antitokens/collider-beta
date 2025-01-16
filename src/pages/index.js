@@ -47,6 +47,7 @@ import {
   pollsInit,
 } from "../utils/utils";
 import { getBalance, getBalances, getPolls, addPoll } from "../utils/api";
+import { decompressMetadata } from "../utils/compress";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 /* Main Page */
@@ -375,7 +376,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setRefresh(false);
           setIsMetaLoading(true);
           const blobBalance = await getBalances(String(poll));
-          const dataBalance = JSON.parse(blobBalance.message);
+          const dataBalance = decompressMetadata(
+            JSON.parse(blobBalance.message)
+          );
 
           setBalances({
             startTime: dataBalance.startTime,
