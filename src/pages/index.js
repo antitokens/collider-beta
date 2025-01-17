@@ -1067,7 +1067,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 size: isMobile ? 10 : 12,
               },
               minRotation: 0,
-              maxRotation: 90,
+              maxRotation: isMobile ? 0 : 90,
               color: "#d3d3d399",
               padding: isMobile ? 10 : 15,
               callback: function (value, index) {
