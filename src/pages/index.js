@@ -416,60 +416,60 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [polls, poll]);
 
   useEffect(() => {
-    if (refresh && !wallet.disconnecting && poll >= 0) {
-      const fetchBalances = async () => {
-        try {
-          setIsMetaLoading(true);
-          const blobBalance = await getBalances(String(poll));
-          const dataBalance = decompressMetadata(
-            JSON.parse(blobBalance.message)
-          );
+    const fetchBalances = async () => {
+      try {
+        // Always set loading when fetching new data
+        setIsMetaLoading(true);
 
-          const blobCheck = wallet.publicKey
-            ? await checkPosted(wallet.publicKey)
-            : { message: "NOT_ALLOWED" };
+        // Fetch balances for the current poll
+        const blobBalance = await getBalances(String(poll));
+        const dataBalance = decompressMetadata(JSON.parse(blobBalance.message));
+
+        // Only check for wallet permissions if wallet is connected
+        if (wallet.publicKey) {
+          const blobCheck = await checkPosted(wallet.publicKey);
           const dataCheck = blobCheck.message;
           setHasPosted(dataCheck === "NOT_ALLOWED");
-
-          setBalances({
-            startTime: dataBalance.startTime,
-            endTime: dataBalance.endTime,
-            colliderDistribution: {},
-            totalDistribution: {},
-            emissionsData: dataBalance.emissionsData,
-            collisionsData: dataBalance.collisionsData,
-            eventsOverTime: dataBalance.eventsOverTime,
-          });
-
-          setBags({
-            baryon: dataBalance.totalDistribution.bags.baryon,
-            photon: dataBalance.totalDistribution.bags.photon,
-            baryonPool: dataBalance.emissionsData.baryonTokens,
-            photonPool: dataBalance.emissionsData.photonTokens,
-            anti: dataBalance.totalDistribution.bags.anti,
-            pro: dataBalance.totalDistribution.bags.pro,
-            antiPool: dataBalance.collisionsData.antiTokens,
-            proPool: dataBalance.collisionsData.proTokens,
-            wallets: dataBalance.totalDistribution.wallets,
-          });
-        } catch (err) {
-          console.error("Error fetching metadata:", err);
-          setMetaError(err);
-        } finally {
-          setIsMetaLoading(false);
-          setRefresh(false);
+        } else {
+          setHasPosted(false); // Reset posting status when wallet disconnects
         }
-      };
+
+        // Always update balances data, regardless of wallet status
+        setBalances({
+          startTime: dataBalance.startTime,
+          endTime: dataBalance.endTime,
+          colliderDistribution: {},
+          totalDistribution: {},
+          emissionsData: dataBalance.emissionsData,
+          collisionsData: dataBalance.collisionsData,
+          eventsOverTime: dataBalance.eventsOverTime,
+        });
+
+        setBags({
+          baryon: dataBalance.totalDistribution.bags.baryon,
+          photon: dataBalance.totalDistribution.bags.photon,
+          baryonPool: dataBalance.emissionsData.baryonTokens,
+          photonPool: dataBalance.emissionsData.photonTokens,
+          anti: dataBalance.totalDistribution.bags.anti,
+          pro: dataBalance.totalDistribution.bags.pro,
+          antiPool: dataBalance.collisionsData.antiTokens,
+          proPool: dataBalance.collisionsData.proTokens,
+          wallets: dataBalance.totalDistribution.wallets,
+        });
+      } catch (err) {
+        console.error("Error fetching metadata:", err);
+        setMetaError(err);
+      } finally {
+        setIsMetaLoading(false);
+        setRefresh(false);
+      }
+    };
+
+    // Fetch whenever poll changes or refresh is triggered
+    if (poll >= 0) {
       fetchBalances();
     }
-  }, [
-    poll,
-    refresh,
-    wallet,
-    wallet.disconnecting,
-    wallet.connected,
-    wallet.publicKey,
-  ]);
+  }, [poll, refresh, wallet.publicKey]); // Include wallet.publicKey to handle connection changes
 
   useEffect(() => {
     setPredictionConfig({
@@ -573,7 +573,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       checkBalance();
       setRefresh(true);
     }
-  }, [wallet, dataUpdated, wallet.disconnecting]);
+  }, [wallet, dataUpdated, wallet.disconnecting, wallet.publicKey]);
 
   useEffect(() => {
     const checkBalance = async () => {
@@ -594,6 +594,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [
     wallet,
     dataUpdated,
+    wallet.publicKey,
     wallet.disconnecting,
     poll,
     antiBalanceLive,
