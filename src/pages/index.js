@@ -52,6 +52,7 @@ import {
   findHourBinForTime,
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
+import { decompressMetadata } from "../utils/compress";
 import { calculateCollision } from "../utils/colliderAlpha";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
@@ -384,8 +385,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setIsMetaLoading(true);
           const blobBalance = await getBalances();
           const blobClaim = await getClaims();
-          const dataBalance = JSON.parse(blobBalance.message);
-          const dataClaim = JSON.parse(blobClaim.message);
+          const dataBalance = decompressMetadata(JSON.parse(blobBalance.message));
+          const dataClaim = decompressMetadata(JSON.parse(blobClaim.message));
 
           const colliderDistribution =
             baryonBalance >= 0 || photonBalance >= 0
