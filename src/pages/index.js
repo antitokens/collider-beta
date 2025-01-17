@@ -179,7 +179,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         console.error("Error fetching polls:", error);
         setPolls(pollsInit);
       });
-  }, []);
+  }, [refresh]);
 
   useEffect(() => {
     setLoading(isMetaLoading);
@@ -342,15 +342,30 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   };
 
   const handlePollCreation = async (formData) => {
-    setNewPoll(formData);
-    setTriggerAddPoll(false);
-    const blobNewPoll = await addPoll(wallet.publicKey, formData, poll);
-    const dataNewPoll = blobNewPoll.message;
-    if (blobNewPoll.status === 202) {
-      toast.error(dataNewPoll);
-    } else {
-      toast.success(dataNewPoll);
-      setRefresh(refresh);
+    try {
+      setNewPoll(formData);
+      setTriggerAddPoll(false);
+      const blobNewPoll = await addPoll(
+        wallet.publicKey,
+        formData,
+        polls.length + 1
+      );
+      if (blobNewPoll.status === 202) {
+        toast.error(blobNewPoll.message);
+        return;
+      }
+      // Update polls state with new poll
+      const updatedPolls = { ...polls };
+      updatedPolls[polls.length + 1] = formData;
+      setPolls(updatedPolls);
+      // Force refresh of balances data
+      setRefresh(true);
+      // Set hasPosted to prevent multiple submissions
+      setHasPosted(true);
+      toast.success(blobNewPoll.message);
+    } catch (error) {
+      console.error("Error creating poll:", error);
+      toast.error("Failed to create poll");
     }
   };
 
@@ -396,14 +411,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     if (refresh && !wallet.disconnecting && poll >= 0) {
       const fetchBalances = async () => {
         try {
-          setRefresh(false);
           setIsMetaLoading(true);
           const blobBalance = await getBalances(String(poll));
           const dataBalance = decompressMetadata(
             JSON.parse(blobBalance.message)
           );
 
-          const blobCheck = await checkPosted(wallet.publicKey);
+          const blobCheck = wallet.publicKey
+            ? await checkPosted(wallet.publicKey)
+            : { message: "NOT_ALLOWED" };
           const dataCheck = blobCheck.message;
           setHasPosted(dataCheck === "NOT_ALLOWED");
 
@@ -441,11 +457,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [
     poll,
     refresh,
-    antiData,
-    proData,
     wallet,
     wallet.disconnecting,
     wallet.connected,
+    wallet.publicKey,
   ]);
 
   useEffect(() => {
@@ -1159,7 +1174,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   <button
                     className="bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
                     onClick={() => setTriggerAddPoll(true)}
-                    disabled={hasPosted}
+                    disabled={
+                      hasPosted || !wallet.connected || wallet.disconnecting
+                    }
                   >
                     Add Poll
                   </button>

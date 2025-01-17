@@ -80,8 +80,12 @@ const UTCDateTimePicker = ({
   };
 
   const handleHourChange = (e) => {
+    const hourValue = parseInt(e.target.value);
+    if (isNaN(hourValue) || hourValue < 0 || hourValue > 23) {
+      return; // Invalid hour value, don't update
+    }
     const newDate = new Date(date);
-    newDate.setUTCHours(parseInt(e.target.value), 0, 0, 0);
+    newDate.setUTCHours(hourValue, 0, 0, 0);
     onChange(newDate.toISOString());
   };
 
