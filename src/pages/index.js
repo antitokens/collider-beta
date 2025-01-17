@@ -525,7 +525,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         {/* Collider Sections Toggle */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto">
           {isMobile && <TimeTicker fontSize={11} />}
-          <div className="lg:col-span-1 xl:col-span-2 mx-2 md:mx-0">
+          <div
+            className={`lg:col-span-1 xl:col-span-2 mx-2 md:mx-0 ${
+              isMobile ? "" : "mt-20"
+            }`}
+          >
             {showCollider ? (
               <div className="text-center">
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
