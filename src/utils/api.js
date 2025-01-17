@@ -10,7 +10,7 @@ export const addPoll = async (walletAddress, config, poll) => {
       poll: poll,
       title: config.title,
       description: config.description,
-      schedule: config.schedule,
+      schedule: [config.startTime, config.endTime],
       wallet: walletAddress,
       signature: config.signature,
       timestamp: config.timestamp,
@@ -78,6 +78,15 @@ export const getBalances = async (poll) => {
 // Get polls data from API
 export const getPolls = async () => {
   const response = await fetch(`${API_URL}/polls`);
+  if (!response.ok) {
+    throw new Error(`HTTP_ERROR: ${response.status}`);
+  }
+  return response.json();
+};
+
+// Check posted status from API
+export const checkPosted = async (wallet) => {
+  const response = await fetch(`${API_URL}/check/${wallet}`);
   if (!response.ok) {
     throw new Error(`HTTP_ERROR: ${response.status}`);
   }

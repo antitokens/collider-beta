@@ -46,7 +46,13 @@ import {
   findHourBinForTime,
   pollsInit,
 } from "../utils/utils";
-import { getBalance, getBalances, getPolls, addPoll } from "../utils/api";
+import {
+  getBalance,
+  getBalances,
+  getPolls,
+  addPoll,
+  checkPosted,
+} from "../utils/api";
 import { decompressMetadata } from "../utils/compress";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
@@ -123,7 +129,8 @@ const Home = ({ BASE_URL }) => {
 const LandingPage = ({ BASE_URL, setTrigger }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
-  const [poll, setPoll] = useState(0);
+  const [poll, setPoll] = useState(1);
+  const [hasPosted, setHasPosted] = useState(false);
   const [polls, setPolls] = useState(pollsInit);
   const [newPoll, setNewPoll] = useState(pollsInit[0]);
   const [started, setStarted] = useState(false);
@@ -158,9 +165,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     const fetchBalances = async () => {
       const blobPolls = await getPolls();
       const dataPolls = JSON.parse(blobPolls.message);
-      setPolls(JSON.stringify(dataPolls) === "{}" ? pollsInit : dataPolls);
+      const addPolls =
+        JSON.stringify(dataPolls) === "{}" ? pollsInit : dataPolls;
+      return addPolls;
     };
-    fetchBalances();
+
+    // Wait for the Promise to resolve before setting the state
+    fetchBalances()
+      .then((result) => {
+        setPolls(result);
+      })
+      .catch((error) => {
+        console.error("Error fetching polls:", error);
+        setPolls(pollsInit);
+      });
   }, []);
 
   useEffect(() => {
@@ -327,8 +345,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setNewPoll(formData);
     setTriggerAddPoll(false);
     const blobNewPoll = await addPoll(wallet.publicKey, formData, poll);
-    const dataNewPoll = JSON.parse(blobNewPoll.message);
-    console.log(dataNewPoll);
+    const dataNewPoll = blobNewPoll.message;
+    if (blobNewPoll.status === 202) {
+      toast.error(dataNewPoll);
+    } else {
+      toast.success(dataNewPoll);
+      setRefresh(refresh);
+    }
   };
 
   const handlePredictionSubmitted = (state, event) => {
@@ -363,14 +386,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [metaError]);
 
   useEffect(() => {
-    if (balances !== metadataInit) {
-      setStarted(new Date() > new Date(balances.startTime));
-      setIsOver(new Date() > new Date(balances.endTime));
+    if (polls[poll]) {
+      setStarted(new Date() > new Date(polls[poll].schedule[0]));
+      setIsOver(new Date() > new Date(polls[poll].schedule[1]));
     }
-  }, [balances]);
+  }, [polls, poll]);
 
   useEffect(() => {
-    if (refresh && started && !wallet.disconnecting && poll) {
+    if (refresh && !wallet.disconnecting && poll >= 0) {
       const fetchBalances = async () => {
         try {
           setRefresh(false);
@@ -379,6 +402,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const dataBalance = decompressMetadata(
             JSON.parse(blobBalance.message)
           );
+
+          const blobCheck = await checkPosted(wallet.publicKey);
+          const dataCheck = blobCheck.message;
+          setHasPosted(dataCheck === "NOT_ALLOWED");
 
           setBalances({
             startTime: dataBalance.startTime,
@@ -416,7 +443,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     refresh,
     antiData,
     proData,
-    started,
     wallet,
     wallet.disconnecting,
     wallet.connected,
@@ -424,13 +450,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
   useEffect(() => {
     setPredictionConfig({
-      startTime: balances.startTime || "-",
-      endTime: balances.endTime || "-",
+      startTime: polls[poll].schedule[0] || "-",
+      endTime: polls[poll].schedule[1] || "-",
       antiLive: balances.collisionsData.antiTokens || 0,
       proLive: balances.collisionsData.proTokens || 0,
       convertToLocaleTime,
     });
-  }, [balances]);
+  }, [balances, polls, poll]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -487,7 +513,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       setProUsage(!wallet.disconnecting ? balance.pro : 0);
     };
 
-    if ((wallet.publicKey || dataUpdated) && poll) {
+    if ((wallet.publicKey || dataUpdated) && poll >= 0) {
       checkBalance();
       setRefresh(true);
     }
@@ -709,7 +735,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           hoverBorderColor: "transparent",
         },
       ],
-      plugins: [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin],
+      plugins:
+        labels.length > 0
+          ? [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin]
+          : [],
       options: {
         layout: {
           padding: {
@@ -956,10 +985,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           },
           y: {
             grid: {
-              display: true,
+              display: labels.length > 0,
               color: "rgba(255, 255, 255, 0.05)",
             },
             ticks: {
+              display: labels.length > 0,
               padding: isMobile ? 5 : 15,
               callback: function (value) {
                 return value === 0
@@ -1008,6 +1038,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               color: "rgba(255, 255, 255, 0.1)",
             },
             ticks: {
+              display: labels.length > 0,
               padding: isMobile ? 5 : 15,
               callback: function (value) {
                 return value === 0
@@ -1104,25 +1135,31 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               isMetaLoading ? "items-center" : ""
             }`}
           >
+            <div className="-ml-2">
+              {isMobile && (
+                <TimeTicker fontSize={isMobile ? 12 : 12} isMobile={isMobile} />
+              )}
+            </div>
             <div className="flex flex-col w-full lg:w-3/4">
               <div className="bg-dark-card p-4 rounded w-full mb-4 border border-gray-800">
                 <div className="flex flex-row justify-between items-center mb-2">
                   <div className="flex flex-row items-center mb-2">
                     <div className="text-2xl text-gray-300 text-left font-medium">
-                      {polls[poll].title}&nbsp;
+                      {polls[poll] ? polls[poll].title : ""}&nbsp;
                     </div>
                     <span className="relative group">
                       <span className="cursor-pointer text-sm text-gray-400">
                         &#9432;
                         <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                          {`Truth is measured in terms of Market Capitalisations`}
+                          {polls[poll] ? polls[poll].description : ""}
                         </span>
                       </span>
                     </span>
                   </div>
                   <button
-                    className="bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal"
+                    className="bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
                     onClick={() => setTriggerAddPoll(true)}
+                    disabled={hasPosted}
                   >
                     Add Poll
                   </button>
@@ -1137,10 +1174,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         >
                           {`Prediction market opening date & time: ${
                             predictionConfig.startTime !== "-"
-                              ? parseToUTC(
-                                  predictionConfig.startTime,
-                                  isMobile
-                                ) + " UTC"
+                              ? isMobile
+                                ? parseToUTC(
+                                    predictionConfig.startTime,
+                                    isMobile
+                                  ) + " UTC"
+                                : parseToUTC(
+                                    predictionConfig.startTime,
+                                    isMobile
+                                  ).split(",")[0]
                               : "..."
                           }`}
                         </span>
@@ -1153,13 +1195,17 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       }`}
                     >
                       {predictionConfig.startTime !== "-"
-                        ? parseToUTC(predictionConfig.startTime, isMobile)
+                        ? isMobile
+                          ? parseToUTC(
+                              predictionConfig.startTime,
+                              isMobile
+                            ).split(",")[0]
+                          : parseToUTC(predictionConfig.startTime, isMobile)
                         : "..."}
                     </span>
-                    &nbsp;&nbsp;
-                    {predictionConfig.startTime !== "-" && (
+                    {predictionConfig.startTime !== "-" && !isMobile && (
                       <span className="font-sfmono text-gray-600 text-[10px]">
-                        UTC
+                        &nbsp;UTC
                       </span>
                     )}{" "}
                   </div>
@@ -1171,13 +1217,17 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       }`}
                     >
                       {predictionConfig.endTime !== "-"
-                        ? parseToUTC(predictionConfig.endTime, isMobile)
+                        ? isMobile
+                          ? parseToUTC(
+                              predictionConfig.endTime,
+                              isMobile
+                            ).split(",")[0]
+                          : parseToUTC(predictionConfig.endTime, isMobile)
                         : "..."}
                     </span>
-                    &nbsp;&nbsp;
-                    {predictionConfig.endTime !== "-" && (
+                    {predictionConfig.endTime !== "-" && !isMobile && (
                       <span className="font-sfmono text-gray-600 text-[10px]">
-                        UTC
+                        &nbsp;UTC
                       </span>
                     )}{" "}
                     &nbsp;
@@ -1189,8 +1239,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         >
                           {`Prediction market closing date & time: ${
                             predictionConfig.endTime !== "-"
-                              ? parseToUTC(predictionConfig.endTime, isMobile) +
-                                " UTC"
+                              ? isMobile
+                                ? parseToUTC(
+                                    predictionConfig.endTime,
+                                    isMobile
+                                  ) + " UTC"
+                                : parseToUTC(
+                                    predictionConfig.endTime,
+                                    isMobile
+                                  ).split(",")[0]
                               : "..."
                           }`}
                         </span>
@@ -1257,24 +1314,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   <div className={`flex flex-col w-full`}>
                     <div className={`flex justify-between items-center w-full`}>
                       <div className="flex flex-row">
-                        <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        </h2>
-                        <div className="flex flex-row items-center">
-                          <TimeTicker
-                            fontSize={isMobile ? 12 : 12}
-                            isMobile={isMobile}
-                          />
-                          <div className="font-grotesk">
-                            <span className="relative group">
-                              <span className="cursor-pointer text-xs text-gray-500">
-                                &#9432;
-                              </span>
-                              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                                {`Displays the global expectation of the outcome over time`}
-                              </span>
-                            </span>
-                          </div>
+                        <div
+                          className={`flex flex-row ${
+                            !isMobile ? "items-center" : "justify-between"
+                          }`}
+                        >
+                          <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          </h2>
+                          {!isMobile && (
+                            <TimeTicker
+                              fontSize={isMobile ? 12 : 12}
+                              isMobile={isMobile}
+                            />
+                          )}
                         </div>
                       </div>
                       <div
@@ -1282,6 +1335,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           loading ? "hidden" : "ml-auto"
                         }`}
                       >
+                        <div className="font-grotesk">
+                          <span className="relative group">
+                            <span className="cursor-pointer text-xs text-gray-500">
+                              &#9432;
+                            </span>
+                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                              {`Displays the global expectation of the outcome over time`}
+                            </span>
+                          </span>
+                        </div>
                         <div
                           className={
                             predictionHistoryTimeframe === "1H"
@@ -1416,6 +1479,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         setIsVisible={setShowBuyTokensModal}
       />
       <PollMetaModal
+        wallet={wallet}
         isVisible={triggerAddPoll}
         setIsVisible={setTriggerAddPoll}
         onSubmit={handlePollCreation}

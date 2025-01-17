@@ -21,7 +21,7 @@ const TokenBalance = (trigger) => {
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      const blobBalance = await getBalance(wallet.publicKey, String(-1));
+      const blobBalance = await getBalance(wallet.publicKey, String(0));
       const dataBalance = JSON.parse(blobBalance.message);
       setAntiBalance(antiBalanceResult - dataBalance.anti);
       setProBalance(proBalanceResult - dataBalance.pro);

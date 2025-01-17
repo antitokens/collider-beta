@@ -38,17 +38,17 @@ export const monthsReverse = {
 
 /* Global Constants */
 // Polls init
-export const pollsInit = [
-  {
-    poll: 0,
+export const pollsInit = {
+  1: {
+    poll: 1,
     title: "Some Empty Poll",
     description: "Just Some Description",
-    schedule: ["0", "1"],
+    schedule: ["1901-01-17T00:00:00.000Z", "1901-01-28T00:00:00.000Z"],
     wallet: "",
     signature: "",
     timestamp: "",
   },
-];
+};
 
 // Metadata init
 export const metadataInit = {
