@@ -1315,7 +1315,7 @@ const Collider = ({
           <span className="relative group">
             <span className="cursor-pointer text-sm text-gray-400">
               &#9432;
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Truth is measured in terms of Market Capitalisations`}
               </span>
             </span>
@@ -1363,7 +1363,7 @@ const Collider = ({
             <span className="relative group">
               <span className="cursor-pointer">
                 &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[113px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {isMobile
                     ? `Prediction market closing date & time: ${
                         config.endTime !== "-"

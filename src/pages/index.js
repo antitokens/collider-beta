@@ -125,6 +125,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [proUsage, setProUsage] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
+  const [baryonUsage, setBaryonUsage] = useState(0);
+  const [photonUsage, setPhotonUsage] = useState(0);
   const [bags, setBags] = useState(emptyBags);
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
@@ -214,8 +216,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           const dataClaim = JSON.parse(blobClaim.message);
 
           const colliderDistribution =
-            baryonBalance >= 0 || photonBalance >= 0
+            baryonBalance + photonBalance > 0
               ? calculateCollision(baryonBalance, photonBalance, true)
+              : baryonUsage + photonUsage > 0
+              ? calculateCollision(baryonUsage, photonUsage, true)
               : emptyGaussian;
 
           const totalDistribution =
@@ -227,7 +231,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   true
                 )
               : emptyGaussian;
-          
+
           setBalances({
             startTime: dataBalance.startTime,
             endTime: dataBalance.endTime,
@@ -326,6 +330,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     refresh,
     baryonBalance,
     photonBalance,
+    baryonUsage,
+    photonUsage,
     antiData,
     proData,
     isOver,
@@ -407,7 +413,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             : balance.pro
           : 0
       );
-
       setBaryonBalance(
         !wallet.disconnecting
           ? claim.baryon + claim.photon > 0
@@ -419,6 +424,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         !wallet.disconnecting
           ? claim.photon + claim.baryon > 0
             ? 0
+            : balance.photon
+          : 0
+      );
+      setBaryonUsage(
+        !wallet.disconnecting
+          ? claim.baryon + claim.photon > 0
+            ? balance.baryon
+            : balance.baryon
+          : 0
+      );
+      setPhotonUsage(
+        !wallet.disconnecting
+          ? claim.photon + claim.baryon > 0
+            ? balance.photon
             : balance.photon
           : 0
       );
@@ -505,9 +524,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
         {/* Collider Sections Toggle */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 lg:gap-8 max-w-7xl mx-auto">
+          {isMobile && <TimeTicker fontSize={11} />}
           <div className="lg:col-span-1 xl:col-span-2 mx-2 md:mx-0">
             {showCollider ? (
-              <div className="text-center mt-20">
+              <div className="text-center">
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <div className="flex flex-row items-center">
                     <div
@@ -519,7 +539,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     <div className="text-xl text-gray-300 text-left font-medium">
                       Collider
                     </div>
-                    <TimeTicker />
+                    {!isMobile && <TimeTicker />}
                   </div>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
@@ -589,7 +609,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 />
               </div>
             ) : (
-              <div className="mt-20">
+              <div>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <div className="flex flex-row items-center">
                     <div
@@ -601,7 +621,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     <div className="text-xl text-gray-300 text-left font-medium">
                       Inverter
                     </div>
-                    <TimeTicker />
+                    {!isMobile && <TimeTicker />}
                   </div>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"

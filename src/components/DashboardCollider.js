@@ -10,7 +10,6 @@ import {
   detectBinningStrategy,
   parseCustomDate,
 } from "../utils/utils";
-import plugin from "@tailwindcss/typography";
 
 Chart.register(ChartDataLabels, ...registerables);
 

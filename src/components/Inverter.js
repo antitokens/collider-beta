@@ -291,7 +291,7 @@ const Inverter = ({
             <span className="relative group">
               <span className="cursor-pointer">
                 &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[154px] lg:-translate-x-[25px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[165px] lg:-translate-x-[39px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {isMobile
                     ? `Reclaim closing date & time: ${
                         balances.endTime !== "-"
@@ -352,7 +352,7 @@ const Inverter = ({
           <div className="flex items-center text-left text-xs">
             <div className="relative group flex items-center">
               <div className="cursor-pointer">&#9432;&nbsp;</div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Displays your current tokens in claim
               </span>
             </div>
@@ -396,7 +396,7 @@ const Inverter = ({
               </span>
               <span className="relative group flex items-center ml-1 pb-[2px]">
                 <div className="cursor-pointer text-xs">&#9432;</div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {`Displays your current realised profit or loss`}
                 </span>
               </span>

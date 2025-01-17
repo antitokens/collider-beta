@@ -546,6 +546,10 @@ export const TimeTicker = ({
   const [font, setFont] = useState(fontSize);
 
   useEffect(() => {
+    setFont(fontSize);
+  }, []);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
