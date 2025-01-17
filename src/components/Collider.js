@@ -110,8 +110,8 @@ const Collider = ({
         {
           antiTokens: antiTokens + antiUsage,
           proTokens: proTokens + proUsage,
-          baryonTokens: 0,
-          photonTokens: 0,
+          baryonTokens: 0, // Force Baryon = 0
+          photonTokens: 0, // Force Photon = 0
           signature,
           timestamp,
         },

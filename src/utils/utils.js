@@ -395,11 +395,15 @@ export const generateGradientColor = (
 export const parseDateToISO = (dateStr, useBinning) => {
   if (useBinning) {
     if (useBinning !== "daily") {
-      const [month, day, year, time] = dateStr
-        .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+):(\d+)/)
-        .slice(1);
+      // Updated regex to handle optional # at the end of the date string
+      const matches = dateStr.match(
+        /(\w+)\s+(\d+),\s+(\d+),\s+(\d+):(\d+)(?:₁*)?/
+      );
+
+      if (!matches) return null;
+
+      const [_, month, day, year, hours, minutes] = matches;
       const monthIndex = new Date(`${month} 1, 2000`).getMonth();
-      const [hours, minutes] = time.split(":");
 
       return new Date(
         Date.UTC(
@@ -547,6 +551,44 @@ export function formatUTCTime(date) {
   const day = date.getUTCDate().toString().padStart(2, "0");
 
   return `${year}-${month}-${day} ${hours}:${minutes} UTC`;
+}
+
+export function getPlotColor(pro, anti, index) {
+  return pro[index] + anti[index] === 0
+    ? 50
+    : (pro[index] / (pro[index] + anti[index])) * 100;
+}
+
+export function getAllPlotColor(pro, anti) {
+  return pro.map((_, index) =>
+    pro[index] + anti[index] === 0
+      ? 50
+      : (pro[index] / (pro[index] + anti[index])) * 100
+  );
+}
+
+export function addRepetitionMarkers(arr, marker = "₁") {
+  // Count occurrences of each string
+  const counts = arr.reduce((acc, str) => {
+    acc[str] = (acc[str] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Keep track of how many times we've seen each string
+  const seen = {};
+
+  // Map through array and add # for repetitions
+  return arr.map((str) => {
+    // If string appears only once, return as is
+    if (counts[str] === 1) return str;
+
+    // Initialize seen counter for this string if not exists
+    seen[str] = (seen[str] || 0) + 1;
+
+    // Add # marks based on how many times we've seen this string
+    // Count - 1 because first occurrence doesn't get a #
+    return str + marker.repeat(seen[str] - 1);
+  });
 }
 
 export const TimeTicker = ({

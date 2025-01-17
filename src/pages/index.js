@@ -46,6 +46,9 @@ import {
   parseToUTC,
   findHourBinForTime,
   pollsInit,
+  getPlotColor,
+  getAllPlotColor,
+  addRepetitionMarkers,
 } from "../utils/utils";
 import {
   getBalance,
@@ -188,6 +191,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setLoading(isMetaLoading);
   }, [isMetaLoading]);
 
+  const marker = "₁";
+
   const xAxisLabelPlugin = {
     id: "xAxisLabel",
     afterDraw: (chart, _, pluginOptions) => {
@@ -220,7 +225,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         const dateStr = shortenTick(item, useBinning);
         // Find all occurrences of this date
         const allIndices = chart.data.labels.reduce((acc, label, i) => {
-          if (label === dateStr) acc.push(i);
+          if (label === dateStr || label === dateStr + marker) acc.push(i);
           return acc;
         }, []);
         // If we have enough occurrences, use the one matching our index
@@ -542,7 +547,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
-  }, []);
+  }, [polls]);
 
   // Function to update hash when poll changes programmatically
   const updatePoll = (newPoll) => {
@@ -635,13 +640,23 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
           parseDateToISO(timestamp, useBinning)
         );
-      const startValue = balances.eventsOverTime.cumulative.photon[thisBin];
-      const endValue = balances.eventsOverTime.cumulative.photon[nextBin];
+      const startValue = getPlotColor(
+        balances.eventsOverTime.cumulative.pro,
+        balances.eventsOverTime.cumulative.anti,
+        thisBin
+      );
+      const endValue = getPlotColor(
+        balances.eventsOverTime.cumulative.pro,
+        balances.eventsOverTime.cumulative.anti,
+        nextBin
+      );
+      const allColors = getAllPlotColor(
+        balances.eventsOverTime.cumulative.pro,
+        balances.eventsOverTime.cumulative.anti
+      );
       const limits = [
-        Math.min(...balances.eventsOverTime.cumulative.photon),
-        Math.max(...balances.eventsOverTime.cumulative.photon) === 0
-          ? 50
-          : Math.max(...balances.eventsOverTime.cumulative.photon),
+        Math.min(...allColors),
+        Math.max(...allColors) === 0 ? 50 : Math.max(...allColors),
       ];
       const currentTick = parseDateToISO(
         balances.eventsOverTime.cumulative.timestamps[thisBin],
@@ -693,7 +708,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               startValue,
               limits[0],
               limits[1],
-              Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+              Math.max(...allColors) === 0
                 ? [128, 128, 128, 0.5]
                 : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
@@ -716,10 +731,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               startValue,
               limits[0],
               limits[1],
-              balances.eventsOverTime.cumulative.photon.findIndex(
-                (value) => value !== 0
-              ) >= nextBin ||
-                Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+              allColors.findIndex((value) => value !== 0) >= nextBin ||
+                Math.max(...allColors) === 0
                 ? [128, 128, 128, 0.5]
                 : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
@@ -731,10 +744,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               endValue,
               limits[0],
               limits[1],
-              balances.eventsOverTime.cumulative.photon.findIndex(
-                (value) => value !== 0
-              ) >= nextBin ||
-                Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+              allColors.findIndex((value) => value !== 0) >= nextBin ||
+                Math.max(...allColors) === 0
                 ? [128, 128, 128, 0.5]
                 : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
@@ -761,8 +772,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         return null;
       })
       .filter((value) => value !== null);
-    const labels = balances.eventsOverTime.cumulative.timestamps.map((value) =>
-      shortenTick(value, useBinning)
+    const labels = addRepetitionMarkers(
+      balances.eventsOverTime.cumulative.timestamps.map((value) =>
+        shortenTick(value, useBinning)
+      )
     );
 
     const chartData = {
@@ -782,33 +795,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           pointHoverRadius: isMobile ? 4 : 6,
           hoverBackgroundColor: "#ffffff55",
           hoverBorderColor: "#ffffffaa",
-        },
-        {
-          // Add a hidden dataset for the certainty tooltip
-          label: "Certainty",
-          data: balances.eventsOverTime.cumulative.timestamps
-            .map((timestamp, index) => {
-              const dateISO = parseDateToISO(timestamp, useBinning);
-              if (dateISO) {
-                const total =
-                  balances.eventsOverTime.cumulative.photon[index] +
-                  balances.eventsOverTime.cumulative.baryon[index];
-                return total > 0
-                  ? (balances.eventsOverTime.cumulative.photon[index] / total) *
-                      100
-                  : 50;
-              }
-              return null;
-            })
-            .filter((value) => value !== null),
-          display: false,
-          hidden: false,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          borderWidth: 0,
-          hoverBorderWidth: 0,
-          hoverBackgroundColor: "transparent",
-          hoverBorderColor: "transparent",
         },
       ],
       plugins:
@@ -908,11 +894,17 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             callbacks: {
               label: (context) => {
                 const value = context.raw;
+                const allColors = getAllPlotColor(
+                  balances.eventsOverTime.cumulative.pro,
+                  balances.eventsOverTime.cumulative.anti
+                );
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
                       shortenTick(timestamp, useBinning) ===
-                      context.chart.data.labels[context.dataIndex]
+                        context.chart.data.labels[context.dataIndex] ||
+                      shortenTick(timestamp, useBinning) + marker ===
+                        context.chart.data.labels[context.dataIndex]
                   ),
                   useBinning
                 );
@@ -923,14 +915,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     new Date(balances.startTime).getTime() ||
                   new Date(currentTick).getTime() >
                     new Date(balances.endTime).getTime() ||
-                  balances.eventsOverTime.cumulative.photon.findIndex(
+                  balances.eventsOverTime.cumulative.pro.findIndex(
                     (value) => value !== 0
-                  ) > context.dataIndex
+                  ) > context.dataIndex ||
+                  labels[context.dataIndex].endsWith(marker)
                 ) {
                   return ` `;
                 }
-                return Math.max(...balances.eventsOverTime.cumulative.photon) >
-                  0
+                return Math.max(...allColors) > 0
                   ? ` ${value.toFixed(0).padStart(2)}% ${
                       context.datasetIndex === 0 ? "expectation" : "uncertainty"
                     }`
@@ -938,15 +930,18 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               },
               labelColor: (context) => {
                 const value = context.raw;
-                const limits = [
-                  Math.min(...balances.eventsOverTime.cumulative.photon),
-                  Math.max(...balances.eventsOverTime.cumulative.photon),
-                ];
+                const allColors = getAllPlotColor(
+                  balances.eventsOverTime.cumulative.pro,
+                  balances.eventsOverTime.cumulative.anti
+                );
+                const limits = [Math.min(...allColors), Math.max(...allColors)];
                 const currentTick = parseDateToISO(
                   balances.eventsOverTime.cumulative.timestamps.find(
                     (timestamp) =>
                       shortenTick(timestamp, useBinning) ===
-                      context.chart.data.labels[context.dataIndex]
+                        context.chart.data.labels[context.dataIndex] ||
+                      shortenTick(timestamp, useBinning) + marker ===
+                        context.chart.data.labels[context.dataIndex]
                   ),
                   useBinning
                 );
@@ -958,7 +953,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     new Date(balances.startTime).getTime() ||
                   new Date(currentTick).getTime() >
                     new Date(balances.endTime).getTime() ||
-                  Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+                  Math.max(...allColors) === 0
                 ) {
                   return {
                     backgroundColor: "#808080",
@@ -971,25 +966,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     context.datasetIndex === 0 ? 0 : limits[0],
                     context.datasetIndex === 0 ? 100 : limits[1],
                     context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      ? allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                         ? [128, 128, 128, 1]
                         : [255, 51, 0, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      : allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                       ? [128, 128, 128, 1]
                       : [66, 255, 214, 0.75],
                     context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      ? allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                         ? [128, 128, 128, 1]
                         : [0, 219, 84, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      : allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                       ? [128, 128, 128, 1]
                       : [3, 173, 252, 0.75]
                   ),
@@ -998,25 +989,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     context.datasetIndex === 0 ? 0 : limits[0],
                     context.datasetIndex === 0 ? 100 : limits[1],
                     context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      ? allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                         ? [128, 128, 128, 1]
                         : [255, 51, 0, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      : allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                       ? [128, 128, 128, 1]
                       : [66, 255, 214, 0.75],
                     context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      ? allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                         ? [128, 128, 128, 1]
                         : [0, 219, 84, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      : allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                       ? [128, 128, 128, 1]
                       : [3, 173, 252, 0.75]
                   ),
