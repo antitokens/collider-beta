@@ -537,10 +537,10 @@ export function formatUTCTime(date) {
 }
 
 export const TimeTicker = ({
-  showSeconds = true,
+  showSeconds = false,
   className = "",
   fontSize = 12,
-  isMobile = false,
+  isMobile = true,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [font, setFont] = useState(fontSize);
@@ -552,6 +552,10 @@ export const TimeTicker = ({
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    setFont(fontSize);
+  }, [fontSize]);
 
   const formatUTCDateTime = (date) => {
     // Format date

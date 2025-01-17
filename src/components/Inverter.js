@@ -264,8 +264,8 @@ const Inverter = ({
           <div className="flex items-center text-left text-xs">
             <div className="relative group flex items-center">
               <div className="cursor-pointer">&#9432;&nbsp;</div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays your current tokens in the pool
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Displays your tokens in reclaim
               </span>
             </div>
             <div className="flex items-center">
@@ -308,7 +308,7 @@ const Inverter = ({
               </span>
               <span className="relative group flex items-center ml-1 pb-[2px]">
                 <div className="cursor-pointer text-xs">&#9432;</div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {`Displays your current realised profit or loss`}
                 </span>
               </span>
@@ -403,10 +403,16 @@ const Inverter = ({
         {/* Submit Button */}
         <button
           onClick={() => setFill(!fill)}
-          disabled={loading || !active}
+          disabled={
+            loading || !active || updatedBalances[0] + updatedBalances[1] <= 0
+          }
           className={`w-1/4 my-2 py-1 rounded-3xl transition-all ${
-            loading || !active || fill
-              ? "bg-transparent border border-gray-400 text-gray-400 hover:border-white hover:text-white"
+            disabled ||
+            loading ||
+            !active ||
+            fill ||
+            updatedBalances[0] + updatedBalances[1] <= 0
+              ? "bg-transparent border border-gray-400 text-gray-400 cursor-not-allowed"
               : "bg-transparent border border-accent-primary text-accent-primary hover:border-white hover:text-white"
           }`}
         >

@@ -654,7 +654,7 @@ const Collider = ({
               <div className="relative group">
                 <div className="cursor-pointer">&#9432;&nbsp;</div>
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Displays your current tokens in the pool
+                  Displays your tokens in the pool
                 </span>
               </div>
               <div>&nbsp;{`Total`}:&nbsp;</div>
@@ -671,16 +671,6 @@ const Collider = ({
               </div>
             </div>
             <div className="flex flex-row text-right text-[12px]">
-              <div>
-                USD:{" "}
-                <span className="text-[11px] text-white font-sfmono">
-                  <span className="text-gray-400">$</span>
-                  {dollarStake >= 1e4
-                    ? formatCount(dollarStake.toFixed(2))
-                    : dollarStake.toFixed(2)}
-                </span>{" "}
-              </div>
-              &nbsp;
               <div className="flex flex-row text-right">
                 <span>&nbsp;P/L:&nbsp;</span>
                 <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[1px]">
@@ -702,10 +692,28 @@ const Collider = ({
             </div>
           </div>
           <div className="flex flex-row justify-between text-[12px] text-gray-500">
-            <div className="text-sm">{isMobile ? "" : ""}</div>
+            <div className="flex flex-row text-right">
+              <div className="flex flex-row text-right">
+                <span className="relative group">
+                  <div className="cursor-pointer text-xs mt-[1px]">&#9432;</div>
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    {`Displays your current dollar stake`}
+                  </span>
+                </span>
+              </div>
+              <div>
+                &nbsp;{" "}USD:{" "}
+                <span className="text-[11px] text-white font-sfmono">
+                  <span className="text-gray-400">$</span>
+                  {dollarStake >= 1e4
+                    ? formatCount(dollarStake.toFixed(2))
+                    : dollarStake.toFixed(2)}
+                </span>
+              </div>
+            </div>
             <div className="flex flex-row text-right">
               <div>
-                Current:{" "}
+                ↓{" "}
                 <span className="text-[11px] text-white font-sfmono">
                   <span className="text-gray-400">$</span>
                   {dollarBet >= 1e4
@@ -731,7 +739,7 @@ const Collider = ({
                 <span className="relative group">
                   <div className="cursor-pointer text-xs mt-[1px]">&#9432;</div>
                   <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                    {`Displays your updated maximum gain`}
+                    {`Displays your current bet and updated maximum gain`}
                   </span>
                 </span>
               </div>

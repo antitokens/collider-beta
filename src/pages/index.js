@@ -1233,6 +1233,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             }`}
           >
             <div className="flex flex-col w-full lg:w-3/4">
+              <div className="-ml-2">
+                {isMobile && <TimeTicker fontSize={11} />}
+              </div>
               <div className="bg-dark-card p-4 rounded w-full mb-4 border border-gray-800">
                 <div className="flex flex-row items-center mb-2">
                   <div className="text-2xl text-gray-300 text-left font-medium">
@@ -1241,7 +1244,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   <span className="relative group">
                     <span className="cursor-pointer text-sm text-gray-400">
                       &#9432;
-                      <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                      <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                         {`Truth is measured in terms of Market Capitalisations`}
                       </span>
                     </span>
@@ -1273,11 +1276,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       }`}
                     >
                       {predictionConfig.startTime !== "-"
-                        ? parseToUTC(predictionConfig.startTime, isMobile)
+                        ? isMobile
+                          ? parseToUTC(
+                              predictionConfig.startTime,
+                              isMobile
+                            ).split(",")[0]
+                          : parseToUTC(predictionConfig.startTime, isMobile)
                         : "..."}
                     </span>
                     &nbsp;&nbsp;
-                    {predictionConfig.startTime !== "-" && (
+                    {predictionConfig.startTime !== "-" && !isMobile && (
                       <span className="font-sfmono text-gray-600 text-[10px]">
                         UTC
                       </span>
@@ -1291,11 +1299,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       }`}
                     >
                       {predictionConfig.endTime !== "-"
-                        ? parseToUTC(predictionConfig.endTime, isMobile)
+                        ? isMobile
+                          ? parseToUTC(
+                              predictionConfig.endTime,
+                              isMobile
+                            ).split(",")[0]
+                          : parseToUTC(predictionConfig.endTime, isMobile)
                         : "..."}
                     </span>
                     &nbsp;&nbsp;
-                    {predictionConfig.endTime !== "-" && (
+                    {predictionConfig.endTime !== "-" && !isMobile && (
                       <span className="font-sfmono text-gray-600 text-[10px]">
                         UTC
                       </span>
@@ -1305,7 +1318,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       <span className="cursor-pointer">
                         &#9432;
                         <span
-                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[41px] lg:translate-x-[31px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[107px] lg:translate-x-[31px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                         >
                           {`Prediction market closing date & time: ${
                             predictionConfig.endTime !== "-"
@@ -1376,15 +1389,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 {predictionHistoryChartData && (
                   <div className={`flex flex-col w-full`}>
                     <div className={`flex justify-between items-center w-full`}>
-                      <div className="flex flex-row">
+                      <div
+                        className={`flex flex-row ${
+                          !isMobile ? "" : "justify-between w-full"
+                        }`}
+                      >
                         <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                         </h2>
                         <div className="flex flex-row items-center">
-                          <TimeTicker
-                            fontSize={isMobile ? 12 : 12}
-                            isMobile={isMobile}
-                          />
+                          {!isMobile && (
+                            <TimeTicker
+                              fontSize={isMobile ? 12 : 12}
+                              isMobile={isMobile}
+                            />
+                          )}
                           <div className="font-grotesk">
                             <span className="relative group">
                               <span className="cursor-pointer text-xs text-gray-500">
