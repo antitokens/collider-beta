@@ -16,6 +16,7 @@ import Collider from "../components/Collider";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
 import Navbar from "../components/TopNavbar";
 import Footer from "../components/BottomFooter";
+import TimeCompletionPie from "../components/TimePie";
 import BuyTokenModal from "../components/BuyTokenModal";
 import PollMetaModal from "../components/PollMetaModal";
 import BinaryOrbit from "../components/BinaryOrbit";
@@ -137,6 +138,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [isOver, setIsOver] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
+  const [antiBalanceLive, setAntiBalanceLive] = useState(0);
+  const [proBalanceLive, setProBalanceLive] = useState(0);
   const [antiUsage, setAntiUsage] = useState(0);
   const [proUsage, setProUsage] = useState(0);
   const [bags, setBags] = useState(emptyBags);
@@ -512,18 +515,69 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     fetchTokenData();
   }, []);
 
+  // URL hash handling
+  useEffect(() => {
+    // Function to handle hash changes
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      const pollNumber = parseInt(hash);
+
+      // Validate poll number exists in polls object
+      if (!isNaN(pollNumber) && pollNumber >= 0 && polls[pollNumber]) {
+        setPoll(pollNumber);
+      } else {
+        // If invalid poll number or poll doesn't exist, default to 1
+        setPoll(1);
+        window.location.hash = "1";
+      }
+    };
+
+    // Handle initial hash on component mount
+    handleHashChange();
+
+    // Add event listener for hash changes
+    window.addEventListener("hashchange", handleHashChange);
+
+    // Cleanup listener on component unmount
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  // Function to update hash when poll changes programmatically
+  const updatePoll = (newPoll) => {
+    if (polls[newPoll]) {
+      window.location.hash = newPoll.toString();
+      setPoll(newPoll);
+    } else {
+      console.warn(`Poll ${newPoll} does not exist`);
+    }
+  };
+
   useEffect(() => {
     const checkBalance = async () => {
       const [antiBalanceResult, proBalanceResult] = await Promise.all([
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
+      setAntiBalanceLive(!wallet.disconnecting ? antiBalanceResult : 0);
+      setProBalanceLive(!wallet.disconnecting ? proBalanceResult : 0);
+    };
+
+    if (wallet.publicKey || dataUpdated) {
+      checkBalance();
+      setRefresh(true);
+    }
+  }, [wallet, dataUpdated, wallet.disconnecting]);
+
+  useEffect(() => {
+    const checkBalance = async () => {
       const _balance = await getBalance(wallet.publicKey, String(poll));
       const balance = JSON.parse(_balance.message);
       setAntiBalance(
-        !wallet.disconnecting ? antiBalanceResult - balance.anti : 0
+        !wallet.disconnecting ? antiBalanceLive - balance.anti : 0
       );
-      setProBalance(!wallet.disconnecting ? proBalanceResult - balance.pro : 0);
+      setProBalance(!wallet.disconnecting ? proBalanceLive - balance.pro : 0);
       setAntiUsage(!wallet.disconnecting ? balance.anti : 0);
       setProUsage(!wallet.disconnecting ? balance.pro : 0);
     };
@@ -532,7 +586,14 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       checkBalance();
       setRefresh(true);
     }
-  }, [wallet, dataUpdated, wallet.disconnecting, poll]);
+  }, [
+    wallet,
+    dataUpdated,
+    wallet.disconnecting,
+    poll,
+    antiBalanceLive,
+    proBalanceLive,
+  ]);
 
   // Create a ref to store the chart instance
   const chartRef = useRef(null);
@@ -1165,11 +1226,26 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     <span className="relative group">
                       <span className="cursor-pointer text-sm text-gray-400">
                         &#9432;
-                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md min-w-64 max-w-auto translate-x-0 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                           {polls[poll] ? polls[poll].description : ""}
                         </span>
                       </span>
                     </span>
+                  </div>
+                  <div className="flex flex-row items-center -mt-5">
+                    <button
+                      className="bg-transparent text-gray-400 hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:text-gray-300 disabled:cursor-not-allowed"
+                      onClick={() => updatePoll(poll - 1)}
+                    >
+                      ← Prev
+                    </button>
+                    <div className="text-gray-600 text-xs">|</div>
+                    <button
+                      className="bg-transparent text-gray-400 hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:text-gray-300 disabled:cursor-not-allowed"
+                      onClick={() => updatePoll(poll + 1)}
+                    >
+                      Next →
+                    </button>
                   </div>
                   <button
                     className="bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
@@ -1252,7 +1328,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                       <span className="cursor-pointer">
                         &#9432;
                         <span
-                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[140px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[113px] lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                         >
                           {`Prediction market closing date & time: ${
                             predictionConfig.endTime !== "-"
@@ -1337,7 +1413,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           }`}
                         >
                           <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <div
+                              className={`w-${isMobile ? "0" : "2"} h-${
+                                isMobile ? "0" : "2"
+                              } rounded-full ${
+                                started && !isOver
+                                  ? "animate-pulse bg-green-500"
+                                  : "bg-gray-500"
+                              }`}
+                            ></div>
                           </h2>
                           {!isMobile && (
                             <TimeTicker
@@ -1345,6 +1429,11 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                               isMobile={isMobile}
                             />
                           )}
+                          <TimeCompletionPie
+                            startTime={polls[poll].schedule[0]}
+                            endTime={polls[poll].schedule[1]}
+                            size={isMobile ? 20 : 24}
+                          />
                         </div>
                       </div>
                       <div
