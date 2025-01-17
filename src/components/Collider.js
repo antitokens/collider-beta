@@ -31,12 +31,17 @@ const Collider = ({
   inactive = true,
   isMetaLoading = true,
 }) => {
+  const [active, setActive] = useState(inactive);
   const [loading, setLoading] = useState(isMetaLoading);
   const [antiTokens, setAntiTokens] = useState(0);
   const [proTokens, setProTokens] = useState(0);
   const [totalInvest, setTotalInvest] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
   const sliderRef = useRef(null);
+
+  useEffect(() => {
+    setActive(!inactive);
+  }, [inactive]);
 
   useEffect(() => {
     setLoading(isMetaLoading);
@@ -254,7 +259,7 @@ const Collider = ({
             value={Math.abs(totalInvest) || ""}
             onChange={handleTotalInvestChange}
             onWheel={(e) => e.target.blur()}
-            disabled={inactive}
+            disabled={!active}
             placeholder="0"
             className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
           />
@@ -268,7 +273,7 @@ const Collider = ({
             max="100"
             value={splitPercentage}
             onChange={handlePercentageChange}
-            disabled={inactive}
+            disabled={!active}
           />
           <div className="flex flex-row items-center justify-between text-[14px]">
             <span className="text-accent-secondary font-sfmono">
@@ -304,10 +309,10 @@ const Collider = ({
                 onMouseDown={(e) => setProTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-sm"
-                disabled={inactive}
+                disabled={!active}
               />
             </div>
-            <div className={inactive ? "hidden" : "text-xs"}>
+            <div className={!active ? "hidden" : "text-xs"}>
               <img
                 src={`${BASE_URL}/assets/pro.png`}
                 alt="pro-logo"
@@ -336,7 +341,7 @@ const Collider = ({
                 onMouseDown={(e) => setAntiTokens(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-xs sm:text-sm text-right"
-                disabled={inactive}
+                disabled={!active}
               />
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <label
@@ -352,7 +357,7 @@ const Collider = ({
                 </span>
               </label>
             </div>
-            <div className={inactive ? "hidden" : "text-xs"}>
+            <div className={!active ? "hidden" : "text-xs"}>
               <img
                 src={`${BASE_URL}/assets/anti.png`}
                 alt="anti-logo"
@@ -383,10 +388,11 @@ const Collider = ({
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={loading || inactive}
+        disabled={loading || !active || !wallet.connected}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
+          disabled ||
           loading ||
-          inactive ||
+          !active ||
           (antiTokens === 0 && proTokens === 0) ||
           (Math.abs(antiTokens - proTokens) < 1 &&
             Math.abs(antiTokens - proTokens) !== 0) ||
@@ -395,7 +401,7 @@ const Collider = ({
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {inactive
+        {!active
           ? "Closed"
           : (Math.abs(antiTokens - proTokens) < 1 &&
               Math.abs(antiTokens - proTokens) !== 0) ||

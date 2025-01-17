@@ -1600,7 +1600,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   proData={proData}
                   isMobile={isMobile}
                   bags={bags}
-                  inactive={isOver}
+                  inactive={!started || isOver}
                   isMetaLoading={isMetaLoading}
                 />
               </div>
