@@ -1412,28 +1412,31 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                             !isMobile ? "items-center" : "justify-between"
                           }`}
                         >
-                          <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
+                          <div className="-mt-[1px] text-xl text-gray-300 text-left font-medium flex flex-row items-center">
                             <div
-                              className={`w-${isMobile ? "0" : "2"} h-${
-                                isMobile ? "0" : "2"
-                              } rounded-full ${
+                              className={`w-2 h-2 rounded-full ${
                                 started && !isOver
                                   ? "animate-pulse bg-green-500"
                                   : "bg-gray-500"
                               }`}
                             ></div>
-                          </h2>
-                          {!isMobile && (
-                            <TimeTicker
-                              fontSize={isMobile ? 12 : 12}
-                              isMobile={isMobile}
+                            {isMobile && <div>&nbsp;&nbsp;&nbsp;</div>}
+                          </div>
+                          <div className={isMobile ? `pt-0` : `-mt-[2.5px]`}>
+                            {!isMobile && (
+                              <TimeTicker
+                                fontSize={isMobile ? 12 : 12}
+                                isMobile={isMobile}
+                              />
+                            )}
+                          </div>
+                          <div className={isMobile ? `pt-1` : `pt-[4px]`}>
+                            <TimeCompletionPie
+                              startTime={polls[poll].schedule[0]}
+                              endTime={polls[poll].schedule[1]}
+                              size={isMobile ? 20 : 20}
                             />
-                          )}
-                          <TimeCompletionPie
-                            startTime={polls[poll].schedule[0]}
-                            endTime={polls[poll].schedule[1]}
-                            size={isMobile ? 20 : 24}
-                          />
+                          </div>
                         </div>
                       </div>
                       <div
