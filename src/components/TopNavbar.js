@@ -63,7 +63,7 @@ const Navbar = (trigger) => {
               <a className="flex items-center text-3xl md:text-xl lg:text-3xl font-semibold font-ocr bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
                 Antitoken
                 <span className="text-xs md:text-sm ml-2 text-white bg-accent-primary py-1 px-2 rounded">
-                  ALPHA
+                  VOTE
                 </span>
               </a>
             </Link>
@@ -78,7 +78,7 @@ const Navbar = (trigger) => {
               <a className="flex items-center tracking-tighter text-2xl font-semibold font-ocr bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
                 Antitoken
                 <span className="text-xs ml-2 text-white bg-accent-primary px-2 py-0.5 rounded">
-                  ALPHA
+                  VOTE
                 </span>
               </a>
             </Link>

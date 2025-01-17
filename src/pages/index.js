@@ -1190,10 +1190,27 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           </div>
         </div>
         <div className={`flex flex-col items-center w-full max-w-7xl px-4`}>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
-            Vote with <span className="text-accent-primary">$ANTI</span> and{" "}
-            <span className="text-accent-secondary">$PRO</span>
-          </h1>
+          {/* Hero Image */}
+          <div className="flex flex-row items-center">
+            <div className="flex justify-center relative -mt-2 mr-4">
+              <div
+                className={`absolute w-${isMobile ? "16" : "24"} h-${
+                  isMobile ? "16" : "24"
+                } rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]`}
+              ></div>
+              <img
+                src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
+                alt="Antitoken Logo"
+                className={`w-${isMobile ? "16" : "24"} h-${
+                  isMobile ? "16" : "24"
+                } rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out`}
+              />
+            </div>
+            <div className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
+              Vote with <span className="text-accent-primary">$ANTI</span> and{" "}
+              <span className="text-accent-secondary">$PRO</span>
+            </div>
+          </div>
           <div
             className={`w-full mt-4 md:mt-4 lg:mt-8 flex flex-col lg:flex-row lg:gap-4 ${
               isMetaLoading ? "items-center" : ""
