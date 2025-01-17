@@ -1,80 +1,6 @@
 /**
- * Metadata compression utilities
+ * Metadata de-compression utilities
  */
-
-const compressMetadata = (metadata) => {
-  if (!metadata) return null;
-
-  // Helper function to compress numbers to 4 decimals
-  const compressNumber = (num) => Math.round(num * 10000) || 0;
-
-  // Helper to compress arrays of numbers
-  const compressArray = (arr) => arr.map(compressNumber);
-
-  // Deep clone to avoid mutations
-  const compressed = {
-    t: {
-      // time
-      s: metadata.startTime,
-      e: metadata.endTime,
-    },
-    c: {
-      // collider
-      u: compressNumber(metadata.colliderDistribution.u),
-      s: compressNumber(metadata.colliderDistribution.s),
-    },
-    d: {
-      // distribution
-      u: compressNumber(metadata.totalDistribution.u),
-      s: compressNumber(metadata.totalDistribution.s),
-      b: {
-        // bags
-        p: compressArray(metadata.totalDistribution.bags.pro),
-        a: compressArray(metadata.totalDistribution.bags.anti),
-        h: compressNumber(metadata.totalDistribution.bags.photon),
-        b: compressNumber(metadata.totalDistribution.bags.baryon),
-      },
-      w: metadata.totalDistribution.wallets, // wallets don't need compression
-    },
-    e: {
-      // emissions
-      t: compressNumber(metadata.emissionsData.total),
-      b: compressNumber(metadata.emissionsData.baryonTokens),
-      p: compressNumber(metadata.emissionsData.photonTokens),
-    },
-    l: {
-      // collisions
-      t: compressNumber(metadata.collisionsData.total),
-      a: compressNumber(metadata.collisionsData.antiTokens),
-      p: compressNumber(metadata.collisionsData.proTokens),
-    },
-    o: {
-      // events over time
-      t: metadata.eventsOverTime.timestamps,
-      e: {
-        p: compressArray(metadata.eventsOverTime.events.pro),
-        a: compressArray(metadata.eventsOverTime.events.anti),
-        h: compressArray(metadata.eventsOverTime.events.photon),
-        b: compressArray(metadata.eventsOverTime.events.baryon),
-      },
-      r: {
-        p: metadata.eventsOverTime.ranges.pro,
-        a: metadata.eventsOverTime.ranges.anti,
-        h: metadata.eventsOverTime.ranges.photon,
-        b: metadata.eventsOverTime.ranges.baryon,
-      },
-      c: {
-        t: metadata.eventsOverTime.cumulative.timestamps,
-        p: compressArray(metadata.eventsOverTime.cumulative.pro),
-        a: compressArray(metadata.eventsOverTime.cumulative.anti),
-        h: compressArray(metadata.eventsOverTime.cumulative.photon),
-        b: compressArray(metadata.eventsOverTime.cumulative.baryon),
-      },
-    },
-  };
-
-  return compressed;
-};
 
 const decompressMetadata = (compressed) => {
   if (!compressed) return metadataInit;
@@ -82,8 +8,20 @@ const decompressMetadata = (compressed) => {
   // Helper function to decompress numbers
   const decompressNumber = (num) => (num || 0) / 10000;
 
-  // Helper to decompress arrays of numbers with fallback
-  const decompressArray = (arr) => (arr ? arr.map(decompressNumber) : []);
+  // Helper to decompress arrays or single numbers
+  const decompressArray = (arr) => {
+    if (!arr) return [];
+    if (Array.isArray(arr)) return arr.map(decompressNumber);
+    if (typeof arr === "number") return [decompressNumber(arr)];
+    return [];
+  };
+
+  // Helper to ensure array
+  const ensureArray = (val) => {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    return [val];
+  };
 
   return {
     startTime: compressed.t?.s || "-",
@@ -91,10 +29,10 @@ const decompressMetadata = (compressed) => {
     colliderDistribution: {
       u: decompressNumber(compressed.c?.u),
       s: decompressNumber(compressed.c?.s),
-      range: compressed.c?.range || [],
-      distribution: compressed.c?.distribution || [],
-      short: compressed.c?.short || [],
-      curve: compressed.c?.curve || [],
+      range: ensureArray(compressed.c?.range),
+      distribution: ensureArray(compressed.c?.distribution),
+      short: ensureArray(compressed.c?.short),
+      curve: ensureArray(compressed.c?.curve),
     },
     totalDistribution: {
       u: decompressNumber(compressed.d?.u),
@@ -105,7 +43,7 @@ const decompressMetadata = (compressed) => {
         photon: decompressArray(compressed.d?.b?.h),
         baryon: decompressArray(compressed.d?.b?.b),
       },
-      wallets: compressed.d?.w || [],
+      wallets: ensureArray(compressed.d?.w),
     },
     emissionsData: {
       total: decompressNumber(compressed.e?.t),
@@ -118,7 +56,7 @@ const decompressMetadata = (compressed) => {
       proTokens: decompressNumber(compressed.l?.p),
     },
     eventsOverTime: {
-      timestamps: compressed.o?.t || ["", "", "", "", ""],
+      timestamps: ensureArray(compressed.o?.t) || ["", "", "", "", ""],
       events: {
         pro: decompressArray(compressed.o?.e?.p),
         anti: decompressArray(compressed.o?.e?.a),
@@ -148,7 +86,7 @@ const decompressMetadata = (compressed) => {
         },
       },
       cumulative: {
-        timestamps: compressed.o?.c?.t || [],
+        timestamps: ensureArray(compressed.o?.c?.t),
         pro: decompressArray(compressed.o?.c?.p),
         anti: decompressArray(compressed.o?.c?.a),
         photon: decompressArray(compressed.o?.c?.h),
@@ -158,4 +96,4 @@ const decompressMetadata = (compressed) => {
   };
 };
 
-export { compressMetadata, decompressMetadata };
+export { decompressMetadata };
