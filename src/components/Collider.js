@@ -419,7 +419,7 @@ const Collider = ({
           wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"
         }`}
       >
-        {wallet.connected ? "" : "Connect your wallet to enable predictions"}
+        {wallet.connected ? "" : "Connect your wallet to enable voting"}
       </p>
     </div>
   );
