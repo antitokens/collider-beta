@@ -1199,41 +1199,93 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               isMetaLoading ? "items-center" : ""
             }`}
           >
-            <div className="-ml-2">
-              {isMobile && (
-                <TimeTicker fontSize={isMobile ? 12 : 12} isMobile={isMobile} />
-              )}
-            </div>
             <div className="flex flex-col w-full lg:w-3/4">
-              <div className="bg-dark-card p-4 rounded w-full mb-4 border border-gray-800">
+              <div className="flex flex-row justify-between">
+                {isMobile && (
+                  <div className="-ml-2">
+                    <TimeTicker
+                      fontSize={isMobile ? 12 : 12}
+                      isMobile={isMobile}
+                    />
+                  </div>
+                )}
+                {!isMobile && <div> </div>}
+                <div className="flex flex-row items-center -mr-2">
+                  <button
+                    className="bg-transparent text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:text-gray-300 disabled:cursor-not-allowed relative group"
+                    onClick={() => updatePoll(poll - 1)}
+                  >
+                    <svg
+                      className="w-6 h-6 rotate-180"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 15v3c0 .5523.44772 1 1 1h9.5M3 15v-4m0 4h9m-9-4V6c0-.55228.44772-1 1-1h16c.5523 0 1 .44772 1 1v5H3Zm5 0v8m4-8v8m7.0999-1.0999L21 16m0 0-1.9001-1.9001M21 16h-5"
+                      />
+                    </svg>
+                    <span className="cursor-pointer">
+                      <span
+                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-3/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                      >
+                        {`Previous Poll`}
+                      </span>
+                    </span>
+                  </button>
+                  <div className="text-gray-600 text-xs">|</div>
+                  <button
+                    className="bg-transparent text-accent-secondary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:text-gray-300 disabled:cursor-not-allowed relative group"
+                    onClick={() => updatePoll(poll + 1)}
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 15v3c0 .5523.44772 1 1 1h9.5M3 15v-4m0 4h9m-9-4V6c0-.55228.44772-1 1-1h16c.5523 0 1 .44772 1 1v5H3Zm5 0v8m4-8v8m7.0999-1.0999L21 16m0 0-1.9001-1.9001M21 16h-5"
+                      />
+                    </svg>
+                    <span className="cursor-pointer">
+                      <span
+                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-full lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                      >
+                        {`Next Poll`}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div className="bg-dark-card p-4 rounded-lg w-full mb-4 border border-gray-800">
                 <div className="flex flex-row justify-between items-center mb-2">
-                  <div className="flex flex-row items-center mb-2">
+                  <div className="flex flex-row items-center mb-2 w-3/4">
                     <div className="text-2xl text-gray-300 text-left font-medium">
                       {polls[poll] ? polls[poll].title : ""}&nbsp;
                     </div>
                     <span className="relative group">
                       <span className="cursor-pointer text-sm text-gray-400">
                         &#9432;
-                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md min-w-64 max-w-auto translate-x-0 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md min-w-64 max-w-auto -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                           {polls[poll] ? polls[poll].description : ""}
                         </span>
                       </span>
                     </span>
-                  </div>
-                  <div className="flex flex-row items-center -mt-5">
-                    <button
-                      className="bg-transparent text-gray-400 hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:text-gray-300 disabled:cursor-not-allowed"
-                      onClick={() => updatePoll(poll - 1)}
-                    >
-                      ← Prev
-                    </button>
-                    <div className="text-gray-600 text-xs">|</div>
-                    <button
-                      className="bg-transparent text-gray-400 hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:text-gray-300 disabled:cursor-not-allowed"
-                      onClick={() => updatePoll(poll + 1)}
-                    >
-                      Next →
-                    </button>
                   </div>
                   <button
                     className="bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
@@ -1527,7 +1579,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               </div>
             </div>
             {showCollider && (
-              <div>
+              <div className="mt-8">
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
                     Vote
