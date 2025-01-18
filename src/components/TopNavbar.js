@@ -10,6 +10,20 @@ const Navbar = (trigger) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCommunityDropdownOpen, setIsCommunityDropdownOpen] = useState(false);
   const [isMobileCommunityOpen, setIsMobileCommunityOpen] = useState(false);
+  const [isAppsDropdownOpen, setIsAppsDropdownOpen] = useState(false);
+  const [isMobileAppsOpen, setIsMobileAppsOpen] = useState(false);
+
+  const openAppsDropdown = () => {
+    setIsAppsDropdownOpen(true);
+  };
+
+  const closeAppsDropdown = () => {
+    setIsAppsDropdownOpen(false);
+  };
+
+  const toggleMobileApps = () => {
+    setIsMobileAppsOpen((prev) => !prev);
+  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -63,7 +77,7 @@ const Navbar = (trigger) => {
               <a className="flex items-center text-3xl md:text-xl lg:text-3xl font-semibold font-ocr bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
                 Antitoken
                 <span className="text-xs md:text-sm ml-2 text-white bg-accent-primary py-1 px-2 rounded">
-                  ALPHA
+                  VOTE
                 </span>
               </a>
             </Link>
@@ -78,7 +92,7 @@ const Navbar = (trigger) => {
               <a className="flex items-center tracking-tighter text-2xl font-semibold font-ocr bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
                 Antitoken
                 <span className="text-xs ml-2 text-white bg-accent-primary px-2 py-0.5 rounded">
-                  ALPHA
+                  VOTE
                 </span>
               </a>
             </Link>
@@ -103,6 +117,106 @@ const Navbar = (trigger) => {
             >
               Whitepaper
             </a>
+            <div
+              className="relative"
+              onMouseEnter={openAppsDropdown}
+              onMouseLeave={closeAppsDropdown}
+            >
+              <button className="text-gray-300 hover:text-accent-primary transition-colors flex items-center">
+                Apps
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 ml-1 transition-transform ${
+                    isAppsDropdownOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              <div
+                className={`absolute w-48 bg-transparent h-2 ${
+                  isAppsDropdownOpen ? "block" : "hidden"
+                }`}
+              ></div>
+              {isAppsDropdownOpen && (
+                <div className="absolute w-48 bg-dark-card border border-gray-800/50 rounded-lg mt-2 space-y-2 p-1">
+                  <a
+                    href="https://poll.antitoken.pro"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 3v18h18" />
+                      <path d="M18 17V9" />
+                      <path d="M13 17V5" />
+                      <path d="M8 17v-3" />
+                    </svg>
+                    Poll
+                  </a>
+                  <a className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors cursor-not-allowed">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 0 9h-.79" />
+                    </svg>
+                    Lite
+                  </a>
+                  <a
+                    href="https://app.antitoken.pro"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                      <polyline points="7.5 19.79 7.5 14.6 3 12" />
+                      <polyline points="21 12 16.5 14.6 16.5 19.79" />
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                      <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                    Pro
+                  </a>
+                </div>
+              )}
+            </div>
             <div
               className="relative"
               onMouseEnter={openCommunityDropdown}
@@ -134,7 +248,7 @@ const Navbar = (trigger) => {
                 }`}
               ></div>
               {isCommunityDropdownOpen && (
-                <div className="absolute w-48 bg-dark-card/90 border border-gray-800/50 rounded-lg mt-2 space-y-2 p-1">
+                <div className="absolute w-48 bg-dark-card border border-gray-800/50 rounded-lg mt-2 space-y-2 p-1">
                   <a
                     href="https://x.com/antitokens"
                     target="_blank"
@@ -228,6 +342,100 @@ const Navbar = (trigger) => {
             >
               Whitepaper
             </a>
+            <div className="space-y-2">
+              <button
+                className="text-gray-300 w-full flex justify-between items-center"
+                onClick={toggleMobileApps}
+              >
+                <span>Apps</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 ml-1 transition-transform ${
+                    isMobileAppsOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {isMobileAppsOpen && (
+                <div className="space-y-2 pl-4 border-l border-gray-700">
+                  <a
+                    href="https://poll.antitoken.pro"
+                    target="_blank"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 3v18h18" />
+                      <path d="M18 17V9" />
+                      <path d="M13 17V5" />
+                      <path d="M8 17v-3" />
+                    </svg>
+                    Poll
+                  </a>
+                  <a
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors cursor-not-allowed"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 0 9h-.79" />
+                    </svg>
+                    Lite
+                  </a>
+                  <a
+                    href="https://app.antitoken.pro"
+                    target="_blank"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                      <polyline points="7.5 19.79 7.5 14.6 3 12" />
+                      <polyline points="21 12 16.5 14.6 16.5 19.79" />
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                      <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                    Pro
+                  </a>
+                </div>
+              )}
+            </div>
             <div className="space-y-2">
               <button
                 className="text-gray-300 w-full flex justify-between items-center"
