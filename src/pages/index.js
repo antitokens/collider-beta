@@ -560,7 +560,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   };
 
   useEffect(() => {
-    const checkBalance = async () => {
+    const checkSupply = async () => {
       const [antiBalanceResult, proBalanceResult] = await Promise.all([
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
@@ -570,8 +570,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     };
 
     if (wallet.publicKey || dataUpdated) {
-      checkBalance();
-      setRefresh(true);
+      checkSupply();
     }
   }, [wallet, dataUpdated, wallet.disconnecting, wallet.publicKey]);
 
@@ -589,7 +588,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
     if ((wallet.publicKey || dataUpdated) && poll >= 0) {
       checkBalance();
-      setRefresh(true);
     }
   }, [
     wallet,
