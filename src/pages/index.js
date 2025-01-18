@@ -483,46 +483,67 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         <div className="grid grid-cols-1 lg:grid-cols-[70%,30%] items-center gap-8 max-w-7xl mx-auto px-4">
           {/* Hero Text */}
           <div>
-            <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300 font-bold font-outfit">
-              PREDICT WITH
-              <br />
-              <span className="text-accent-primary">$ANTI</span> and{" "}
-              <span className="text-accent-secondary">$PRO</span>
-            </h1>
-            <p className="font-open font-medium text-xl md:text-[1.35rem] text-gray-300 mb-6">
+            <div className="flex flex-row items-center w-full">
+              <h1 className="tracking-tight text-4xl md:text-5xl lg:text-6xl mb-4 text-gray-300 font-bold font-outfit">
+                PREDICT WITH
+                <br />
+                <span className="text-accent-primary">$ANTI</span> and{" "}
+                <span className="text-accent-secondary">$PRO</span>
+              </h1>
+              {isMobile && (
+                <div className="flex justify-center relative w-40 ml-4 -mt-4">
+                  <div className="absolute w-32 h-32 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
+                  <img
+                    src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
+                    alt="Antitoken Logo"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+                  />
+                </div>
+              )}
+            </div>
+            <p
+              className={`font-open font-medium text-xl md:text-[1.35rem] text-gray-300 ${
+                isMobile ? "mb-2 mt-2" : "mb-6"
+              }`}
+            >
               Experience the future of prediction markets with Antitoken
             </p>
-            <button
-              className="bg-accent-primary hover:opacity-90 text-gray-100 px-8 py-3 rounded-full text-lg font-semibold flex items-center gap-2"
-              onClick={() => setShowBuyTokensModal(true)}
-            >
-              <span>Buy Tokens</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-gray-100 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <div className="flex flex-row w-full justify-between">
+              {isMobile && <div>{""}</div>}
+              <button
+                className="bg-accent-primary hover:opacity-90 text-gray-100 px-8 py-3 rounded-full text-lg font-semibold flex items-center gap-2"
+                onClick={() => setShowBuyTokensModal(true)}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </button>
+                <span>Buy Tokens</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-gray-100 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Hero Image */}
-          <div className="flex justify-center relative">
-            <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
-            <img
-              src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
-              alt="Antitoken Logo"
-              className="w-72 h-72 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
-            />
-          </div>
+          {!isMobile && (
+            <div className="flex justify-center relative">
+              <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
+              <img
+                src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
+                alt="Antitoken Logo"
+                className="w-72 h-72 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+              />
+            </div>
+          )}
         </div>
 
         {/* Collider Sections Toggle */}
