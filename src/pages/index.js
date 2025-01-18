@@ -1192,18 +1192,18 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         <div className={`flex flex-col items-center w-full max-w-7xl px-4`}>
           {/* Hero Image */}
           <div className="flex flex-row items-center">
-            <div className="flex justify-center relative -mt-2 mr-4">
+            <div className="flex justify-center -mt-4 mr-8">
               <div
-                className={`absolute w-${isMobile ? "16" : "24"} h-${
-                  isMobile ? "16" : "24"
-                } rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]`}
+                className={`absolute rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px] ${
+                  isMobile ? "w-16 h-16" : "w-24 h-24"
+                }`}
               ></div>
               <img
                 src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
                 alt="Antitoken Logo"
-                className={`w-${isMobile ? "16" : "24"} h-${
-                  isMobile ? "16" : "24"
-                } rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out`}
+                className={`rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out ${
+                  isMobile ? "w-16 h-16" : "w-24 h-24"
+                }`}
               />
             </div>
             <div className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
