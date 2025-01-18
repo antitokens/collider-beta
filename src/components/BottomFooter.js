@@ -3,6 +3,8 @@ import Link from "next/link";
 /* Footer */
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear().toString();
+
   return (
     <footer className="border-t border-gray-800/50 backdrop-blur-xl bg-dark-card/95 w-full">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -127,7 +129,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 Antitoken. All rights reserved.</p>
+          <p>&copy; {currentYear} Antitoken. All rights reserved.</p>
         </div>
       </div>
     </footer>
