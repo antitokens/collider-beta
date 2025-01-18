@@ -205,7 +205,7 @@ const PollMetaModal = ({ wallet, isVisible, setIsVisible, onSubmit }) => {
                     htmlFor="title"
                     className="block text-md font-medium text-gray-200 mb-1"
                   >
-                    Title
+                    Title<span className="text-xs text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -214,7 +214,7 @@ const PollMetaModal = ({ wallet, isVisible, setIsVisible, onSubmit }) => {
                     value={formData.title}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-100 font-sfmono text-sm"
-                    placeholder="Enter poll title"
+                    placeholder="Enter poll title (required)"
                     required
                     disabled={isSubmitting}
                   />
@@ -230,7 +230,7 @@ const PollMetaModal = ({ wallet, isVisible, setIsVisible, onSubmit }) => {
                     htmlFor="description"
                     className="block text-md font-medium text-gray-200 mb-1"
                   >
-                    Description
+                    Description<span className="text-xs text-red-400">*</span>
                   </label>
                   <textarea
                     id="description"
@@ -238,7 +238,7 @@ const PollMetaModal = ({ wallet, isVisible, setIsVisible, onSubmit }) => {
                     value={formData.description}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-100 h-24 font-sfmono text-sm"
-                    placeholder="Enter poll description"
+                    placeholder="Enter poll description (required)"
                     required
                     disabled={isSubmitting}
                   />
@@ -259,7 +259,7 @@ const PollMetaModal = ({ wallet, isVisible, setIsVisible, onSubmit }) => {
                     className="flex flex-row justify-between items-center text-md font-medium text-gray-200 mb-0"
                   >
                     <div>
-                      Start Time
+                      Start Time<span className="text-xs text-red-400">*</span>
                       <span className="relative group ml-1">
                         <span className="cursor-pointer text-xs text-gray-400">
                           &#9432;
@@ -288,7 +288,7 @@ const PollMetaModal = ({ wallet, isVisible, setIsVisible, onSubmit }) => {
                     htmlFor="endTime"
                     className="block text-md font-medium text-gray-200 mb-1"
                   >
-                    Close Time
+                    Close Time<span className="text-xs text-red-400">*</span>
                     <span className="relative group ml-1">
                       <span className="cursor-pointer text-xs text-gray-400">
                         &#9432;
