@@ -64,22 +64,21 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 
 const Home = ({ BASE_URL }) => {
   const [trigger, setTrigger] = useState(null); // Shared state
+  const [metadata, setMetadata] = useState({
+    description: "Vote with $ANTI and $PRO tokens",
+    ogDescription: "Vote with $ANTI and $PRO tokens",
+    twitterDescription: "Vote with $ANTI and $PRO tokens",
+  });
 
   return (
     <>
       <Head>
         <title>Antitoken | Poll</title>
-        <meta
-          name="description"
-          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
-        />
+        <meta name="description" content={metadata.description} />
 
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Antitoken Predicting Station" />
-        <meta
-          property="og:description"
-          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
-        />
+        <meta property="og:title" content="Antitoken Polling Station" />
+        <meta property="og:description" content={metadata.ogDescription} />
         <meta
           property="og:image"
           content={`${BASE_URL}/assets/antitoken_logo.jpeg`}
@@ -92,7 +91,7 @@ const Home = ({ BASE_URL }) => {
         <meta name="twitter:title" content="Antitoken Predicting Station" />
         <meta
           name="twitter:description"
-          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
+          content={metadata.twitterDescription}
         />
         <meta
           name="twitter:image"
@@ -123,14 +122,18 @@ const Home = ({ BASE_URL }) => {
       <div className="bg-dark text-gray-100 min-h-screen relative overflow-x-hidden font-grotesk">
         <Stars length={16} />
         <Navbar trigger={trigger} />
-        <LandingPage BASE_URL={BASE_URL} setTrigger={setTrigger} />
+        <LandingPage
+          BASE_URL={BASE_URL}
+          setTrigger={setTrigger}
+          setMetadata={setMetadata}
+        />
         <Footer />
       </div>
     </>
   );
 };
 
-const LandingPage = ({ BASE_URL, setTrigger }) => {
+const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const [poll, setPoll] = useState(1);
@@ -186,6 +189,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         setPolls(pollsInit);
       });
   }, [refresh]);
+
+  useEffect(() => {
+    // Update metadata based on some condition or data
+    setMetadata({
+      description: polls[poll].title,
+      ogDescription: polls[poll].title,
+      twitterDescription: polls[poll].title,
+    });
+  }, [poll, polls]);
 
   useEffect(() => {
     setLoading(isMetaLoading);
@@ -520,8 +532,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     fetchTokenData();
   }, []);
 
-  // URL hash handling
   useEffect(() => {
+    // Only handle URL hash after polls are loaded
+    if (isMetaLoading) {
+      return; // Exit early if still loading
+    }
+
     // Function to handle hash changes
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1);
@@ -533,21 +549,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
       } else {
         // If invalid poll number or poll doesn't exist, default to 1
         setPoll(1);
-        window.location.hash = "1";
+        // Use history.replaceState to update URL without triggering a new history entry
+        history.replaceState(null, "", "#1");
       }
     };
 
-    // Handle initial hash on component mount
+    // Handle initial hash on component mount or when polls finish loading
     handleHashChange();
-
     // Add event listener for hash changes
     window.addEventListener("hashchange", handleHashChange);
-
     // Cleanup listener on component unmount
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
-  }, [polls]);
+  }, [polls, isMetaLoading]); // Dependencies remain the same
 
   // Function to update hash when poll changes programmatically
   const updatePoll = (newPoll) => {
