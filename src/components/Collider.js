@@ -1673,7 +1673,7 @@ const Collider = ({
                 className="text-accent-secondary font-medium text-sm relative group"
                 onClick={() => copyText(process.env.NEXT_PUBLIC_PRO_TOKEN_MINT)}
               >
-                {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PRO`}
+                {`${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}PRO`}
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-0 lg:-translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
                   {`Click to copy CA`}
                 </span>
@@ -1732,7 +1732,7 @@ const Collider = ({
                   copyText(process.env.NEXT_PUBLIC_ANTI_TOKEN_MINT)
                 }
               >
-                {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}ANTI`}
+                {`${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}ANTI`}
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
                   {`Click to copy CA`}
                 </span>
@@ -1776,7 +1776,7 @@ const Collider = ({
                   htmlFor="photonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PHOTON`}
+                  {`${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}PHOTON`}
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
@@ -1837,7 +1837,7 @@ const Collider = ({
                   htmlFor="baryonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  {`${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON`}
+                  {`${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}BARYON`}
                 </label>
               </div>
               <div

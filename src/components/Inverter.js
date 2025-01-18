@@ -476,7 +476,7 @@ const Inverter = ({
                 htmlFor="photonTokens"
                 className="text-gray-300 font-medium text-xs sm:text-sm"
               >
-                ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PHOTON
+                ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}PHOTON
               </label>
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <input
@@ -553,7 +553,7 @@ const Inverter = ({
                   htmlFor="baryonTokens"
                   className="text-gray-300 font-medium text-xs sm:text-sm"
                 >
-                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}BARYON
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}BARYON
                 </label>
               </div>
               <div
@@ -617,7 +617,7 @@ const Inverter = ({
                   htmlFor="antiTokens"
                   className="text-accent-secondary font-medium text-xs sm:text-sm"
                 >
-                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}PRO
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}PRO
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
@@ -668,7 +668,7 @@ const Inverter = ({
                   htmlFor="antiTokens"
                   className="text-accent-orange font-medium text-xs sm:text-sm"
                 >
-                  ${process.env.NEXT_PUBLIC_TEST_TOKENS ? "t" : ""}ANTI
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}ANTI
                 </label>
               </div>
               <div className={!active ? "hidden" : "text-xs text-gray-500"}>
