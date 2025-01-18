@@ -385,7 +385,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setIsMetaLoading(true);
           const blobBalance = await getBalances();
           const blobClaim = await getClaims();
-          const dataBalance = decompressMetadata(JSON.parse(blobBalance.message));
+          const dataBalance = decompressMetadata(
+            JSON.parse(blobBalance.message)
+          );
           const dataClaim = decompressMetadata(JSON.parse(blobClaim.message));
 
           const colliderDistribution =
@@ -1224,10 +1226,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           </div>
         </div>
         <div className={`flex flex-col items-center w-full max-w-7xl px-4`}>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
-            Predict with <span className="text-accent-primary">$ANTI</span> and{" "}
-            <span className="text-accent-secondary">$PRO</span>
-          </h1>
+          {/* Hero Image */}
+          <div className="flex flex-row items-center w-full">
+            <div className="flex justify-center relative w-40 mr-4 -mt-2">
+              <div className="absolute w-32 h-32 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
+              <img
+                src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
+                alt="Antitoken Logo"
+                className="w-32 h-32 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+              />
+            </div>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
+              Predict with <span className="text-accent-primary">$ANTI</span>{" "}
+              and <span className="text-accent-secondary">$PRO</span>
+            </h1>
+          </div>
           <div
             className={`w-full mt-4 md:mt-4 lg:mt-8 flex flex-col lg:flex-row lg:gap-4 ${
               isMetaLoading ? "items-center" : ""
