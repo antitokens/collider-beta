@@ -1165,7 +1165,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     <>
       <section className="min-h-screen pt-16 md:pt-20 flex flex-col items-center relative mt-10 mb-10">
         {/* Hero Section */}
-        <div className="w-full max-w-4xl px-4 mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center rounded-md">
+        <div className="w-full max-w-7xl px-4 mb-8 bg-gray-800 border border-gray-700 text-gray-300 p-4 text-center rounded-md">
           <div className="flex items-center gap-2 flex-wrap md:flex-nowrap justify-center md:justify-start">
             <div>
               <svg
@@ -1191,19 +1191,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         </div>
         <div className={`flex flex-col items-center w-full max-w-7xl px-4`}>
           {/* Hero Image */}
-          <div className="flex flex-row items-center">
-            <div className="flex justify-center -mt-4 mr-8">
-              <div
-                className={`absolute rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px] ${
-                  isMobile ? "w-16 h-16" : "w-24 h-24"
-                }`}
-              ></div>
+          <div className="flex flex-row items-center w-full">
+            <div className="flex justify-center relative w-40 mr-4 -mt-2">
+              <div className="absolute w-32 h-32 rounded-full bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 blur-[50px]"></div>
               <img
                 src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
                 alt="Antitoken Logo"
-                className={`rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out ${
-                  isMobile ? "w-16 h-16" : "w-24 h-24"
-                }`}
+                className="w-32 h-32 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
               />
             </div>
             <div className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
