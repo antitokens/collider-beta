@@ -480,7 +480,10 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     };
 
     // Fetch whenever poll changes or refresh is triggered
-    if (poll >= 0 && String(poll) === window.location.hash.slice(1)) {
+    if (
+      poll >= 0 &&
+      (String(poll) === window.location.hash.slice(1) || !window.location.hash)
+    ) {
       fetchBalances();
     }
   }, [poll, refresh, wallet.publicKey]); // Include wallet.publicKey to handle connection changes
