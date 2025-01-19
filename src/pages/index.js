@@ -138,8 +138,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const [poll, setPoll] = useState(1);
   const [hasPosted, setHasPosted] = useState(false);
+  const [newPollPosted, setNewPollPosted] = useState(false);
   const [polls, setPolls] = useState(pollsInit);
-  const [newPoll, setNewPoll] = useState(pollsInit[0]);
   const [started, setStarted] = useState(false);
   const [isOver, setIsOver] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
@@ -183,19 +183,20 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     fetchBalances()
       .then((result) => {
         setPolls(result);
+        if (newPollPosted) setPoll(result.length);
       })
       .catch((error) => {
         console.error("Error fetching polls:", error);
         setPolls(pollsInit);
       });
-  }, [refresh]);
+  }, [refresh, newPollPosted]);
 
   useEffect(() => {
     // Update metadata based on some condition or data
     setMetadata({
-      description: polls[poll].title,
-      ogDescription: polls[poll].title,
-      twitterDescription: polls[poll].title,
+      description: polls[poll]?.title || "",
+      ogDescription: polls[poll]?.title || "",
+      twitterDescription: polls[poll]?.title || "",
     });
   }, [poll, polls]);
 
@@ -363,7 +364,6 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
 
   const handlePollCreation = async (formData) => {
     try {
-      setNewPoll(formData);
       setTriggerAddPoll(false);
       const blobNewPoll = await addPoll(
         wallet.publicKey,
@@ -376,8 +376,10 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       }
       // Update polls state with new poll
       const updatedPolls = { ...polls };
-      updatedPolls[polls.length + 1] = formData;
+      updatedPolls[Object.keys(polls).length + 1] = formData;
+      setNewPollPosted(true);
       setPolls(updatedPolls);
+      updatePoll(Object.keys(updatedPolls).length, false);
       // Force refresh of balances data
       setRefresh(true);
       // Set hasPosted to prevent multiple submissions
@@ -421,7 +423,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   }, [metaError]);
 
   useEffect(() => {
-    if (polls[poll]) {
+    if (polls[poll]?.schedule) {
       setStarted(new Date() > new Date(polls[poll].schedule[0]));
       setIsOver(new Date() > new Date(polls[poll].schedule[1]));
     }
@@ -478,15 +480,15 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     };
 
     // Fetch whenever poll changes or refresh is triggered
-    if (poll >= 0) {
+    if (poll >= 0 && String(poll) === window.location.hash.slice(1)) {
       fetchBalances();
     }
   }, [poll, refresh, wallet.publicKey]); // Include wallet.publicKey to handle connection changes
 
   useEffect(() => {
     setPredictionConfig({
-      startTime: polls[poll].schedule[0] || "-",
-      endTime: polls[poll].schedule[1] || "-",
+      startTime: polls[poll]?.schedule?.[0] || "-",
+      endTime: polls[poll]?.schedule?.[1] || "-",
       antiLive: balances.collisionsData.antiTokens || 0,
       proLive: balances.collisionsData.proTokens || 0,
       convertToLocaleTime,
@@ -565,8 +567,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   }, [polls, isMetaLoading]); // Dependencies remain the same
 
   // Function to update hash when poll changes programmatically
-  const updatePoll = (newPoll) => {
-    if (polls[newPoll]) {
+  const updatePoll = (newPoll, check = true) => {
+    if (polls[newPoll] || !check) {
       window.location.hash = newPoll.toString();
       setPoll(newPoll);
     } else {
@@ -862,7 +864,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                 }
               : {
                   marker:
-                    balances.startTime === "-" || balances.endTime === "-"
+                    balances.startTime === "-" ||
+                    balances.endTime === "-" ||
+                    isOver
                       ? []
                       : [
                           useBinning !== "hourly"
@@ -879,7 +883,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                         ],
                   values: [labels, plotable],
                   labels:
-                    balances.startTime === "-" || balances.endTime === "-"
+                    balances.startTime === "-" ||
+                    balances.endTime === "-" ||
+                    isOver
                       ? []
                       : findBinForTimestamp(
                           new Date().toISOString(),
@@ -1172,7 +1178,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [balances, started]);
+  }, [balances, started, isOver]);
 
   return (
     <>
@@ -1496,8 +1502,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           </div>
                           <div className={isMobile ? `pt-1` : `pt-[4px]`}>
                             <TimeCompletionPie
-                              startTime={polls[poll].schedule[0]}
-                              endTime={polls[poll].schedule[1]}
+                              startTime={polls[poll]?.schedule?.[0] || ""}
+                              endTime={polls[poll]?.schedule?.[1] || ""}
                               size={isMobile ? 20 : 20}
                             />
                           </div>

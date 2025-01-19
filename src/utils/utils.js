@@ -315,7 +315,6 @@ export const formatCount = (_value, _flag = undefined, _fill = 4) => {
     // For millions, fill-2 digits (accounting for 'm' and one leading zero + decimal)
     const digits = _fill - Math.abs(_value).toString().split(".")[0].length;
     const scaled = value / 1e6;
-    console.log(_fill);
     const formatted = scaled
       .toFixed(digits >= 0 ? digits : 1)
       .replace(/^0+/, "0");
