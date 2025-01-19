@@ -160,6 +160,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [balances, setBalances] = useState(metadataInit);
   const [predictionConfig, setPredictionConfig] = useState(emptyConfig);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
+  const [, setIsMetaLoaded] = useState(false);
+  const [, setIsPageReload] = useState(false);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [loading, setLoading] = useState(isMetaLoading);
@@ -169,6 +171,20 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     useState(null);
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
     useState("1D");
+
+  useEffect(() => {
+    // Check if this is a page reload
+    const isReload = sessionStorage.getItem("isReload") === "true";
+    setIsPageReload(isReload);
+    if (isReload)
+      setPoll(window.location.hash ? window.location.hash.slice(1) : 1);
+    // Set flag for next load
+    sessionStorage.setItem("isReload", "true");
+    // Clean up on component unmount (optional)
+    return () => {
+      sessionStorage.removeItem("isReload");
+    };
+  }, []);
 
   useEffect(() => {
     const fetchBalances = async () => {
@@ -475,6 +491,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
         setMetaError(err);
       } finally {
         setIsMetaLoading(false);
+        setIsMetaLoaded(true);
         setRefresh(false);
       }
     };
@@ -486,7 +503,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     ) {
       fetchBalances();
     }
-  }, [poll, refresh, wallet.publicKey]); // Include wallet.publicKey to handle connection changes
+  }, [poll, refresh, wallet.publicKey, poll]); // Include wallet.publicKey to handle connection changes
 
   useEffect(() => {
     setPredictionConfig({
@@ -567,7 +584,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
-  }, [polls, isMetaLoading]); // Dependencies remain the same
+  }, [polls, isMetaLoading]);
 
   // Function to update hash when poll changes programmatically
   const updatePoll = (newPoll, check = true) => {
