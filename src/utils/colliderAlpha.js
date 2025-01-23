@@ -6,20 +6,14 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
     ? anti
     : anti + pro >= 0 && anti + pro < 1
     ? 0
-    : Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
-    ? Math.abs(anti - pro)
     : Math.abs(anti - pro);
 
   // Step 2: Calculate s (= standard deviation)
   const s = flag
     ? pro
-    : anti + pro >= 0 && anti + pro < 1
+    : (anti + pro >= 0 && anti + pro < 1) || Math.abs(anti - pro) <= anti + pro
     ? 0
-    : Math.abs(anti - pro) === anti + pro
-    ? 0
-    : Math.abs(anti - pro) > 0 && Math.abs(anti - pro) < 1
-    ? (anti + pro) * 1.0
-    : Math.abs(anti - pro) === 0
+    : Math.abs(anti - pro) < 1
     ? anti + pro
     : (anti + pro) / Math.abs(anti - pro);
 
