@@ -11,8 +11,9 @@ const Navbar = (trigger) => {
   const [isCommunityDropdownOpen, setIsCommunityDropdownOpen] = useState(false);
   const [isMobileCommunityOpen, setIsMobileCommunityOpen] = useState(false);
   const [isAppsDropdownOpen, setIsAppsDropdownOpen] = useState(false);
-  const [isPapersDropdownOpen, setIsPapersDropdownOpen] = useState(false);
   const [isMobileAppsOpen, setIsMobileAppsOpen] = useState(false);
+  const [isPapersDropdownOpen, setIsPapersDropdownOpen] = useState(false);
+  const [isMobilePapersOpen, setIsMobilePapersOpen] = useState(false);
 
   const openAppsDropdown = () => {
     setIsAppsDropdownOpen(true);
@@ -28,6 +29,10 @@ const Navbar = (trigger) => {
 
   const closePapersDropdown = () => {
     setIsPapersDropdownOpen(false);
+  };
+
+  const toggleMobilePapers = () => {
+    setIsMobilePapersOpen((prev) => !prev);
   };
 
   const toggleMobileApps = () => {
@@ -190,6 +195,26 @@ const Navbar = (trigger) => {
                       />
                     </svg>
                     Yellowpaper
+                  </a>
+                  <a className="flex items-center gap-2 block text-gray-400 cursor-not-allowed">
+                    <svg
+                      class="w-6 h-6 text-gray-800 dark:text-white"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="white"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5.35709 16V5.78571c0-.43393.34822-.78571.77777-.78571H18.5793c.4296 0 .7778.35178.7778.78571V16M5.35709 16h-1c-.55229 0-1 .4477-1 1v1c0 .5523.44771 1 1 1H20.3571c.5523 0 1-.4477 1-1v-1c0-.5523-.4477-1-1-1h-1M5.35709 16H19.3571M9.35709 8l2.62501 2.5L9.35709 13m4.00001 0h2"
+                      />
+                    </svg>
+                    Gitbook
                   </a>
                 </div>
               )}
@@ -429,15 +454,97 @@ const Navbar = (trigger) => {
             >
               Home
             </a>
-            <a
-              href="https://antitoken.pro/whitepaper"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-gray-300 hover:text-accent-primary transition-colors"
-              onClick={toggleMobileMenu}
-            >
-              Whitepaper
-            </a>
+            <div className="space-y-2">
+              <button
+                className="text-gray-300 w-full flex justify-between items-center"
+                onClick={toggleMobilePapers}
+              >
+                <span>Technology</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 ml-1 transition-transform ${
+                    isMobilePapersOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {isMobilePapersOpen && (
+                <div className="space-y-2 pl-4 border-l border-gray-700">
+                  <a
+                    href="https://antitoken.pro/whitepaper"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
+                    <svg
+                      class="w-6 h-6 text-gray-800 dark:text-white"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="white"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7Zm-.293 9.293a1 1 0 0 1 0 1.414L9.414 14l1.293 1.293a1 1 0 0 1-1.414 1.414l-2-2a1 1 0 0 1 0-1.414l2-2a1 1 0 0 1 1.414 0Zm2.586 1.414a1 1 0 0 1 1.414-1.414l2 2a1 1 0 0 1 0 1.414l-2 2a1 1 0 0 1-1.414-1.414L14.586 14l-1.293-1.293Z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Whitepaper
+                  </a>
+                  <a className="flex items-center gap-2 block text-gray-400 cursor-not-allowed">
+                    <svg
+                      class="w-6 h-6 text-gray-800 dark:text-white"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="white"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m8 8-4 4 4 4m8 0 4-4-4-4m-2-3-4 14"
+                      />
+                    </svg>
+                    Yellowpaper
+                  </a>
+                  <a className="flex items-center gap-2 block text-gray-400 cursor-not-allowed">
+                    <svg
+                      class="w-6 h-6 text-gray-800 dark:text-white"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="white"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5.35709 16V5.78571c0-.43393.34822-.78571.77777-.78571H18.5793c.4296 0 .7778.35178.7778.78571V16M5.35709 16h-1c-.55229 0-1 .4477-1 1v1c0 .5523.44771 1 1 1H20.3571c.5523 0 1-.4477 1-1v-1c0-.5523-.4477-1-1-1h-1M5.35709 16H19.3571M9.35709 8l2.62501 2.5L9.35709 13m4.00001 0h2"
+                      />
+                    </svg>
+                    Gitbook
+                  </a>
+                </div>
+              )}
+            </div>
             <div className="space-y-2">
               <button
                 className="text-gray-300 w-full flex justify-between items-center"
