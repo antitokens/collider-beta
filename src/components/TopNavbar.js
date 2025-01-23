@@ -11,6 +11,7 @@ const Navbar = (trigger) => {
   const [isCommunityDropdownOpen, setIsCommunityDropdownOpen] = useState(false);
   const [isMobileCommunityOpen, setIsMobileCommunityOpen] = useState(false);
   const [isAppsDropdownOpen, setIsAppsDropdownOpen] = useState(false);
+  const [isPapersDropdownOpen, setIsPapersDropdownOpen] = useState(false);
   const [isMobileAppsOpen, setIsMobileAppsOpen] = useState(false);
 
   const openAppsDropdown = () => {
@@ -19,6 +20,14 @@ const Navbar = (trigger) => {
 
   const closeAppsDropdown = () => {
     setIsAppsDropdownOpen(false);
+  };
+
+  const openPapersDropdown = () => {
+    setIsPapersDropdownOpen(true);
+  };
+
+  const closePapersDropdown = () => {
+    setIsPapersDropdownOpen(false);
   };
 
   const toggleMobileApps = () => {
@@ -108,15 +117,83 @@ const Navbar = (trigger) => {
             >
               Home
             </a>
-            <a
-              href="https://antitoken.pro/whitepaper"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-gray-300 hover:text-accent-primary transition-colors"
-              onClick={toggleMobileMenu}
+            <div
+              className="relative"
+              onMouseEnter={openPapersDropdown}
+              onMouseLeave={closePapersDropdown}
             >
-              Whitepaper
-            </a>
+              <button className="text-gray-300 hover:text-accent-primary transition-colors flex items-center">
+                Technology
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 ml-1 transition-transform ${
+                    isPapersDropdownOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              <div
+                className={`absolute w-48 bg-transparent h-2 ${
+                  isPapersDropdownOpen ? "block" : "hidden"
+                }`}
+              ></div>
+              {isPapersDropdownOpen && (
+                <div className="absolute w-48 bg-dark-card border border-gray-800/50 rounded-lg mt-2 space-y-2 p-1">
+                  <a
+                    href="https://antitoken.pro/whitepaper"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
+                    <svg
+                      class="w-6 h-6 text-gray-800 dark:text-white"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="white"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7Zm-.293 9.293a1 1 0 0 1 0 1.414L9.414 14l1.293 1.293a1 1 0 0 1-1.414 1.414l-2-2a1 1 0 0 1 0-1.414l2-2a1 1 0 0 1 1.414 0Zm2.586 1.414a1 1 0 0 1 1.414-1.414l2 2a1 1 0 0 1 0 1.414l-2 2a1 1 0 0 1-1.414-1.414L14.586 14l-1.293-1.293Z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Whitepaper
+                  </a>
+                  <a className="flex items-center gap-2 block text-gray-400 cursor-not-allowed">
+                    <svg
+                      class="w-6 h-6 text-gray-800 dark:text-white"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="white"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="m8 8-4 4 4 4m8 0 4-4-4-4m-2-3-4 14"
+                      />
+                    </svg>
+                    Yellowpaper
+                  </a>
+                </div>
+              )}
+            </div>
             <div
               className="relative"
               onMouseEnter={openAppsDropdown}
@@ -147,72 +224,91 @@ const Navbar = (trigger) => {
                 }`}
               ></div>
               {isAppsDropdownOpen && (
-                <div className="absolute w-48 bg-dark-card border border-gray-800/50 rounded-lg mt-2 space-y-2 p-1">
+                <div className="absolute w-64 bg-dark-card border border-gray-800/50 rounded-lg mt-2 space-y-2 p-1">
                   <a className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors cursor-not-allowed">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 3v18h18" />
-                      <path d="M18 17V9" />
-                      <path d="M13 17V5" />
-                      <path d="M8 17v-3" />
-                    </svg>
-                    Poll
+                    <div className="flex flex-row justify-between w-full">
+                      <div className="flex flex-row gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M3 3v18h18" />
+                          <path d="M18 17V9" />
+                          <path d="M13 17V5" />
+                          <path d="M8 17v-3" />
+                        </svg>
+                        Poll
+                      </div>
+                      <div className="text-sm font-sfmono">
+                        ⎋ poll.antitoken.pro
+                      </div>
+                    </div>
                   </a>
                   <a
                     href="https://lite.antitoken.pro"
                     target="_blank"
-                    rel="noopener noreferrer"
                     className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 0 9h-.79" />
-                    </svg>
-                    Lite
+                    <div className="flex flex-row justify-between w-full">
+                      <div className="flex flex-row gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 0 9h-.79" />
+                        </svg>
+                        Lite
+                      </div>
+                      <div className="text-sm font-sfmono">
+                        ⎋ lite.antitoken.pro
+                      </div>
+                    </div>
                   </a>
                   <a
                     href="https://app.antitoken.pro"
                     target="_blank"
-                    rel="noopener noreferrer"
                     className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                      <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
-                      <polyline points="7.5 19.79 7.5 14.6 3 12" />
-                      <polyline points="21 12 16.5 14.6 16.5 19.79" />
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                      <line x1="12" y1="22.08" x2="12" y2="12" />
-                    </svg>
-                    Pro
+                    <div className="flex flex-row justify-between w-full">
+                      <div className="flex flex-row gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                          <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                          <polyline points="7.5 19.79 7.5 14.6 3 12" />
+                          <polyline points="21 12 16.5 14.6 16.5 19.79" />
+                          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                          <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
+                        Pro{" "}
+                      </div>
+                      <div className="text-sm font-sfmono">
+                        ⎋ app.antitoken.pro
+                      </div>
+                    </div>
                   </a>
                 </div>
               )}
@@ -368,68 +464,89 @@ const Navbar = (trigger) => {
               {isMobileAppsOpen && (
                 <div className="space-y-2 pl-4 border-l border-gray-700">
                   <a className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors cursor-not-allowed">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 3v18h18" />
-                      <path d="M18 17V9" />
-                      <path d="M13 17V5" />
-                      <path d="M8 17v-3" />
-                    </svg>
-                    Poll
+                    <div className="flex flex-row justify-between w-full">
+                      <div className="flex flex-row gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M3 3v18h18" />
+                          <path d="M18 17V9" />
+                          <path d="M13 17V5" />
+                          <path d="M8 17v-3" />
+                        </svg>
+                        Poll
+                      </div>
+                      <div className="text-sm font-sfmono">
+                        ⎋ poll.antitoken.pro
+                      </div>
+                    </div>
                   </a>
                   <a
                     href="https://lite.antitoken.pro"
                     target="_blank"
                     className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 0 9h-.79" />
-                    </svg>
-                    Lite
+                    <div className="flex flex-row justify-between w-full">
+                      <div className="flex flex-row gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 0 9h-.79" />
+                        </svg>
+                        Lite
+                      </div>
+                      <div className="text-sm font-sfmono">
+                        ⎋ lite.antitoken.pro
+                      </div>
+                    </div>
                   </a>
                   <a
                     href="https://app.antitoken.pro"
                     target="_blank"
                     className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                      <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
-                      <polyline points="7.5 19.79 7.5 14.6 3 12" />
-                      <polyline points="21 12 16.5 14.6 16.5 19.79" />
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                      <line x1="12" y1="22.08" x2="12" y2="12" />
-                    </svg>
-                    Pro
+                    <div className="flex flex-row justify-between w-full">
+                      <div className="flex flex-row gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                          <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                          <polyline points="7.5 19.79 7.5 14.6 3 12" />
+                          <polyline points="21 12 16.5 14.6 16.5 19.79" />
+                          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                          <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
+                        Pro{" "}
+                      </div>
+                      <div className="text-sm font-sfmono">
+                        ⎋ app.antitoken.pro
+                      </div>
+                    </div>
                   </a>
                 </div>
               )}
