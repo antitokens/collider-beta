@@ -154,7 +154,7 @@ const Navbar = (trigger) => {
               {isPapersDropdownOpen && (
                 <div className="absolute w-48 bg-dark-card border border-gray-800/50 rounded-lg mt-2 space-y-2 p-1">
                   <a
-                    href="https://antitoken.pro/whitepaper"
+                    href="https://docs.antitoken.pro/docs/whitepaper/antitoken"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
@@ -176,7 +176,12 @@ const Navbar = (trigger) => {
                     </svg>
                     Whitepaper
                   </a>
-                  <a className="flex items-center gap-2 block text-gray-400 cursor-not-allowed">
+                  <a
+                    href="https://docs.antitoken.pro/docs/yellowpaper/antitoken"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
                     <svg
                       class="w-6 h-6 text-gray-800 dark:text-white"
                       aria-hidden="true"
@@ -196,7 +201,12 @@ const Navbar = (trigger) => {
                     </svg>
                     Yellowpaper
                   </a>
-                  <a className="flex items-center gap-2 block text-gray-400 cursor-not-allowed">
+                  <a
+                    href="https://docs.antitoken.pro/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
                     <svg
                       class="w-6 h-6 text-gray-800 dark:text-white"
                       aria-hidden="true"
@@ -480,7 +490,7 @@ const Navbar = (trigger) => {
               {isMobilePapersOpen && (
                 <div className="space-y-2 pl-4 border-l border-gray-700">
                   <a
-                    href="https://antitoken.pro/whitepaper"
+                    href="https://docs.antitoken.pro/docs/whitepaper/antitoken"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
@@ -502,7 +512,12 @@ const Navbar = (trigger) => {
                     </svg>
                     Whitepaper
                   </a>
-                  <a className="flex items-center gap-2 block text-gray-400 cursor-not-allowed">
+                  <a
+                    href="https://docs.antitoken.pro/docs/yellowpaper/antitoken"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
                     <svg
                       class="w-6 h-6 text-gray-800 dark:text-white"
                       aria-hidden="true"
@@ -522,7 +537,12 @@ const Navbar = (trigger) => {
                     </svg>
                     Yellowpaper
                   </a>
-                  <a className="flex items-center gap-2 block text-gray-400 cursor-not-allowed">
+                  <a
+                    href="https://docs.antitoken.pro/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 block text-gray-400 hover:text-accent-primary transition-colors"
+                  >
                     <svg
                       class="w-6 h-6 text-gray-800 dark:text-white"
                       aria-hidden="true"
