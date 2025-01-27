@@ -1,15 +1,15 @@
-/* Collider v1.0-alpha */
+/* Collider v1.0-beta */
 
-export const calculateCollision = (anti, pro, flag = false, norm = false) => {
+export const collide = (anti, pro, noCalc = false, normalise = false) => {
   // Step 1: Calculate u (= mean)
-  const u = flag
+  const u = noCalc
     ? anti
     : anti + pro >= 0 && anti + pro < 1
     ? 0
     : Math.abs(anti - pro);
 
   // Step 2: Calculate s (= standard deviation)
-  const s = flag
+  const s = noCalc
     ? pro
     : (anti + pro >= 0 && anti + pro < 1) || Math.abs(anti - pro) <= anti + pro
     ? 0
@@ -28,7 +28,7 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
     const value =
       s > 0
         ? Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
-          (norm ? Math.sqrt(2 * Math.PI) * s : 1)
+          (normalise ? Math.sqrt(2 * Math.PI) * s : 1)
         : 1 / 2;
     distribution.push({ x, value });
   }
@@ -44,7 +44,7 @@ export const calculateCollision = (anti, pro, flag = false, norm = false) => {
     const value =
       s > 0
         ? Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2))) /
-          (norm ? Math.sqrt(2 * Math.PI) * s : 1)
+          (normalise ? Math.sqrt(2 * Math.PI) * s : 1)
         : 1 / 2;
     curve.push({ x, value });
   }

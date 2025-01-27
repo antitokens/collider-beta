@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { recordPrediction } from "../utils/api";
-import { calculateCollision } from "../utils/colliderAlpha";
-import { calculateEqualisation } from "../utils/equaliserAlpha";
+import { collide } from "../utils/collider";
+import { equalise } from "../utils/equaliser";
 import BinaryOrbit from "../components/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
@@ -11,7 +11,6 @@ import {
   toastContainerConfig,
   toast,
   emptyBags,
-  emptyMetadata,
   formatCount,
   formatPrecise,
   defaultToken,
@@ -34,7 +33,6 @@ const Collider = ({
   clearFields,
   antiData = defaultToken,
   proData = defaultToken,
-  isMobile = false,
   bags = emptyBags,
   inactive = true,
   isMetaLoading = true,
@@ -99,7 +97,7 @@ const Collider = ({
     if (wallet.publicKey) {
       const rewardCurrent =
         bags !== emptyBags
-          ? calculateEqualisation(
+          ? equalise(
               bags.baryon,
               bags.photon,
               bags.anti,
@@ -149,7 +147,7 @@ const Collider = ({
 
         const rewardFuture =
           pseudoBags !== emptyBags
-            ? calculateEqualisation(
+            ? equalise(
                 pseudoBags.baryon,
                 pseudoBags.photon,
                 pseudoBags.anti,
@@ -205,7 +203,7 @@ const Collider = ({
 
       const rewardUpdated =
         bags !== emptyBags
-          ? calculateEqualisation(
+          ? equalise(
               updatedBaryonBags,
               updatedPhotonBags,
               updatedAntiBags,
@@ -548,12 +546,12 @@ const Collider = ({
   };
 
   useEffect(() => {
-    setPastDistribution(calculateCollision(baryonBalance, photonBalance, true));
+    setPastDistribution(collide(baryonBalance, photonBalance, true));
     if (totalInvest > 0) {
       setTotalDistribution(
-        calculateCollision(antiUsage + antiTokens, proUsage + proTokens)
+        collide(antiUsage + antiTokens, proUsage + proTokens)
       );
-      setUserDistribution(calculateCollision(antiTokens, proTokens));
+      setUserDistribution(collide(antiTokens, proTokens));
     } else {
       setUserDistribution({
         u: 0,
@@ -570,7 +568,7 @@ const Collider = ({
         ],
       });
       setTotalDistribution(
-        calculateCollision(baryonBalance, photonBalance, true)
+        collide(baryonBalance, photonBalance, true)
       );
     }
   }, [

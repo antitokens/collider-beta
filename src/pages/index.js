@@ -15,10 +15,7 @@ import {
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
-import {
-  calculateEqualisation,
-  implementEqualisation,
-} from "../utils/equaliserAlpha";
+import { equalise } from "../utils/equaliser";
 import Metadata from "../components/Metadata";
 import Navbar from "../components/TopNavbar";
 import Footer from "../components/BottomFooter";
@@ -53,7 +50,7 @@ import {
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { decompressMetadata } from "../utils/compress";
-import { calculateCollision } from "../utils/colliderAlpha";
+import { collider } from "../utils/collider";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 /* Main Page */
@@ -392,13 +389,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
           const colliderDistribution =
             baryonBalance >= 0 || photonBalance >= 0
-              ? calculateCollision(baryonBalance, photonBalance, true)
+              ? collider(baryonBalance, photonBalance, true)
               : emptyGaussian;
 
           const totalDistribution =
             dataBalance.totalDistribution.u >= 0 &&
             dataBalance.totalDistribution.s >= 0
-              ? calculateCollision(
+              ? collider(
                   dataBalance.emissionsData.baryonTokens,
                   dataBalance.emissionsData.photonTokens,
                   true
@@ -442,7 +439,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               ]
             : 0;
 
-          const rewardCurrent = calculateEqualisation(
+          const rewardCurrent = equalise(
             dataBalance.totalDistribution.bags.baryon,
             dataBalance.totalDistribution.bags.photon,
             dataBalance.totalDistribution.bags.anti,
@@ -459,7 +456,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             ]
           );
 
-          const rewardFinal = implementEqualisation(
+          const rewardFinal = equalise(
             dataBalance.totalDistribution.bags.baryon,
             dataBalance.totalDistribution.bags.photon,
             dataBalance.totalDistribution.bags.anti,
@@ -1590,7 +1587,6 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   clearFields={clearFields}
                   antiData={antiData}
                   proData={proData}
-                  isMobile={isMobile}
                   bags={bags}
                   inactive={isOver}
                   isMetaLoading={isMetaLoading}

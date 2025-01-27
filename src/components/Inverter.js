@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { recordClaim } from "../utils/api";
-import { calculateInversion } from "../utils/inverterAlpha";
-import { implementEqualisation } from "../utils/equaliserAlpha";
+import { equalise } from "../utils/equaliser";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "./BinaryOrbit";
-import { Line } from "react-chartjs-2";
 import "react-toastify/dist/ReactToastify.css";
 import {
   toastContainerConfig,
@@ -59,7 +57,7 @@ const Inverter = ({
     if (wallet.publicKey) {
       const rewardCurrent =
         bags !== emptyBags
-          ? implementEqualisation(
+          ? equalise(
               bags.baryon,
               bags.photon,
               bags.anti,

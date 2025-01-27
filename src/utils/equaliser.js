@@ -1,9 +1,9 @@
-import { calculateCollision } from "./colliderAlpha";
+import { collide } from "./collider";
 
-/* Equaliser v1.0-alpha */
+/* Equaliser v1.0-beta */
 
 /* Calculates maximum gains by assuming favourable truth */
-export const calculateEqualisation = (
+export const equalise = (
   baryonBags,
   photonBags,
   antiBags,
@@ -20,7 +20,7 @@ export const calculateEqualisation = (
     .map((_, i) => {
       const baryon = baryonBags[i];
       const photon = photonBags[i];
-      const sign =
+      const parity =
         truth.length === 0
           ? 0
           : truth[0] > truth[1] === antiBags[i] > proBags[i]
@@ -31,7 +31,7 @@ export const calculateEqualisation = (
         : 1;
 
       return (
-        (sign *
+        (parity *
           Math.exp(
             -Math.pow(Math.log(2e9 - baryon), 2) /
               (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
@@ -47,19 +47,19 @@ export const calculateEqualisation = (
     });
 
   // Calculate forward distribution
-  const forward = calculateDistribution(overlap, [], [], antiBags, proBags);
+  const forward = distributer(overlap, [], [], antiBags, proBags);
 
   // Calculate returns
   const scatter = {
-    anti: distributeCountOverBins(forward.distribution, antiPool),
-    pro: distributeCountOverBins(forward.distribution, proPool),
+    anti: scatterer(forward.distribution, antiPool),
+    pro: scatterer(forward.distribution, proPool),
     baryon: [],
     photon: [],
   };
 
   const returns = [
-    distributeValuesInBins(scatter.anti.resampled, forward.indices, antiBags),
-    distributeValuesInBins(scatter.pro.resampled, forward.indices, proBags),
+    localiser(scatter.anti.resampled, forward.indices, antiBags),
+    localiser(scatter.pro.resampled, forward.indices, proBags),
     [],
     [],
   ];
@@ -80,9 +80,9 @@ export const calculateEqualisation = (
       const _pro = returns[1][i][j];
       invert.anti[forward.indices[i][j]] = _anti;
       invert.pro[forward.indices[i][j]] = _pro;
-      const collide = calculateCollision(_anti, _pro);
-      const _baryon = collide.u;
-      const _photon = collide.s;
+      const _collide = collide(_anti, _pro);
+      const _baryon = _collide.u;
+      const _photon = _collide.s;
       invert.baryon[forward.indices[i][j]] = _baryon;
       invert.photon[forward.indices[i][j]] = _photon;
       invert.wallet[forward.indices[i][j]] = wallets[_counter_];
@@ -118,11 +118,8 @@ export const calculateEqualisation = (
   };
 };
 
-/* Implements gains using the actual truth */
-export const implementEqualisation = calculateEqualisation;
-
 // Distribute indexed values over bins
-function calculateDistribution(
+function distributer(
   values,
   baryonBags,
   photonBags,
@@ -183,7 +180,7 @@ function calculateDistribution(
 }
 
 // Distribute values across bins based on another distribution
-function distributeCountOverBins(distribution, totalCount) {
+function scatterer(distribution, totalCount) {
   // Find indices of non-zero bins
   const nonZeroBinIndices = distribution
     .map((value, index) => ({ value, index }))
@@ -201,7 +198,7 @@ function distributeCountOverBins(distribution, totalCount) {
   // Calculate sum of unnormalised values distribution
   const totalUnnormalised = unnormalised.reduce((sum, val) => sum + val, 0);
 
-  // Normalise and assign only to non-zero bin positions
+  // Normalise and asparity only to non-zero bin positions
   nonZeroBinIndices.forEach((binIndex, i) => {
     resampled[binIndex] =
       (unnormalised[nonZeroBinIndices.length - 1 - i] / totalUnnormalised) *
@@ -212,7 +209,7 @@ function distributeCountOverBins(distribution, totalCount) {
 }
 
 // Distribute values within one bin
-function distributeValuesInBins(valueSums, indicesInBins, orderBy) {
+function localiser(valueSums, indicesInBins, orderBy) {
   return valueSums.map((sums, binIndex) => {
     const count = indicesInBins[binIndex].length;
     if (count === 0) return [];
