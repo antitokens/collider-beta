@@ -50,7 +50,7 @@ import {
 } from "../utils/utils";
 import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
 import { decompressMetadata } from "../utils/compress";
-import { collider } from "../utils/collider";
+import { collide } from "../utils/collider";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 /* Main Page */
@@ -389,13 +389,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
           const colliderDistribution =
             baryonBalance >= 0 || photonBalance >= 0
-              ? collider(baryonBalance, photonBalance, true)
+              ? collide(baryonBalance, photonBalance, true)
               : emptyGaussian;
 
           const totalDistribution =
             dataBalance.totalDistribution.u >= 0 &&
             dataBalance.totalDistribution.s >= 0
-              ? collider(
+              ? collide(
                   dataBalance.emissionsData.baryonTokens,
                   dataBalance.emissionsData.photonTokens,
                   true
