@@ -41,8 +41,8 @@ export const monthsReverse = {
 export const pollsInit = {
   1: {
     poll: 1,
-    title: "Some Empty Poll",
-    description: "Just Some Description",
+    title: "...",
+    description: "...",
     schedule: ["1901-01-17T00:00:00.000Z", "1901-01-28T00:00:00.000Z"],
     wallet: "",
     signature: "",
