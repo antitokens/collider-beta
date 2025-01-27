@@ -4,29 +4,29 @@ import { collide } from "./collider";
 
 /* Calculates maximum gains by assuming favourable truth */
 export const equalise = (
-  baryonBags,
-  photonBags,
-  antiBags,
-  proBags,
+  baryonBalances,
+  photonBalances,
+  antiBalances,
+  proBalances,
   antiPool,
   proPool,
   prices,
   wallets,
   truth = [],
-  flag = false
+  normalise = false
 ) => {
   // Calculate normalised overlap with truth (inverse-log-normalised)
-  const overlap = baryonBags
+  const overlap = baryonBalances
     .map((_, i) => {
-      const baryon = baryonBags[i];
-      const photon = photonBags[i];
+      const baryon = baryonBalances[i];
+      const photon = photonBalances[i];
       const parity =
         truth.length === 0
           ? 0
-          : truth[0] > truth[1] === antiBags[i] > proBags[i]
+          : truth[0] > truth[1] === antiBalances[i] > proBalances[i]
           ? 1
           : -1;
-      const norm = flag
+      const norm = normalise
         ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon))
         : 1;
 
@@ -47,7 +47,7 @@ export const equalise = (
     });
 
   // Calculate forward distribution
-  const forward = distributer(overlap, [], [], antiBags, proBags);
+  const forward = distributer(overlap, [], [], antiBalances, proBalances);
 
   // Calculate returns
   const scatter = {
@@ -58,8 +58,8 @@ export const equalise = (
   };
 
   const returns = [
-    localiser(scatter.anti.resampled, forward.indices, antiBags),
-    localiser(scatter.pro.resampled, forward.indices, proBags),
+    localiser(scatter.anti.resampled, forward.indices, antiBalances),
+    localiser(scatter.pro.resampled, forward.indices, proBalances),
     [],
     [],
   ];
@@ -95,15 +95,15 @@ export const equalise = (
   const change = {
     baryon: [],
     photon: [],
-    anti: antiBags.map((value, index) => invert.anti[index] - value),
-    pro: proBags.map((value, index) => invert.pro[index] - value),
-    gain: antiBags.map(
+    anti: antiBalances.map((value, index) => invert.anti[index] - value),
+    pro: proBalances.map((value, index) => invert.pro[index] - value),
+    gain: antiBalances.map(
       (value, index) =>
         (invert.anti[index] - value) * prices[0] +
-        (invert.pro[index] - proBags[index]) * prices[1]
+        (invert.pro[index] - proBalances[index]) * prices[1]
     ),
-    original: antiBags.map(
-      (value, index) => value * prices[0] + proBags[index] * prices[1]
+    original: antiBalances.map(
+      (value, index) => value * prices[0] + proBalances[index] * prices[1]
     ),
     wallets: wallets,
   };
@@ -121,10 +121,10 @@ export const equalise = (
 // Distribute indexed values over bins
 function distributer(
   values,
-  baryonBags,
-  photonBags,
-  antiBags,
-  proBags,
+  baryonBalances,
+  photonBalances,
+  antiBalances,
+  proBalances,
   numBins = 100
 ) {
   // Step 1: Initialise bins
@@ -144,10 +144,10 @@ function distributer(
       bins[binIndex] += 1; // Increment the corresponding bin
       itemsInBins[binIndex].push(index);
       valueInBins[binIndex].push([
-        baryonBags[index],
-        photonBags[index],
-        antiBags[index],
-        proBags[index],
+        baryonBalances[index],
+        photonBalances[index],
+        antiBalances[index],
+        proBalances[index],
       ]);
     }
   });
