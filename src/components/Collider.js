@@ -27,7 +27,6 @@ const Collider = ({
   clearFields,
   antiData = defaultToken,
   proData = defaultToken,
-  isMobile = false,
   inactive = true,
   isMetaLoading = true,
 }) => {

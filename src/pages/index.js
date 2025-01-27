@@ -14,8 +14,8 @@ import {
 } from "@solana/wallet-adapter-wallets";
 import Collider from "../components/Collider";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
-import Navbar from "../components/TopNavbar";
-import Footer from "../components/BottomFooter";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import TimeCompletionPie from "../components/TimePie";
 import BuyTokenModal from "../components/BuyTokenModal";
 import PollMetaModal from "../components/PollMetaModal";
@@ -1648,7 +1648,6 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                   clearFields={clearFields}
                   antiData={antiData}
                   proData={proData}
-                  isMobile={isMobile}
                   bags={bags}
                   inactive={!started || isOver}
                   isMetaLoading={isMetaLoading}
