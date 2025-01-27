@@ -1,72 +1,65 @@
-import { calculateCollision } from "./colliderAlpha";
+import { collide } from "./collider";
 
-/* Equaliser v1.0-alpha */
+/* Equaliser v1.0-beta */
 
 /* Calculates maximum gains by assuming favourable truth */
-export const calculateEqualisation = (
-  baryonBags,
-  photonBags,
-  antiBags,
-  proBags,
+export const equalise = (
+  baryonBalances,
+  photonBalances,
+  antiBalances,
+  proBalances,
   antiPool,
   proPool,
   prices,
   wallets,
   truth = [],
-  flag = false
+  normalise = false
 ) => {
   // Calculate normalised overlap with truth (inverse-log-normalised)
-  const overlap = baryonBags
-    .map((baryon, i) => {
-      const photon = photonBags[i];
-      const sign =
-        truth.length > 0
-          ? truth[0] > truth[1] && antiBags[i] > proBags[i]
-            ? 1
-            : truth[0] < truth[1] && antiBags[i] > proBags[i]
-            ? -1
-            : truth[0] > truth[1] && antiBags[i] < proBags[i]
-            ? -1
-            : truth[0] < truth[1] && antiBags[i] < proBags[i]
-            ? 1
-            : -1
-          : 0;
+  const overlap = baryonBalances
+    .map((_, i) => {
+      const baryon = baryonBalances[i];
+      const photon = photonBalances[i];
+      const parity =
+        truth.length === 0
+          ? 0
+          : truth[0] > truth[1] === antiBalances[i] > proBalances[i]
+          ? 1
+          : -1;
+      const norm = normalise
+        ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon))
+        : 1;
 
       return (
-        (sign *
+        (parity *
           Math.exp(
             -Math.pow(Math.log(2e9 - baryon), 2) /
               (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
           )) /
-        (flag
-          ? Math.sqrt(2 * Math.PI) * (photon <= 1 ? 1 : 1 + Math.log(photon))
-          : 1)
+        norm
       );
     })
     .map((value) => {
-      return value === 0
-        ? 0
-        : value === 1
-        ? 1
-        : value > 0
-        ? 1 / Math.abs(Math.log(value))
-        : 1 - 1 / Math.abs(Math.log(Math.abs(value)));
+      if (value === 0) return 0;
+      if (value === 1) return 1;
+      if (value > 0) return 1 / Math.abs(Math.log(value));
+      return 1 - 1 / Math.abs(Math.log(Math.abs(value)));
     });
 
   // Calculate forward distribution
-  const forward = calculateDistribution(overlap, [], [], antiBags, proBags);
+  const forward = distributer(overlap, [], [], antiBalances, proBalances);
 
   // Calculate returns
   const scatter = {
-    anti: distributeCountOverBins(forward.distribution, antiPool),
-    pro: distributeCountOverBins(forward.distribution, proPool),
+    anti: scatterer(forward.distribution, antiPool),
+    pro: scatterer(forward.distribution, proPool),
     baryon: [],
     photon: [],
   };
 
   const returns = [
-    distributeValuesInBins(scatter.anti.resampled, forward.indices, antiBags),
-    distributeValuesInBins(scatter.pro.resampled, forward.indices, proBags),
+    localiser(scatter.anti.resampled, forward.indices, antiBalances),
+    localiser(scatter.pro.resampled, forward.indices, proBalances),
     [],
     [],
   ];
@@ -87,9 +80,9 @@ export const calculateEqualisation = (
       const _pro = returns[1][i][j];
       invert.anti[forward.indices[i][j]] = _anti;
       invert.pro[forward.indices[i][j]] = _pro;
-      const collide = calculateCollision(_anti, _pro);
-      const _baryon = collide.u;
-      const _photon = collide.s;
+      const _collide = collide(_anti, _pro);
+      const _baryon = _collide.u;
+      const _photon = _collide.s;
       invert.baryon[forward.indices[i][j]] = _baryon;
       invert.photon[forward.indices[i][j]] = _photon;
       invert.wallet[forward.indices[i][j]] = wallets[_counter_];
@@ -102,15 +95,15 @@ export const calculateEqualisation = (
   const change = {
     baryon: [],
     photon: [],
-    anti: antiBags.map((value, index) => invert.anti[index] - value),
-    pro: proBags.map((value, index) => invert.pro[index] - value),
-    gain: antiBags.map(
+    anti: antiBalances.map((value, index) => invert.anti[index] - value),
+    pro: proBalances.map((value, index) => invert.pro[index] - value),
+    gain: antiBalances.map(
       (value, index) =>
         (invert.anti[index] - value) * prices[0] +
-        (invert.pro[index] - proBags[index]) * prices[1]
+        (invert.pro[index] - proBalances[index]) * prices[1]
     ),
-    original: antiBags.map(
-      (value, index) => value * prices[0] + proBags[index] * prices[1]
+    original: antiBalances.map(
+      (value, index) => value * prices[0] + proBalances[index] * prices[1]
     ),
     wallets: wallets,
   };
@@ -125,16 +118,13 @@ export const calculateEqualisation = (
   };
 };
 
-/* Implements gains using the actual truth */
-export const implementEqualisation = calculateEqualisation;
-
 // Distribute indexed values over bins
-function calculateDistribution(
+function distributer(
   values,
-  baryonBags,
-  photonBags,
-  antiBags,
-  proBags,
+  baryonBalances,
+  photonBalances,
+  antiBalances,
+  proBalances,
   numBins = 100
 ) {
   // Step 1: Initialise bins
@@ -154,10 +144,10 @@ function calculateDistribution(
       bins[binIndex] += 1; // Increment the corresponding bin
       itemsInBins[binIndex].push(index);
       valueInBins[binIndex].push([
-        baryonBags[index],
-        photonBags[index],
-        antiBags[index],
-        proBags[index],
+        baryonBalances[index],
+        photonBalances[index],
+        antiBalances[index],
+        proBalances[index],
       ]);
     }
   });
@@ -190,7 +180,7 @@ function calculateDistribution(
 }
 
 // Distribute values across bins based on another distribution
-function distributeCountOverBins(distribution, totalCount) {
+function scatterer(distribution, totalCount) {
   // Find indices of non-zero bins
   const nonZeroBinIndices = distribution
     .map((value, index) => ({ value, index }))
@@ -208,7 +198,7 @@ function distributeCountOverBins(distribution, totalCount) {
   // Calculate sum of unnormalised values distribution
   const totalUnnormalised = unnormalised.reduce((sum, val) => sum + val, 0);
 
-  // Normalise and assign only to non-zero bin positions
+  // Normalise and asparity only to non-zero bin positions
   nonZeroBinIndices.forEach((binIndex, i) => {
     resampled[binIndex] =
       (unnormalised[nonZeroBinIndices.length - 1 - i] / totalUnnormalised) *
@@ -219,7 +209,7 @@ function distributeCountOverBins(distribution, totalCount) {
 }
 
 // Distribute values within one bin
-function distributeValuesInBins(valueSums, indicesInBins, orderBy) {
+function localiser(valueSums, indicesInBins, orderBy) {
   return valueSums.map((sums, binIndex) => {
     const count = indicesInBins[binIndex].length;
     if (count === 0) return [];

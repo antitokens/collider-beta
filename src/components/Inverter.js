@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { recordClaim } from "../utils/api";
-import { implementEqualisation } from "../utils/equaliserAlpha";
+import { equalise } from "../utils/equaliser";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import BinaryOrbit from "./BinaryOrbit";
@@ -58,7 +58,7 @@ const Inverter = ({
     if (wallet.publicKey) {
       const rewardCurrent =
         bags !== emptyBags
-          ? implementEqualisation(
+          ? equalise(
               bags.baryon,
               bags.photon,
               bags.anti,
