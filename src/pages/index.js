@@ -17,8 +17,8 @@ import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/CollisionAnimation";
 import { equalise } from "../utils/equaliser";
 import Metadata from "../components/Metadata";
-import Navbar from "../components/TopNavbar";
-import Footer from "../components/BottomFooter";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import BuyTokenModal from "../components/BuyTokenModal";
 import BinaryOrbit from "../components/BinaryOrbit";
 import {
