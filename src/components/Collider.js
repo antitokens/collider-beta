@@ -148,8 +148,8 @@ const Collider = ({
   };
 
   const updateSplit = (total, percentage) => {
-    const pro = (percentage / 100) * total;
-    const anti = total - pro;
+    const pro = parseFloat(((percentage / 100) * total).toFixed(2));
+    const anti = parseFloat((total - pro).toFixed(2));
     if (!proData || !antiData) {
       return;
     }
