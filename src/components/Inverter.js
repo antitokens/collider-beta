@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   toastContainerConfig,
   toast,
-  emptyBags,
+  emptyHoldings,
   formatCount,
   defaultToken,
   emptyMetadata,
@@ -32,7 +32,7 @@ const Inverter = ({
   antiData = defaultToken,
   proData = defaultToken,
   isMobile = false,
-  bags = emptyBags,
+  holdings = emptyHoldings,
   inactive,
   truth = [],
   balances = emptyMetadata,
@@ -52,30 +52,30 @@ const Inverter = ({
   // Clear input fields when `clearFields` changes
   useEffect(() => {
     // Calculate expected rewardCurrents
-    let myBag = -1;
+    let myHolding = -1;
     if (wallet.publicKey) {
       const rewardCurrent =
-        bags !== emptyBags
+        holdings !== emptyHoldings
           ? equalise(
-              bags.baryon,
-              bags.photon,
-              bags.anti,
-              bags.pro,
-              bags.antiPool,
-              bags.proPool,
+              holdings.baryon,
+              holdings.photon,
+              holdings.anti,
+              holdings.pro,
+              holdings.antiPool,
+              holdings.proPool,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [1, 1],
-              bags.wallets,
+              holdings.wallets,
               truth
             )
           : undefined;
 
-      myBag = rewardCurrent
+      myHolding = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
 
-      if (proData && antiData && myBag >= 0) {
+      if (proData && antiData && myHolding >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         setChange(
@@ -83,9 +83,9 @@ const Inverter = ({
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
             ? [
-                rewardCurrent.change.pro[myBag],
-                rewardCurrent.change.anti[myBag],
-                rewardCurrent.change.gain[myBag],
+                rewardCurrent.change.pro[myHolding],
+                rewardCurrent.change.anti[myHolding],
+                rewardCurrent.change.gain[myHolding],
               ]
             : [0, 0, 0]
         );
@@ -95,8 +95,8 @@ const Inverter = ({
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
             ? [
-                rewardCurrent.invert.pro[myBag],
-                rewardCurrent.invert.anti[myBag],
+                rewardCurrent.invert.pro[myHolding],
+                rewardCurrent.invert.anti[myHolding],
               ]
             : !wallet.disconnecting
             ? [0, 0]
@@ -106,7 +106,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.invert.anti[myBag]
+            ? rewardCurrent.invert.anti[myHolding]
             : !wallet.disconnecting
             ? 0
             : 0
@@ -115,7 +115,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.invert.pro[myBag]
+            ? rewardCurrent.invert.pro[myHolding]
             : !wallet.disconnecting
             ? 0
             : 0
@@ -125,7 +125,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.invert.baryon[myBag]
+            ? rewardCurrent.invert.baryon[myHolding]
             : !wallet.disconnecting
             ? 0
             : 0
@@ -134,7 +134,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.invert.photon[myBag]
+            ? rewardCurrent.invert.photon[myHolding]
             : !wallet.disconnecting
             ? 0
             : 0
@@ -143,7 +143,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.change.gain[myBag]
+            ? rewardCurrent.change.gain[myHolding]
             : 0
         );
         setGain(
@@ -151,12 +151,12 @@ const Inverter = ({
             !wallet.disconnecting &&
             originalPosition > 0 &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
+            ? (rewardCurrent.change.gain[myHolding] / originalPosition) * 100
             : 0
         );
       }
     }
-  }, [antiData, proData, bags, truth, wallet, wallet.disconnecting, active]);
+  }, [antiData, proData, holdings, truth, wallet, wallet.disconnecting, active]);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {

@@ -34,7 +34,7 @@ import {
   emptyMetadata,
   metadataInit,
   emptyGaussian,
-  emptyBags,
+  emptyHoldings,
   emptyConfig,
   defaultToken,
   detectBinningStrategy,
@@ -156,7 +156,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [proUsage, setProUsage] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
   const [photonBalance, setPhotonBalance] = useState(0);
-  const [bags, setBags] = useState(emptyBags);
+  const [holdings, setHoldings] = useState(emptyHoldings);
   const [showCollider, setShowCollider] = useState(true);
   const [dataUpdated, setDataUpdated] = useState(false);
   const [clearFields, setClearFields] = useState(false);
@@ -525,34 +525,34 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
             events: dataBalance.events,
           });
 
-          setBags({
-            baryon: dataBalance.plasma.bags.baryon,
-            photon: dataBalance.plasma.bags.photon,
+          setHoldings({
+            baryon: dataBalance.plasma.holdings.baryon,
+            photon: dataBalance.plasma.holdings.photon,
             baryonPool: dataBalance.emission.baryon,
             photonPool: dataBalance.emission.photon,
-            anti: dataBalance.plasma.bags.anti,
-            pro: dataBalance.plasma.bags.pro,
+            anti: dataBalance.plasma.holdings.anti,
+            pro: dataBalance.plasma.holdings.pro,
             antiPool: dataBalance.collision.anti,
             proPool: dataBalance.collision.pro,
             wallets: dataBalance.plasma.wallets,
           });
 
           const thisAntiUsage = wallet.publicKey
-            ? dataBalance.plasma.bags.anti[
+            ? dataBalance.plasma.holdings.anti[
                 dataBalance.plasma.wallets.indexOf(wallet.publicKey.toString())
               ]
             : 0;
           const thisProUsage = wallet.publicKey
-            ? dataBalance.plasma.bags.pro[
+            ? dataBalance.plasma.holdings.pro[
                 dataBalance.plasma.wallets.indexOf(wallet.publicKey.toString())
               ]
             : 0;
 
           const rewardCurrent = equalise(
-            dataBalance.plasma.bags.baryon,
-            dataBalance.plasma.bags.photon,
-            dataBalance.plasma.bags.anti,
-            dataBalance.plasma.bags.pro,
+            dataBalance.plasma.holdings.baryon,
+            dataBalance.plasma.holdings.photon,
+            dataBalance.plasma.holdings.anti,
+            dataBalance.plasma.holdings.pro,
             dataBalance.collision.anti,
             dataBalance.collision.pro,
             antiData && proData
@@ -566,10 +566,10 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           );
 
           const rewardFinal = equalise(
-            dataBalance.plasma.bags.baryon,
-            dataBalance.plasma.bags.photon,
-            dataBalance.plasma.bags.anti,
-            dataBalance.plasma.bags.pro,
+            dataBalance.plasma.holdings.baryon,
+            dataBalance.plasma.holdings.photon,
+            dataBalance.plasma.holdings.anti,
+            dataBalance.plasma.holdings.pro,
             dataBalance.collision.anti,
             dataBalance.collision.pro,
             antiData && proData
@@ -630,11 +630,11 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     setPredictionConfig({
       startTime: predictions[prediction]?.schedule?.[0] || "-",
       endTime: predictions[prediction]?.schedule?.[1] || "-",
-      antiLive: balances.collision.anti || 0,
-      proLive: balances.collision.pro || 0,
+      antiLive: balances.collision.anti - withdrawals.collision.anti || 0,
+      proLive: balances.collision.pro - withdrawals.collision.pro || 0,
       convertToLocaleTime,
     });
-  }, [balances, predictions, prediction]);
+  }, [balances, withdrawals, predictions, prediction]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -723,12 +723,12 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
 
   useEffect(() => {
     const checkSupply = async () => {
-      const [antiBalanceLive, proBalanceLive] = await Promise.all([
+      const [antiBalanceCache, proBalanceCache] = await Promise.all([
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      setAntiBalanceLive(!wallet.disconnecting ? antiBalanceLive : 0);
-      setProBalanceLive(!wallet.disconnecting ? proBalanceLive : 0);
+      setAntiBalanceLive(!wallet.disconnecting ? antiBalanceCache : 0);
+      setProBalanceLive(!wallet.disconnecting ? proBalanceCache : 0);
     };
 
     if (wallet.publicKey || dataUpdated) {
@@ -1732,6 +1732,16 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           loading ? "hidden" : "ml-auto"
                         }`}
                       >
+                        <div className="font-grotesk">
+                          <span className="relative group">
+                            <span className="cursor-pointer text-xs text-gray-500">
+                              &#9432;
+                            </span>
+                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                              {`Displays the global expectation of the outcome over time`}
+                            </span>
+                          </span>
+                        </div>
                         <div
                           className={
                             predictionHistoryTimeframe === "1H"
@@ -1888,7 +1898,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                   clearFields={clearFields}
                   antiData={antiData}
                   proData={proData}
-                  bags={bags}
+                  holdings={holdings}
                   inactive={!started || isOver}
                   isMetaLoading={isMetaLoading}
                 />
@@ -1950,7 +1960,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                   antiData={antiData}
                   proData={proData}
                   isMobile={isMobile}
-                  bags={bags}
+                  holdings={holdings}
                   inactive={!isOver}
                   truth={!isOver ? [] : truth}
                   balances={balances}

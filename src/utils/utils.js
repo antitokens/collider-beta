@@ -65,7 +65,7 @@ export const metadataInit = {
   plasma: {
     mean: 0,
     stddev: 0,
-    balances: {
+    holdings: {
       pro: [],
       anti: [],
       photon: [],
@@ -353,7 +353,7 @@ export const emptyConfig2 = {
   photonLive: 0,
 };
 
-export const emptyBags = {
+export const emptyHoldings = {
   baryon: [],
   photon: [],
   baryonPool: 0,
@@ -394,9 +394,13 @@ export const generateGradientColor = (
 export const parseDateToISO = (dateStr, useBinning) => {
   if (useBinning) {
     if (useBinning !== "daily") {
-      const [month, day, year, time] = dateStr
-        .match(/(\w+)\s+(\d+),\s+(\d+),\s+(\d+):(\d+)/)
-        .slice(1);
+      // Regex to handle optional # at the end of the date string
+      const matches = dateStr.match(
+        /(\w+)\s+(\d+),\s+(\d+),\s+(\d+):(\d+)(?:₁*)?/
+      );
+      if (!matches) return null;
+
+      const [month, day, year, time] = matches;
       const monthIndex = new Date(`${month} 1, 2000`).getMonth();
       const [hours, minutes] = time.split(":");
 
