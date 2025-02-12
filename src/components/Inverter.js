@@ -50,12 +50,25 @@ const Inverter = ({
   const [fill, setFill] = useState(false);
   const [dollarGain, setDollarGain] = useState(0);
 
+  useEffect(() => {
+    setActive(!inactive);
+  }, [inactive]);
+
   // Clear input fields when `clearFields` changes
   useEffect(() => {
-    // Calculate expected rewardCurrents
+    if (clearFields) {
+      setAnti(0);
+      setPro(0);
+      setBaryon(0);
+      setPhoton(0);
+    }
+  }, [clearFields]);
+
+  // Calculate expected returns
+  useEffect(() => {
     let myHolding = -1;
     if (wallet.publicKey) {
-      const rewardCurrent =
+      const reward =
         holdings !== emptyHoldings
           ? equalise(
               holdings.baryon,
@@ -72,21 +85,21 @@ const Inverter = ({
             )
           : undefined;
 
-      myHolding = rewardCurrent
-        ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
+      myHolding = reward
+        ? reward.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
 
       if (proData && antiData && myHolding >= 0) {
-        const originalPosition =
+        const position =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         setChange(
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
             ? [
-                rewardCurrent.change.pro[myHolding],
-                rewardCurrent.change.anti[myHolding],
-                rewardCurrent.change.gain[myHolding],
+                reward.change.pro[myHolding],
+                reward.change.anti[myHolding],
+                reward.change.gain[myHolding],
               ]
             : [0, 0, 0]
         );
@@ -95,10 +108,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? [
-                rewardCurrent.invert.pro[myHolding],
-                rewardCurrent.invert.anti[myHolding],
-              ]
+            ? [reward.invert.pro[myHolding], reward.invert.anti[myHolding]]
             : !wallet.disconnecting
             ? [0, 0]
             : [0, 0]
@@ -107,7 +117,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.invert.anti[myHolding]
+            ? reward.invert.anti[myHolding]
             : !wallet.disconnecting
             ? 0
             : 0
@@ -116,7 +126,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.invert.pro[myHolding]
+            ? reward.invert.pro[myHolding]
             : !wallet.disconnecting
             ? 0
             : 0
@@ -126,7 +136,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.invert.baryon[myHolding]
+            ? reward.invert.baryon[myHolding]
             : !wallet.disconnecting
             ? 0
             : 0
@@ -135,7 +145,7 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.invert.photon[myHolding]
+            ? reward.invert.photon[myHolding]
             : !wallet.disconnecting
             ? 0
             : 0
@@ -144,15 +154,15 @@ const Inverter = ({
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? rewardCurrent.change.gain[myHolding]
+            ? reward.change.gain[myHolding]
             : 0
         );
         setGain(
           truth.length > 0 &&
             !wallet.disconnecting &&
-            originalPosition > 0 &&
+            position > 0 &&
             (photonBalance > 0 || baryonBalance > 0)
-            ? (rewardCurrent.change.gain[myHolding] / originalPosition) * 100
+            ? (reward.change.gain[myHolding] / position) * 100
             : 0
         );
       }
@@ -166,20 +176,6 @@ const Inverter = ({
     wallet.disconnecting,
     active,
   ]);
-
-  // Clear input fields when `clearFields` changes
-  useEffect(() => {
-    if (clearFields) {
-      setAnti(0);
-      setPro(0);
-      setBaryon(0);
-      setPhoton(0);
-    }
-  }, [clearFields]);
-
-  useEffect(() => {
-    setActive(!inactive);
-  }, [inactive]);
 
   const handleRewithdrawal = async () => {
     if (disabled || loading) return;
@@ -219,6 +215,7 @@ const Inverter = ({
         for
         ${anti.toFixed(2)} $ANTI,
         ${pro.toFixed(2)} $PRO
+        on prediction ${prediction} with ${colliderBeta},
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
@@ -226,14 +223,18 @@ const Inverter = ({
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
       const timestamp = new Date().toISOString();
       // Record the withdrawal
-      await recordWithdrawal(wallet.publicKey.toString(), {
-        anti: anti,
-        pro: pro,
-        baryon: baryon,
-        photon: photon,
-        signature,
-        timestamp,
-      });
+      await recordWithdrawal(
+        wallet.publicKey.toString(),
+        {
+          anti: anti,
+          pro: pro,
+          baryon: baryon,
+          photon: photon,
+          signature,
+          timestamp,
+        },
+        prediction
+      );
       // Create withdrawal data object
       const withdrawal = {
         anti: anti,

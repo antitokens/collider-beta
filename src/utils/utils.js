@@ -339,6 +339,8 @@ export const formatPrecise = (_value, _decimal = 1) => {
     .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+export const PROGRAM_ID = ""; // FIX!
+
 export const emptyConfig = {
   startTime: "-",
   endTime: "-",

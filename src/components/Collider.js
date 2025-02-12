@@ -15,6 +15,7 @@ import {
   formatPrecise,
   defaultToken,
   copyText,
+  PROGRAM_ID,
 } from "../utils/utils";
 Chart.register(...registerables);
 
@@ -55,6 +56,7 @@ const Collider = ({
   const [newGain, setNewGain] = useState(0);
   const [splitPercentage, setSplitPercentage] = useState(50);
   const sliderRef = useRef(null);
+  const colliderBeta = PROGRAM_ID;
 
   useEffect(() => {
     setActive(!inactive);
@@ -511,7 +513,7 @@ const Collider = ({
         for
         ${baryon.toFixed(2)} $BARYON,
         ${photon.toFixed(2)} $PHOTON,
-        on prediction ${prediction} with Collider-beta,
+        on prediction ${prediction} with ${colliderBeta},
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
