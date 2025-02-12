@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import { BadgeCheck, CircleAlert } from "lucide-react";
-import { debounce } from "lodash";
+import { debounce, mean } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
 // Convert month abbreviation to number
@@ -37,23 +37,35 @@ export const monthsReverse = {
 };
 
 /* Global Constants */
+// Predictions init
+export const predictionsInit = {
+  1: {
+    prediction: 1,
+    title: "...",
+    description: "...",
+    schedule: ["1901-01-17T00:00:00.000Z", "1901-01-28T00:00:00.000Z"],
+    wallet: "",
+    signature: "",
+    timestamp: "",
+  },
+};
 
 // Metadata init
 export const metadataInit = {
   startTime: "-",
   endTime: "-",
-  colliderDistribution: {
-    u: 0,
-    s: 0,
-    range: [],
-    distribution: [],
-    short: [],
-    curve: [],
+  collider: {
+    mean: 0,
+    stddev: 0,
+    xLong: [],
+    yLong: [],
+    xShort: [],
+    yShort: [],
   },
-  totalDistribution: {
-    u: 0,
-    s: 0,
-    bags: {
+  plasma: {
+    mean: 0,
+    stddev: 0,
+    balances: {
       pro: [],
       anti: [],
       photon: [],
@@ -61,17 +73,17 @@ export const metadataInit = {
     },
     wallets: [],
   },
-  emissionsData: {
+  emission: {
     total: 0,
-    photonTokens: 0,
-    baryonTokens: 0,
+    photon: 0,
+    baryon: 0,
   },
-  collisionsData: {
-    total: 1e9,
-    proTokens: 0,
-    antiTokens: 0,
+  collision: {
+    total: supply,
+    pro: 0,
+    anti: 0,
   },
-  eventsOverTime: {
+  events: {
     timestamps: ["", "", "", "", ""],
     events: {
       pro: [],
@@ -258,7 +270,7 @@ export function parseToUTC(timeString, isMobile = false, locale = "en-US") {
 
 export function convertToLocaleTime(
   timeString,
-  isMobile = false,
+  _isMobile = false,
   locale = "en-US"
 ) {
   if (!isValidTime(timeString)) {
@@ -279,22 +291,22 @@ export function isValidTime(timeString) {
 }
 
 export const emptyMetadata = {
-  antiToken: 0.0,
-  proToken: 0.0,
-  baryonToken: 0.0,
-  photonToken: 0.0,
+  anti: 0.0,
+  pro: 0.0,
+  baryon: 0.0,
+  photon: 0.0,
   signature: "-",
   timestamp: "-",
   wallet: "-",
 };
 
 export const emptyGaussian = {
-  u: 0,
-  s: 0,
-  range: [],
-  distribution: [],
-  short: [],
-  curve: [],
+  mean: 0,
+  stddev: 0,
+  xLong: [],
+  yLong: [],
+  xShort: [],
+  yShort: [],
 };
 
 export const formatCount = (_value, _flag = undefined, _fill = 4) => {
@@ -534,6 +546,44 @@ export function formatUTCTime(date) {
   const day = date.getUTCDate().toString().padStart(2, "0");
 
   return `${year}-${month}-${day} ${hours}:${minutes} UTC`;
+}
+
+export function getPlotColor(pro, anti, index) {
+  return pro[index] + anti[index] === 0
+    ? 50
+    : (pro[index] / (pro[index] + anti[index])) * 100;
+}
+
+export function getAllPlotColor(pro, anti) {
+  return pro.map((_, index) =>
+    pro[index] + anti[index] === 0
+      ? 50
+      : (pro[index] / (pro[index] + anti[index])) * 100
+  );
+}
+
+export function addRepetitionMarkers(arr, marker = "₁") {
+  // Count occurrences of each string
+  const counts = arr.reduce((acc, str) => {
+    acc[str] = (acc[str] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Keep track of how many times we've seen each string
+  const seen = {};
+
+  // Map through array and add # for repetitions
+  return arr.map((str) => {
+    // If string appears only once, return as is
+    if (counts[str] === 1) return str;
+
+    // Initialize seen counter for this string if not exists
+    seen[str] = (seen[str] || 0) + 1;
+
+    // Add # marks based on how many times we've seen this string
+    // Count - 1 because first occurrence doesn't get a #
+    return str + marker.repeat(seen[str] - 1);
+  });
 }
 
 export const TimeTicker = ({

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { recordClaim } from "../utils/api";
+import { recordWithdrawal } from "../utils/api";
 import { equalise } from "../utils/equaliser";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
-import BinaryOrbit from "./BinaryOrbit";
+import BinaryOrbit from "./animation/BinaryOrbit";
 import "react-toastify/dist/ReactToastify.css";
 import {
   toastContainerConfig,
@@ -17,7 +17,6 @@ import {
 Chart.register(...registerables);
 
 /* Inverter Container */
-
 const Inverter = ({
   wallet,
   antiBalance,
@@ -28,7 +27,7 @@ const Inverter = ({
   photonBalance,
   disabled,
   BASE_URL,
-  onClaimSubmitted,
+  onWithdrawalSubmitted,
   clearFields,
   antiData = defaultToken,
   proData = defaultToken,
@@ -173,14 +172,14 @@ const Inverter = ({
     setActive(!inactive);
   }, [inactive]);
 
-  const handleReclaim = async () => {
+  const handleRewithdrawal = async () => {
     if (disabled || loading) return;
 
     try {
       setLoading(true);
       // Validate input
       if (baryonTokens <= 0 && photonTokens <= 0) {
-        toast.error("You must claim with at least some tokens!");
+        toast.error("You must withdrawal with at least some tokens!");
         return;
       }
 
@@ -188,12 +187,12 @@ const Inverter = ({
         antiTokens !== updatedBalances[1] ||
         proTokens !== updatedBalances[0]
       ) {
-        toast.error("You can only claim maximum available balance!");
+        toast.error("You can only withdrawal maximum available balance!");
         return;
       }
 
       if (antiTokens > updatedBalances[1] || proTokens > updatedBalances[0]) {
-        toast.error("You cannot claim with more tokens than you have!");
+        toast.error("You cannot withdrawal with more tokens than you have!");
         return;
       }
 
@@ -208,7 +207,7 @@ const Inverter = ({
       }
 
       // Prompt for Solana signature
-      const message = `Requesting signature to claim with:
+      const message = `Requesting signature to withdrawal with:
         ${baryonTokens.toFixed(2)} $BARYON,
         ${photonTokens.toFixed(2)} $PHOTON,
         for
@@ -220,8 +219,8 @@ const Inverter = ({
       );
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
       const timestamp = new Date().toISOString();
-      // Record the claim
-      await recordClaim(wallet.publicKey.toString(), {
+      // Record the withdrawal
+      await recordWithdrawal(wallet.publicKey.toString(), {
         antiTokens: antiTokens,
         proTokens: proTokens,
         baryonTokens: baryonTokens,
@@ -229,8 +228,8 @@ const Inverter = ({
         signature,
         timestamp,
       });
-      // Create claim data object
-      const claim = {
+      // Create withdrawal data object
+      const withdrawal = {
         antiTokens: antiTokens,
         proTokens: proTokens,
         baryonTokens: baryonTokens,
@@ -240,11 +239,11 @@ const Inverter = ({
         wallet: wallet.publicKey.toString(),
       };
       // Emit the updated data
-      onClaimSubmitted(true, claim);
-      toast.success("Your claim has been recorded!");
+      onWithdrawalSubmitted(true, withdrawal);
+      toast.success("Your withdrawal has been recorded!");
     } catch (error) {
       console.error("CLAIM_SUBMISSION_FAILED:", error);
-      toast.error("An error occurred while recording your claim");
+      toast.error("An error occurred while recording your withdrawal");
     } finally {
       setLoading(false);
       setUpdatedBalances([0, 0]);
@@ -263,11 +262,11 @@ const Inverter = ({
             <div className="relative group flex items-center">
               <div className="cursor-pointer">&#9432;&nbsp;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays your tokens in reclaim
+                Displays your tokens in rewithdrawal
               </span>
             </div>
             <div className="flex items-center">
-              <div>&nbsp;Claim:&nbsp;</div>
+              <div>&nbsp;Withdrawal:&nbsp;</div>
               <div className="flex items-center font-sfmono pt-[0px] lg:pt-[2px]">
                 <div className="text-accent-secondary text-[11px] opacity-95">
                   {!active ? "0.0" : formatCount(updatedBalances[0])}
@@ -321,7 +320,7 @@ const Inverter = ({
                 <span
                   className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                 >
-                  {`Reclaim opening date & time: ${
+                  {`Rewithdrawal opening date & time: ${
                     balances.endTime !== "-" && balances.startTime !== "-"
                       ? parseToUTC(balances.endTime, isMobile) + " UTC"
                       : "..."
@@ -437,7 +436,8 @@ const Inverter = ({
                   htmlFor="antiTokens"
                   className="text-accent-secondary font-medium text-xs sm:text-sm"
                 >
-                  ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}PRO
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}
+                  PRO
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
@@ -496,7 +496,8 @@ const Inverter = ({
                   htmlFor="antiTokens"
                   className="text-accent-orange font-medium text-xs sm:text-sm"
                 >
-                  ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}ANTI
+                  ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}
+                  ANTI
                 </label>
               </div>
               <div className={!active ? "hidden" : "text-xs text-gray-500"}>
@@ -541,7 +542,7 @@ const Inverter = ({
       </div>
       {/* Submit Button */}
       <button
-        onClick={handleReclaim}
+        onClick={handleRewithdrawal}
         disabled={loading || !active || !fill}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
@@ -566,7 +567,7 @@ const Inverter = ({
           wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"
         }`}
       >
-        {wallet.connected ? "" : "Connect your wallet to enable reclaims"}
+        {wallet.connected ? "" : "Connect your wallet to enable rewithdrawals"}
       </p>
       <ToastContainer {...toastContainerConfig} />
     </div>

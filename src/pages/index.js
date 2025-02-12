@@ -14,13 +14,15 @@ import {
 } from "@solana/wallet-adapter-wallets";
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
-import { Stars, ParticleCollision } from "../components/CollisionAnimation";
+import { Stars, ParticleCollision } from "../components/animation/Animations";
 import { equalise } from "../utils/equaliser";
 import Metadata from "../components/Metadata";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import BuyTokenModal from "../components/BuyTokenModal";
-import BinaryOrbit from "../components/BinaryOrbit";
+import TimeCompletionPie from "../components/animation/TimePie";
+import BuyTokenModal from "../components/utils/BuyToken";
+import PredictionMetaModal from "../components/meta/AddPrediction";
+import BinaryOrbit from "../components/animation/BinaryOrbit";
 import {
   ANTI_TOKEN_MINT,
   PRO_TOKEN_MINT,
@@ -47,51 +49,61 @@ import {
   TimeTicker,
   parseToUTC,
   findHourBinForTime,
+  predictionsInit,
+  getPlotColor,
+  getAllPlotColor,
+  addRepetitionMarkers,
 } from "../utils/utils";
-import { getBalance, getBalances, getClaim, getClaims } from "../utils/api";
+import {
+  getBalance,
+  getBalances,
+  getWithdrawal,
+  getWithdrawals,
+  getPredictions,
+  addPrediction,
+  checkPredictions,
+} from "../utils/api";
 import { decompressMetadata } from "../utils/compress";
 import { collide } from "../utils/collider";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { TwitterIcon } from "lucide-react";
 
 /* Main Page */
 
 const Home = ({ BASE_URL }) => {
   const [trigger, setTrigger] = useState(null); // Shared state
+  const [metadata, setMetadata] = useState({
+    description: "Predict with $ANTI and $PRO tokens",
+    ogTitle: "Antitoken Prediction Market",
+    ogDescription: "Predict with $ANTI and $PRO tokens",
+    ogImage: `${BASE_URL}/assets/antitoken_logo.jpeg`,
+    ogUrl: `${BASE_URL}`,
+    ogSiteName: "Antitoken",
+    xCard: "Antitoken App",
+    xTitle: "Antitoken Predicting Station",
+    xDescription:
+      "Experience the future of prediction markets with $ANTI and $PRO tokens.",
+    xImage: `${BASE_URL}/assets/antitoken_logo_large.webp`,
+    xSite: "@antitokens",
+  });
 
   return (
     <>
       <Head>
         <title>Antitoken | Predict</title>
-        <meta
-          name="description"
-          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
-        />
-
+        <meta name="description" content={metadata.description} />
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Antitoken Predicting Station" />
-        <meta
-          property="og:description"
-          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
-        />
-        <meta
-          property="og:image"
-          content={`${BASE_URL}/assets/antitoken_logo.jpeg`}
-        />
-        <meta property="og:url" content={`${BASE_URL}`} />
-        <meta property="og:site_name" content="Antitoken" />
-
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Antitoken Predicting Station" />
-        <meta
-          name="twitter:description"
-          content="Experience the future of prediction markets with $ANTI and $PRO tokens."
-        />
-        <meta
-          name="twitter:image"
-          content={`${BASE_URL}/assets/antitoken_logo_large.webp`}
-        />
-        <meta name="twitter:site" content="@antitokens" />
+        <meta property="og:title" content={metadata.ogTitle} />
+        <meta property="og:description" content={metadata.ogDescription} />
+        <meta property="og:image" content={metadata.ogImage} />
+        <meta property="og:url" content={metadata.ogUrl} />
+        <meta property="og:site_name" content={metadata.ogSiteName} />
+        {/* X Meta Tags */}
+        <meta name="twitter:card" content={metadata.xCard} />
+        <meta name="twitter:title" content={metadata.xTitle} />
+        <meta name="twitter:description" content={metadata.xDescription} />
+        <meta name="twitter:image" content={metadata.xImage} />
+        <meta name="twitter:site" content={metadata.xSite} />
         {/* Favicon and Icons */}
         <link
           rel="icon"
@@ -116,20 +128,30 @@ const Home = ({ BASE_URL }) => {
       <div className="bg-dark text-gray-100 min-h-screen relative overflow-x-hidden font-grotesk">
         <Stars length={16} />
         <Navbar trigger={trigger} />
-        <LandingPage BASE_URL={BASE_URL} setTrigger={setTrigger} />
+        <LandingPage
+          BASE_URL={BASE_URL}
+          setTrigger={setTrigger}
+          setMetadata={setMetadata}
+        />
         <Footer />
       </div>
     </>
   );
 };
 
-const LandingPage = ({ BASE_URL, setTrigger }) => {
+const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
+  const [prediction, setPrediction] = useState(1);
+  const [alreadyPosted, setAlreadyPosted] = useState(false);
+  const [newPredictionPosted, setNewPredictionPosted] = useState(false);
+  const [predictions, setPredictions] = useState(predictionsInit);
   const [started, setStarted] = useState(false);
   const [isOver, setIsOver] = useState(false);
   const [antiBalance, setAntiBalance] = useState(0);
   const [proBalance, setProBalance] = useState(0);
+  const [antiBalanceLive, setAntiBalanceLive] = useState(0);
+  const [proBalanceLive, setProBalanceLive] = useState(0);
   const [antiUsage, setAntiUsage] = useState(0);
   const [proUsage, setProUsage] = useState(0);
   const [baryonBalance, setBaryonBalance] = useState(0);
@@ -143,17 +165,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   const [showAnimation, setShowAnimation] = useState(false);
   const [currentPredictionData, setCurrentPredictionData] =
     useState(emptyMetadata);
-  const [currentClaimData, setCurrentClaimData] = useState(emptyMetadata);
+  const [currentWithdrawalData, setCurrentWithdrawalData] =
+    useState(emptyMetadata);
   const [balances, setBalances] = useState(metadataInit);
-  const [claims, setClaims] = useState(metadataInit);
+  const [withdrawals, setWithdrawals] = useState(metadataInit);
   const [predictionConfig, setPredictionConfig] = useState(emptyConfig);
   const [isMetaLoading, setIsMetaLoading] = useState(true);
+  const [, setIsMetaLoaded] = useState(false);
+  const [, setIsPageReload] = useState(false);
   const [metaError, setMetaError] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [loading, setLoading] = useState(isMetaLoading);
   const [, setDynamicsCurrent] = useState([]);
   const [, setDynamicsFinal] = useState([]);
-  const [truth, setTruth] = useState([0, 1]); // ANTI-PRO
+  const [truth] = useState([0, 1]); // ANTI-PRO
+  const [triggerAddPrediction, setTriggerAddPrediction] = useState(false);
   const isMobile = useIsMobile();
   const [predictionHistoryChartData, setPredictionHistoryChartData] =
     useState(null);
@@ -161,8 +187,57 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     useState("1D");
 
   useEffect(() => {
+    // Check if this is a page reload
+    const isReload = sessionStorage.getItem("isReload") === "true";
+    setIsPageReload(isReload);
+    if (isReload)
+      setPrediction(window.location.hash ? window.location.hash.slice(1) : 1);
+    // Set flag for next load
+    sessionStorage.setItem("isReload", "true");
+    // Clean up on component unmount (optional)
+    return () => {
+      sessionStorage.removeItem("isReload");
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchBalances = async () => {
+      const blobPredictions = await getPredictions();
+      const dataPredictions = JSON.parse(blobPredictions.message);
+      const addPredictions =
+        JSON.stringify(dataPredictions) === "{}"
+          ? predictionsInit
+          : dataPredictions;
+      return addPredictions;
+    };
+
+    // Wait for the Promise to resolve before setting the state
+    fetchBalances()
+      .then((result) => {
+        setPredictions(result);
+        if (newPredictionPosted) setPrediction(result.length);
+      })
+      .catch((error) => {
+        console.error("Error fetching predictions:", error);
+        setPredictions(predictionsInit);
+      });
+  }, [refresh, newPredictionPosted]);
+
+  useEffect(() => {
+    // Update metadata based on some condition or data
+    setMetadata({
+      description: predictions[prediction]?.title,
+      ogDescription: predictions[prediction]?.title,
+      xTitle: predictions[prediction]?.title,
+      xDescription: predictions[prediction]?.description,
+    });
+  }, [prediction, predictions]);
+
+  useEffect(() => {
     setLoading(isMetaLoading);
   }, [isMetaLoading]);
+
+  const marker = "₁";
 
   const xAxisLabelPlugin = {
     id: "xAxisLabel",
@@ -196,7 +271,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         const dateStr = shortenTick(item, useBinning);
         // Find all occurrences of this date
         const allIndices = chart.data.labels.reduce((acc, label, i) => {
-          if (label === dateStr) acc.push(i);
+          if (label === dateStr || label === dateStr + marker) acc.push(i);
           return acc;
         }, []);
         // If we have enough occurrences, use the one matching our index
@@ -320,6 +395,35 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     },
   };
 
+  const handlePredictionCreation = async (formData) => {
+    try {
+      setTriggerAddPrediction(false);
+      const blobNewPrediction = await addPrediction(
+        wallet.publicKey,
+        formData,
+        predictions.length + 1
+      );
+      if (blobNewPrediction.status === 202) {
+        toast.error(blobNewPrediction.message);
+        return;
+      }
+      // Update predictions state with new prediction
+      const updatedPredictions = { ...predictions };
+      updatedPredictions[Object.keys(predictions).length + 1] = formData;
+      setNewPredictionPosted(true);
+      setPredictions(updatedPredictions);
+      updatePrediction(Object.keys(updatedPredictions).length, false);
+      // Force refresh of balances data
+      setRefresh(true);
+      // Set alreadyPosted to prevent multiple submissions
+      setAlreadyPosted(true);
+      toast.success(blobNewPrediction.message);
+    } catch (error) {
+      console.error("Error creating prediction:", error);
+      toast.error("Failed to create prediction");
+    }
+  };
+
   const handlePredictionSubmitted = (state, event) => {
     if (state) {
       // Store the submitted event data
@@ -337,13 +441,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     setTimeout(() => setShowAnimation(state), 100);
   };
 
-  const handleClaimSubmitted = (state, claim) => {
+  const handleWithdrawalSubmitted = (state, withdrawal) => {
     if (state) {
-      setCurrentClaimData(claim);
+      setCurrentWithdrawalData(withdrawal);
       setRefresh(true);
     } else {
       // Handle error case
-      console.error("Reclaim submission failed:", claim.error);
+      console.error("Rewithdrawal submission failed:", withdrawal.error);
     }
     setDataUpdated(state);
     setTrigger(state);
@@ -368,36 +472,45 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, [metaError]);
 
   useEffect(() => {
-    if (balances !== metadataInit) {
-      setStarted(new Date() < new Date(balances.startTime));
-      setIsOver(new Date() > new Date(balances.endTime));
+    if (predictions[prediction]?.schedule) {
+      setStarted(new Date() > new Date(predictions[prediction].schedule[0]));
+      setIsOver(new Date() > new Date(predictions[prediction].schedule[1]));
     }
-  }, [balances]);
+  }, [predictions, prediction]);
 
   useEffect(() => {
     if (refresh && !wallet.disconnecting) {
-      const fetchBalancesWithClaims = async () => {
+      const fetchBalancesWithWithdrawals = async () => {
         try {
-          setRefresh(false);
           setIsMetaLoading(true);
           const blobBalance = await getBalances();
-          const blobClaim = await getClaims();
+          const blobWithdrawal = await getWithdrawals();
           const dataBalance = decompressMetadata(
             JSON.parse(blobBalance.message)
           );
-          const dataClaim = decompressMetadata(JSON.parse(blobClaim.message));
+          const dataWithdrawal = decompressMetadata(
+            JSON.parse(blobWithdrawal.message)
+          );
 
-          const colliderDistribution =
+          // Only check for wallet permissions if wallet is connected
+          if (wallet.publicKey) {
+            const blobCheck = await checkPredictions(wallet.publicKey);
+            const dataCheck = blobCheck.message;
+            setAlreadyPosted(dataCheck === "NOT_ALLOWED");
+          } else {
+            setAlreadyPosted(false); // Reset posting status when wallet disconnects
+          }
+
+          const collider =
             baryonBalance >= 0 || photonBalance >= 0
               ? collide(baryonBalance, photonBalance, true)
               : emptyGaussian;
 
-          const totalDistribution =
-            dataBalance.totalDistribution.u >= 0 &&
-            dataBalance.totalDistribution.s >= 0
+          const plasma =
+            dataBalance.plasma.mean >= 0 && dataBalance.plasma.stddev >= 0
               ? collide(
-                  dataBalance.emissionsData.baryonTokens,
-                  dataBalance.emissionsData.photonTokens,
+                  dataBalance.emission.baryon,
+                  dataBalance.emission.photon,
                   true
                 )
               : emptyGaussian;
@@ -405,51 +518,47 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           setBalances({
             startTime: dataBalance.startTime,
             endTime: dataBalance.endTime,
-            colliderDistribution: colliderDistribution,
-            totalDistribution: totalDistribution,
-            emissionsData: dataBalance.emissionsData,
-            collisionsData: dataBalance.collisionsData,
-            eventsOverTime: dataBalance.eventsOverTime,
+            collider: collider,
+            plasma: plasma,
+            emission: dataBalance.emission,
+            collision: dataBalance.collision,
+            events: dataBalance.events,
           });
 
           setBags({
-            baryon: dataBalance.totalDistribution.bags.baryon,
-            photon: dataBalance.totalDistribution.bags.photon,
-            baryonPool: dataBalance.emissionsData.baryonTokens,
-            photonPool: dataBalance.emissionsData.photonTokens,
-            anti: dataBalance.totalDistribution.bags.anti,
-            pro: dataBalance.totalDistribution.bags.pro,
-            antiPool: dataBalance.collisionsData.antiTokens,
-            proPool: dataBalance.collisionsData.proTokens,
-            wallets: dataBalance.totalDistribution.wallets,
+            baryon: dataBalance.plasma.bags.baryon,
+            photon: dataBalance.plasma.bags.photon,
+            baryonPool: dataBalance.emission.baryon,
+            photonPool: dataBalance.emission.photon,
+            anti: dataBalance.plasma.bags.anti,
+            pro: dataBalance.plasma.bags.pro,
+            antiPool: dataBalance.collision.anti,
+            proPool: dataBalance.collision.pro,
+            wallets: dataBalance.plasma.wallets,
           });
 
           const thisAntiUsage = wallet.publicKey
-            ? dataBalance.totalDistribution.bags.anti[
-                dataBalance.totalDistribution.wallets.indexOf(
-                  wallet.publicKey.toString()
-                )
+            ? dataBalance.plasma.bags.anti[
+                dataBalance.plasma.wallets.indexOf(wallet.publicKey.toString())
               ]
             : 0;
           const thisProUsage = wallet.publicKey
-            ? dataBalance.totalDistribution.bags.pro[
-                dataBalance.totalDistribution.wallets.indexOf(
-                  wallet.publicKey.toString()
-                )
+            ? dataBalance.plasma.bags.pro[
+                dataBalance.plasma.wallets.indexOf(wallet.publicKey.toString())
               ]
             : 0;
 
           const rewardCurrent = equalise(
-            dataBalance.totalDistribution.bags.baryon,
-            dataBalance.totalDistribution.bags.photon,
-            dataBalance.totalDistribution.bags.anti,
-            dataBalance.totalDistribution.bags.pro,
-            dataBalance.collisionsData.antiTokens,
-            dataBalance.collisionsData.proTokens,
+            dataBalance.plasma.bags.baryon,
+            dataBalance.plasma.bags.photon,
+            dataBalance.plasma.bags.anti,
+            dataBalance.plasma.bags.pro,
+            dataBalance.collision.anti,
+            dataBalance.collision.pro,
             antiData && proData
               ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
               : [1, 1],
-            dataBalance.totalDistribution.wallets,
+            dataBalance.plasma.wallets,
             [
               thisAntiUsage > thisProUsage ? 1 : 0,
               thisAntiUsage < thisProUsage ? 1 : 0,
@@ -457,71 +566,75 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           );
 
           const rewardFinal = equalise(
-            dataBalance.totalDistribution.bags.baryon,
-            dataBalance.totalDistribution.bags.photon,
-            dataBalance.totalDistribution.bags.anti,
-            dataBalance.totalDistribution.bags.pro,
-            dataBalance.collisionsData.antiTokens,
-            dataBalance.collisionsData.proTokens,
+            dataBalance.plasma.bags.baryon,
+            dataBalance.plasma.bags.photon,
+            dataBalance.plasma.bags.anti,
+            dataBalance.plasma.bags.pro,
+            dataBalance.collision.anti,
+            dataBalance.collision.pro,
             antiData && proData
               ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
               : [1, 1],
-            dataBalance.totalDistribution.wallets,
+            dataBalance.plasma.wallets,
             truth
           );
 
           setDynamicsCurrent(rewardCurrent ? rewardCurrent.normalised : []);
           setDynamicsFinal(rewardFinal ? rewardFinal.normalised : []);
 
-          setClaims({
-            startTime: dataClaim.startTime,
-            endTime: dataClaim.endTime,
-            colliderDistribution: colliderDistribution,
-            totalDistribution: totalDistribution,
-            emissionsData: dataClaim.emissionsData,
-            collisionsData: dataClaim.collisionsData,
-            eventsOverTime: dataClaim.eventsOverTime,
+          setWithdrawals({
+            startTime: dataWithdrawal.startTime,
+            endTime: dataWithdrawal.endTime,
+            collider: collider,
+            plasma: plasma,
+            emission: dataWithdrawal.emission,
+            collision: dataWithdrawal.collision,
+            events: dataWithdrawal.events,
           });
         } catch (err) {
           console.error("Error fetching metadata:", err);
           setMetaError(err);
         } finally {
           setIsMetaLoading(false);
+          setIsMetaLoaded(true);
           setRefresh(false);
         }
       };
-      fetchBalancesWithClaims();
+      // Fetch whenever prediction changes or refresh is triggered
+      if (
+        prediction >= 0 &&
+        (String(prediction) === window.location.hash.slice(1) ||
+          !window.location.hash)
+      ) {
+        fetchBalancesWithWithdrawals();
+      }
     }
     if (wallet.disconnecting) {
       setDynamicsCurrent([]);
       setDynamicsFinal([]);
     }
   }, [
+    prediction,
     refresh,
     baryonBalance,
     photonBalance,
     antiData,
     proData,
-    started,
     truth,
     wallet,
     wallet.disconnecting,
-    wallet.connected,
+    wallet.publicKey,
   ]);
 
   useEffect(() => {
     setPredictionConfig({
-      startTime: balances.startTime || "-",
-      endTime: balances.endTime || "-",
-      antiLive:
-        balances.collisionsData.antiTokens - claims.collisionsData.antiTokens ||
-        0,
-      proLive:
-        balances.collisionsData.proTokens - claims.collisionsData.proTokens ||
-        0,
+      startTime: predictions[prediction]?.schedule?.[0] || "-",
+      endTime: predictions[prediction]?.schedule?.[1] || "-",
+      antiLive: balances.collision.anti || 0,
+      proLive: balances.collision.pro || 0,
       convertToLocaleTime,
     });
-  }, [balances, claims]);
+  }, [balances, predictions, prediction]);
 
   useEffect(() => {
     const fetchTokenData = async () => {
@@ -563,47 +676,106 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
   }, []);
 
   useEffect(() => {
-    const checkBalance = async () => {
-      const [antiBalanceResult, proBalanceResult] = await Promise.all([
+    // Only handle URL hash after predictions are loaded
+    if (isMetaLoading) {
+      return; // Exit early if still loading
+    }
+
+    // Function to handle hash changes
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      const predictionNumber = parseInt(hash);
+
+      // Validate prediction number exists in predictions object
+      if (
+        !isNaN(predictionNumber) &&
+        predictionNumber >= 0 &&
+        predictions[predictionNumber]
+      ) {
+        setPrediction(predictionNumber);
+      } else {
+        // If invalid prediction number or prediction doesn't exist, default to 1
+        setPrediction(1);
+        // Use history.replaceState to update URL without triggering a new history entry
+        history.replaceState(null, "", "#1");
+      }
+    };
+
+    // Handle initial hash on component mount or when predictions finish loading
+    handleHashChange();
+    // Add event listener for hash changes
+    window.addEventListener("hashchange", handleHashChange);
+    // Cleanup listener on component unmount
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, [predictions, isMetaLoading]);
+
+  // Function to update hash when prediction changes programmatically
+  const updatePrediction = (newPrediction, check = true) => {
+    if (predictions[newPrediction] || !check) {
+      window.location.hash = newPrediction.toString();
+      setPrediction(newPrediction);
+    } else {
+      console.warn(`Prediction ${newPrediction} does not exist`);
+    }
+  };
+
+  useEffect(() => {
+    const checkSupply = async () => {
+      const [antiBalanceLive, proBalanceLive] = await Promise.all([
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
+      setAntiBalanceLive(!wallet.disconnecting ? antiBalanceLive : 0);
+      setProBalanceLive(!wallet.disconnecting ? proBalanceLive : 0);
+    };
+
+    if (wallet.publicKey || dataUpdated) {
+      checkSupply();
+    }
+  }, [wallet, dataUpdated, wallet.disconnecting, wallet.publicKey]);
+
+  useEffect(() => {
+    const checkBalance = async () => {
       const _balance = await getBalance(wallet.publicKey);
       const balance = JSON.parse(_balance.message);
-      const _claim = await getClaim(wallet.publicKey);
-      const claim = JSON.parse(_claim.message);
+      const _withdrawal = await getWithdrawal(wallet.publicKey);
+      const withdrawal = JSON.parse(_withdrawal.message);
       setAntiBalance(
         !wallet.disconnecting
-          ? antiBalanceResult - balance.anti + claim.anti
+          ? antiBalanceLive - balance.anti + withdrawal.anti
           : 0
       );
       setProBalance(
-        !wallet.disconnecting ? proBalanceResult - balance.pro + claim.pro : 0
+        !wallet.disconnecting
+          ? proBalanceLive - balance.pro + withdrawal.pro
+          : 0
       );
       setAntiUsage(
         !wallet.disconnecting
-          ? claim.anti + claim.pro > 0
-            ? claim.anti - balance.anti
+          ? withdrawal.anti + withdrawal.pro > 0
+            ? withdrawal.anti - balance.anti
             : balance.anti
           : 0
       );
       setProUsage(
         !wallet.disconnecting
-          ? claim.anti + claim.pro > 0
-            ? claim.pro - balance.pro
+          ? withdrawal.anti + withdrawal.pro > 0
+            ? withdrawal.pro - balance.pro
             : balance.pro
           : 0
       );
       setBaryonBalance(
         !wallet.disconnecting
-          ? claim.baryon + claim.photon > 0
+          ? withdrawal.baryon + withdrawal.photon > 0
             ? 0
             : balance.baryon
           : 0
       );
       setPhotonBalance(
         !wallet.disconnecting
-          ? claim.photon + claim.baryon > 0
+          ? withdrawal.photon + withdrawal.baryon > 0
             ? 0
             : balance.photon
           : 0
@@ -612,9 +784,16 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
     if (wallet.publicKey || dataUpdated) {
       checkBalance();
-      setRefresh(true);
     }
-  }, [wallet, dataUpdated, wallet.disconnecting]);
+  }, [
+    wallet,
+    dataUpdated,
+    wallet.publicKey,
+    wallet.disconnecting,
+    prediction,
+    antiBalanceLive,
+    proBalanceLive,
+  ]);
 
   // Create a ref to store the chart instance
   const chartRef = useRef(null);
@@ -648,28 +827,38 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
 
       const thisBin =
         context.p0DataIndex +
-        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+        balances.events.cumulative.timestamps.findIndex((timestamp) =>
           parseDateToISO(timestamp, useBinning)
         );
       const nextBin =
         context.p1DataIndex +
-        balances.eventsOverTime.cumulative.timestamps.findIndex((timestamp) =>
+        balances.events.cumulative.timestamps.findIndex((timestamp) =>
           parseDateToISO(timestamp, useBinning)
         );
-      const startValue = balances.eventsOverTime.cumulative.photon[thisBin];
-      const endValue = balances.eventsOverTime.cumulative.photon[nextBin];
+      const startValue = getPlotColor(
+        balances.events.cumulative.pro,
+        balances.events.cumulative.anti,
+        thisBin
+      );
+      const endValue = getPlotColor(
+        balances.events.cumulative.pro,
+        balances.events.cumulative.anti,
+        nextBin
+      );
+      const allColors = getAllPlotColor(
+        balances.events.cumulative.pro,
+        balances.events.cumulative.anti
+      );
       const limits = [
-        Math.min(...balances.eventsOverTime.cumulative.photon),
-        Math.max(...balances.eventsOverTime.cumulative.photon) === 0
-          ? 50
-          : Math.max(...balances.eventsOverTime.cumulative.photon),
+        Math.min(...allColors),
+        Math.max(...allColors) === 0 ? 50 : Math.max(...allColors),
       ];
       const currentTick = parseDateToISO(
-        balances.eventsOverTime.cumulative.timestamps[thisBin],
+        balances.events.cumulative.timestamps[thisBin],
         useBinning
       );
       const nextTick = parseDateToISO(
-        balances.eventsOverTime.cumulative.timestamps[nextBin],
+        balances.events.cumulative.timestamps[nextBin],
         useBinning
       );
       const nowTime = new Date().toISOString();
@@ -714,7 +903,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               startValue,
               limits[0],
               limits[1],
-              Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+              Math.max(...allColors) === 0
                 ? [128, 128, 128, 0.5]
                 : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
@@ -737,10 +926,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               startValue,
               limits[0],
               limits[1],
-              balances.eventsOverTime.cumulative.photon.findIndex(
-                (value) => value !== 0
-              ) >= nextBin ||
-                Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+              allColors.findIndex((value) => value !== 0) >= nextBin ||
+                Math.max(...allColors) === 0
                 ? [128, 128, 128, 0.5]
                 : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
@@ -752,10 +939,8 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               endValue,
               limits[0],
               limits[1],
-              balances.eventsOverTime.cumulative.photon.findIndex(
-                (value) => value !== 0
-              ) >= nextBin ||
-                Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+              allColors.findIndex((value) => value !== 0) >= nextBin ||
+                Math.max(...allColors) === 0
                 ? [128, 128, 128, 0.5]
                 : [66, 255, 214, 0.75],
               [3, 173, 252, 0.75]
@@ -770,20 +955,22 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     };
 
     // Prepare the chart data
-    const plotable = balances.eventsOverTime.cumulative.timestamps
+    const plotable = balances.events.cumulative.timestamps
       .map((timestamp, index) => {
         const dateISO = parseDateToISO(timestamp, useBinning);
         if (dateISO) {
-          const pro = balances.eventsOverTime.cumulative.pro[index];
-          const anti = balances.eventsOverTime.cumulative.anti[index];
+          const pro = balances.events.cumulative.pro[index];
+          const anti = balances.events.cumulative.anti[index];
           const total = pro + anti;
           return total === 0 ? 50 : (pro / total) * 100;
         }
         return null;
       })
       .filter((value) => value !== null);
-    const labels = balances.eventsOverTime.cumulative.timestamps.map((value) =>
-      shortenTick(value, useBinning)
+    const labels = addRepetitionMarkers(
+      balances.events.cumulative.timestamps.map((value) =>
+        shortenTick(value, useBinning)
+      )
     );
 
     const chartData = {
@@ -807,16 +994,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         {
           // Add a hidden dataset for the certainty tooltip
           label: "Certainty",
-          data: balances.eventsOverTime.cumulative.timestamps
+          data: balances.events.cumulative.timestamps
             .map((timestamp, index) => {
               const dateISO = parseDateToISO(timestamp, useBinning);
               if (dateISO) {
                 const total =
-                  balances.eventsOverTime.cumulative.photon[index] +
-                  balances.eventsOverTime.cumulative.baryon[index];
+                  balances.events.cumulative.photon[index] +
+                  balances.events.cumulative.baryon[index];
                 return total > 0
-                  ? (balances.eventsOverTime.cumulative.photon[index] / total) *
-                      100
+                  ? (balances.events.cumulative.photon[index] / total) * 100
                   : 50;
               }
               return null;
@@ -832,7 +1018,10 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           hoverBorderColor: "transparent",
         },
       ],
-      plugins: [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin],
+      plugins:
+        labels.length > 0
+          ? [verticalLinesPlugin, xAxisLabelPlugin, nowTimePlugin]
+          : [],
       options: {
         layout: {
           padding: {
@@ -880,7 +1069,9 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 }
               : {
                   marker:
-                    balances.startTime === "-" || balances.endTime === "-"
+                    balances.startTime === "-" ||
+                    balances.endTime === "-" ||
+                    isOver
                       ? []
                       : [
                           useBinning !== "hourly"
@@ -897,18 +1088,20 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         ],
                   values: [labels, plotable],
                   labels:
-                    balances.startTime === "-" || balances.endTime === "-"
+                    balances.startTime === "-" ||
+                    balances.endTime === "-" ||
+                    isOver
                       ? []
                       : findBinForTimestamp(
                           new Date().toISOString(),
-                          balances.eventsOverTime.cumulative.timestamps.map(
-                            (value) => parseDateToISO(value)
+                          balances.events.cumulative.timestamps.map((value) =>
+                            parseDateToISO(value)
                           )
                         ) ===
                         findBinForTimestamp(
                           balances.startTime,
-                          balances.eventsOverTime.cumulative.timestamps.map(
-                            (value) => parseDateToISO(value)
+                          balances.events.cumulative.timestamps.map((value) =>
+                            parseDateToISO(value)
                           )
                         )
                       ? []
@@ -931,11 +1124,17 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             callbacks: {
               label: (context) => {
                 const value = context.raw;
+                const allColors = getAllPlotColor(
+                  balances.events.cumulative.pro,
+                  balances.events.cumulative.anti
+                );
                 const currentTick = parseDateToISO(
-                  balances.eventsOverTime.cumulative.timestamps.find(
+                  balances.events.cumulative.timestamps.find(
                     (timestamp) =>
                       shortenTick(timestamp, useBinning) ===
-                      context.chart.data.labels[context.dataIndex]
+                        context.chart.data.labels[context.dataIndex] ||
+                      shortenTick(timestamp, useBinning) + marker ===
+                        context.chart.data.labels[context.dataIndex]
                   ),
                   useBinning
                 );
@@ -946,14 +1145,13 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     new Date(balances.startTime).getTime() ||
                   new Date(currentTick).getTime() >
                     new Date(balances.endTime).getTime() ||
-                  balances.eventsOverTime.cumulative.photon.findIndex(
+                  balances.events.cumulative.photon.findIndex(
                     (value) => value !== 0
                   ) > context.dataIndex
                 ) {
                   return ` `;
                 }
-                return Math.max(...balances.eventsOverTime.cumulative.photon) >
-                  0
+                return Math.max(...allColors) > 0
                   ? ` ${value.toFixed(0).padStart(2)}% ${
                       context.datasetIndex === 0 ? "expectation" : "uncertainty"
                     }`
@@ -961,15 +1159,18 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               },
               labelColor: (context) => {
                 const value = context.raw;
-                const limits = [
-                  Math.min(...balances.eventsOverTime.cumulative.photon),
-                  Math.max(...balances.eventsOverTime.cumulative.photon),
-                ];
+                const allColors = getAllPlotColor(
+                  balances.events.cumulative.pro,
+                  balances.events.cumulative.anti
+                );
+                const limits = [Math.min(...allColors), Math.max(...allColors)];
                 const currentTick = parseDateToISO(
-                  balances.eventsOverTime.cumulative.timestamps.find(
+                  balances.events.cumulative.timestamps.find(
                     (timestamp) =>
                       shortenTick(timestamp, useBinning) ===
-                      context.chart.data.labels[context.dataIndex]
+                        context.chart.data.labels[context.dataIndex] ||
+                      shortenTick(timestamp, useBinning) + marker ===
+                        context.chart.data.labels[context.dataIndex]
                   ),
                   useBinning
                 );
@@ -981,7 +1182,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     new Date(balances.startTime).getTime() ||
                   new Date(currentTick).getTime() >
                     new Date(balances.endTime).getTime() ||
-                  Math.max(...balances.eventsOverTime.cumulative.photon) === 0
+                  Math.max(...allColors) === 0
                 ) {
                   return {
                     backgroundColor: "#808080",
@@ -994,25 +1195,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     context.datasetIndex === 0 ? 0 : limits[0],
                     context.datasetIndex === 0 ? 100 : limits[1],
                     context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      ? allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                         ? [128, 128, 128, 1]
                         : [255, 51, 0, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      : allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                       ? [128, 128, 128, 1]
                       : [66, 255, 214, 0.75],
                     context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      ? allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                         ? [128, 128, 128, 1]
                         : [0, 219, 84, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      : allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                       ? [128, 128, 128, 1]
                       : [3, 173, 252, 0.75]
                   ),
@@ -1021,25 +1218,21 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     context.datasetIndex === 0 ? 0 : limits[0],
                     context.datasetIndex === 0 ? 100 : limits[1],
                     context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      ? allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                         ? [128, 128, 128, 1]
                         : [255, 51, 0, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      : allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                       ? [128, 128, 128, 1]
                       : [66, 255, 214, 0.75],
                     context.datasetIndex === 0
-                      ? balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      ? allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                         ? [128, 128, 128, 1]
                         : [0, 219, 84, 1]
-                      : balances.eventsOverTime.cumulative.photon.findIndex(
-                          (value) => value !== 0
-                        ) > context.dataIndex
+                      : allColors.findIndex((value) => value !== 0) >
+                        context.dataIndex
                       ? [128, 128, 128, 1]
                       : [3, 173, 252, 0.75]
                   ),
@@ -1070,7 +1263,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               maxRotation: isMobile ? 0 : 90,
               color: "#d3d3d399",
               padding: isMobile ? 10 : 15,
-              callback: function (value, index) {
+              callback: function (_, index) {
                 if (
                   index === 0 &&
                   useBinning !== "daily" &&
@@ -1084,7 +1277,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
           },
           y: {
             grid: {
-              display: true,
+              display: labels.length > 0,
               color: "rgba(255, 255, 255, 0.05)",
             },
             ticks: {
@@ -1184,7 +1377,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     // Force a chart update after the initial render
     const timeoutId = setTimeout(() => {
       if (chartRef.current) {
-        chartRef.current.update("none"); // Update without animation
+        chartRef.current.meanpdate("none"); // Update without animation
       }
     }, 0);
 
@@ -1192,7 +1385,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [balances, started]);
+  }, [balances, started, isOver]);
 
   return (
     <>
@@ -1244,22 +1437,107 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             }`}
           >
             <div className="flex flex-col w-full lg:w-3/4">
-              <div className="-ml-2">
-                {isMobile && <TimeTicker fontSize={11} />}
-              </div>
-              <div className="bg-dark-card p-4 rounded w-full mb-4 border border-gray-800">
-                <div className="flex flex-row items-center mb-2">
-                  <div className="text-2xl text-gray-300 text-left font-medium">
-                    Will SOL overtake ETH in 2025?&nbsp;
+              <div className="flex flex-row justify-between">
+                {isMobile && (
+                  <div className="-ml-2">
+                    <TimeTicker
+                      fontSize={isMobile ? 12 : 12}
+                      isMobile={isMobile}
+                    />
                   </div>
-                  <span className="relative group">
-                    <span className="cursor-pointer text-sm text-gray-400">
-                      &#9432;
-                      <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                        {`Truth is measured in terms of Market Capitalisations`}
+                )}
+                {!isMobile && <div> </div>}
+                <div className="flex flex-row items-center -mr-2">
+                  <button
+                    className="bg-transparent text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:text-gray-300 disabled:cursor-not-allowed relative group"
+                    onClick={() => updatePrediction(prediction - 1)}
+                  >
+                    <svg
+                      className="w-6 h-6 rotate-180"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 15v3c0 .5523.44772 1 1 1h9.5M3 15v-4m0 4h9m-9-4V6c0-.55228.44772-1 1-1h16c.5523 0 1 .44772 1 1v5H3Zm5 0v8m4-8v8m7.0999-1.0999L21 16m0 0-1.9001-1.9001M21 16h-5"
+                      />
+                    </svg>
+                    <span className="cursor-pointer">
+                      <span
+                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-3/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                      >
+                        {`Previous Prediction`}
                       </span>
                     </span>
-                  </span>
+                  </button>
+                  <div className="text-gray-600 text-xs">|</div>
+                  <button
+                    className="bg-transparent text-accent-secondary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:text-gray-300 disabled:cursor-not-allowed relative group"
+                    onClick={() => updatePrediction(prediction + 1)}
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 15v3c0 .5523.44772 1 1 1h9.5M3 15v-4m0 4h9m-9-4V6c0-.55228.44772-1 1-1h16c.5523 0 1 .44772 1 1v5H3Zm5 0v8m4-8v8m7.0999-1.0999L21 16m0 0-1.9001-1.9001M21 16h-5"
+                      />
+                    </svg>
+                    <span className="cursor-pointer">
+                      <span
+                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-full lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                      >
+                        {`Next Prediction`}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div className="bg-dark-card p-4 rounded-lg w-full mb-4 border border-gray-800">
+                <div className="flex flex-row justify-between items-center mb-2">
+                  <div className="flex flex-row items-center mb-2 w-3/4">
+                    <div className="text-2xl text-gray-300 text-left font-medium">
+                      {predictions[prediction]
+                        ? predictions[prediction].title
+                        : ""}
+                      &nbsp;
+                    </div>
+                    <span className="relative group">
+                      <span className="cursor-pointer text-sm text-gray-400">
+                        &#9432;
+                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md min-w-64 max-w-auto -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                          {predictions[prediction]
+                            ? predictions[prediction].description
+                            : ""}
+                        </span>
+                      </span>
+                    </span>
+                  </div>
+                  <button
+                    className="bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
+                    onClick={() => setTriggerAddPrediction(true)}
+                    disabled={
+                      alreadyPosted || !wallet.connected || wallet.disconnecting
+                    }
+                  >
+                    Add Prediction
+                  </button>
                 </div>
                 <div className="flex flex-row justify-between">
                   <div className="text-[12px] text-gray-500 text-left">
@@ -1271,10 +1549,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         >
                           {`Prediction market opening date & time: ${
                             predictionConfig.startTime !== "-"
-                              ? parseToUTC(
-                                  predictionConfig.startTime,
-                                  isMobile
-                                ) + " UTC"
+                              ? isMobile
+                                ? parseToUTC(
+                                    predictionConfig.startTime,
+                                    isMobile
+                                  ) + " UTC"
+                                : parseToUTC(
+                                    predictionConfig.startTime,
+                                    isMobile
+                                  ).split(",")[0]
                               : "..."
                           }`}
                         </span>
@@ -1295,7 +1578,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                           : parseToUTC(predictionConfig.startTime, isMobile)
                         : "..."}
                     </span>
-                    &nbsp;&nbsp;
+                    &nbsp;
                     {predictionConfig.startTime !== "-" && !isMobile && (
                       <span className="font-sfmono text-gray-600 text-[10px]">
                         UTC
@@ -1333,8 +1616,15 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                         >
                           {`Prediction market closing date & time: ${
                             predictionConfig.endTime !== "-"
-                              ? parseToUTC(predictionConfig.endTime, isMobile) +
-                                " UTC"
+                              ? isMobile
+                                ? parseToUTC(
+                                    predictionConfig.endTime,
+                                    isMobile
+                                  ) + " UTC"
+                                : parseToUTC(
+                                    predictionConfig.endTime,
+                                    isMobile
+                                  ).split(",")[0]
                               : "..."
                           }`}
                         </span>
@@ -1400,30 +1690,40 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                 {predictionHistoryChartData && (
                   <div className={`flex flex-col w-full`}>
                     <div className={`flex justify-between items-center w-full`}>
-                      <div
-                        className={`flex flex-row ${
-                          !isMobile ? "" : "justify-between w-full"
-                        }`}
-                      >
-                        <h2 className="text-xl text-gray-300 text-left font-medium flex flex-row items-center">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        </h2>
-                        <div className="flex flex-row items-center">
-                          {!isMobile && (
-                            <TimeTicker
-                              fontSize={isMobile ? 12 : 12}
-                              isMobile={isMobile}
+                      <div className="flex flex-row">
+                        <div
+                          className={`flex flex-row ${
+                            !isMobile ? "items-center" : "justify-between"
+                          }`}
+                        >
+                          <div className="-mt-[1px] text-xl text-gray-300 text-left font-medium flex flex-row items-center">
+                            <div
+                              className={`w-2 h-2 rounded-full ${
+                                started && !isOver
+                                  ? "animate-pulse bg-green-500"
+                                  : "bg-gray-500"
+                              }`}
+                            ></div>
+                            {isMobile && <div>&nbsp;&nbsp;&nbsp;</div>}
+                          </div>
+                          <div className={isMobile ? `pt-0` : `-mt-[2.5px]`}>
+                            {!isMobile && (
+                              <TimeTicker
+                                fontSize={isMobile ? 12 : 12}
+                                isMobile={isMobile}
+                              />
+                            )}
+                          </div>
+                          <div className={isMobile ? `pt-1` : `pt-[4px]`}>
+                            <TimeCompletionPie
+                              startTime={
+                                predictions[prediction]?.schedule?.[0] || ""
+                              }
+                              endTime={
+                                predictions[prediction]?.schedule?.[1] || ""
+                              }
+                              size={isMobile ? 20 : 20}
                             />
-                          )}
-                          <div className="font-grotesk">
-                            <span className="relative group">
-                              <span className="cursor-pointer text-xs text-gray-500">
-                                &#9432;
-                              </span>
-                              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                                {`Displays the global expectation of the outcome over time`}
-                              </span>
-                            </span>
                           </div>
                         </div>
                       </div>
@@ -1546,7 +1846,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                     }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-                      <div className="mr-1">Switch to Claim</div>
+                      <div className="mr-1">Switch to Withdrawal</div>
                       <svg
                         width="13"
                         height="13"
@@ -1574,6 +1874,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   </button>
                 </div>
                 <Collider
+                  prediction={prediction}
                   wallet={wallet}
                   antiBalance={antiBalance}
                   proBalance={proBalance}
@@ -1588,7 +1889,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   antiData={antiData}
                   proData={proData}
                   bags={bags}
-                  inactive={isOver}
+                  inactive={!started || isOver}
                   isMetaLoading={isMetaLoading}
                 />
               </div>
@@ -1596,7 +1897,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
               <div>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
-                    Claim
+                    Withdrawal
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"
@@ -1644,7 +1945,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
                   photonBalance={photonBalance}
                   disabled={!wallet.connected}
                   BASE_URL={BASE_URL}
-                  onClaimSubmitted={handleClaimSubmitted}
+                  onWithdrawalSubmitted={handleWithdrawalSubmitted}
                   clearFields={clearFields}
                   antiData={antiData}
                   proData={proData}
@@ -1678,6 +1979,12 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
         isVisible={showBuyTokensModal}
         setIsVisible={setShowBuyTokensModal}
       />
+      <PredictionMetaModal
+        wallet={wallet}
+        isVisible={triggerAddPrediction}
+        setIsVisible={setTriggerAddPrediction}
+        onSubmit={handlePredictionCreation}
+      />
       {/* Animation */}
       {showAnimation && (
         <div className="w-screen h-screen fixed top-0 left-0 z-50">
@@ -1693,7 +2000,7 @@ const LandingPage = ({ BASE_URL, setTrigger }) => {
             metadata={
               showCollider
                 ? JSON.stringify(currentPredictionData)
-                : JSON.stringify(currentClaimData)
+                : JSON.stringify(currentWithdrawalData)
             }
             onComplete={() => {
               setShowAnimation(false);

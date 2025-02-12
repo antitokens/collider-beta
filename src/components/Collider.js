@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { recordPrediction } from "../utils/api";
 import { collide } from "../utils/collider";
 import { equalise } from "../utils/equaliser";
-import BinaryOrbit from "../components/BinaryOrbit";
+import BinaryOrbit from "./animation/BinaryOrbit";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";

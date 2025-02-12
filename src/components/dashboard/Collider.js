@@ -9,13 +9,11 @@ import {
   shortenTick,
   detectBinningStrategy,
   parseCustomDate,
-} from "../utils/utils";
-import plugin from "@tailwindcss/typography";
+} from "../../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
 
 /* Collider Dashboard */
-
 const DashboardCollider = ({
   emissionsData,
   collisionsData,
@@ -744,11 +742,11 @@ const DashboardCollider = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-black border-x border-b border-gray-800 rounded-b-lg">
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{"Token Collisions"}</div>
+            <div>{"Deposits"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of PRO & ANTI collisions in the pool`}
+                {`Displays the distribution of PRO & ANTI deposited in the pool`}
               </span>
             </div>
           </div>
@@ -761,11 +759,11 @@ const DashboardCollider = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{"Token Emissions"}</div>
+            <div>{"Collisions"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of BARYON & PHOTON emissions in the pool`}
+                {`Displays the distribution of BARYON & PHOTON emitted in the pool`}
               </span>
             </div>
           </div>
@@ -782,7 +780,7 @@ const DashboardCollider = ({
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the sizes of PRO & ANTI collisions, and PHOTON & BARYON emissions in the pool`}
+                {`Displays the sizes of PRO & ANTI deposits, and emitted PHOTON & BARYON in the pool`}
               </span>
             </div>
           </div>
@@ -798,7 +796,7 @@ const DashboardCollider = ({
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the count of PRO & ANTI collisions, and PHOTON & BARYON emissions over time`}
+                {`Displays the count of PRO & ANTI deposits, and emitted PHOTON & BARYON over time`}
               </span>
             </div>
           </div>

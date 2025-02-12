@@ -8,12 +8,11 @@ import {
   generateGradientColor,
   shortenTick,
   detectBinningStrategy,
-} from "../utils/utils";
+} from "../../utils/utils";
 
 Chart.register(ChartDataLabels, ...registerables);
 
 /* Inverter Dashboard */
-
 const DashboardInverter = ({
   emissionsData,
   collisionsData,
@@ -758,11 +757,11 @@ const DashboardInverter = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-black border-x border-b border-gray-800 rounded-b-lg">
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{"Emission Burns"}</div>
+            <div>{"Inversions"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of BARYON & PHOTON burns in the pool`}
+                {`Displays the distribution of BARYON & PHOTON inversions in the pool`}
               </span>
             </div>
           </div>
@@ -775,11 +774,11 @@ const DashboardInverter = ({
         </div>
         <div className="p-4 rounded-lg">
           <div className="flex justify-center gap-2 items-center font-grotesk text-gray-200">
-            <div>{"Collision Reclaims"}</div>
+            <div>{"Withdrawals"}</div>
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the distribution of PRO & ANTI reclaims in the pool`}
+                {`Displays the distribution of PRO & ANTI withdrawals from the pool`}
               </span>
             </div>
           </div>
@@ -796,7 +795,7 @@ const DashboardInverter = ({
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the sizes of PRO & ANTI reclaims, and PHOTON & BARYON burns from the pool`}
+                {`Displays the sizes of PRO & ANTI withdrawals from the pool, and PHOTON & BARYON inversions`}
               </span>
             </div>
           </div>
@@ -812,7 +811,7 @@ const DashboardInverter = ({
             <div className="relative group">
               <div className="cursor-pointer">&#9432;</div>
               <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                {`Displays the count of PRO & ANTI reclaims, and PHOTON & BARYON burns over time`}
+                {`Displays the count of PRO & ANTI withdrawals from the pool, and PHOTON & BARYON inversions over time`}
               </span>
             </div>
           </div>

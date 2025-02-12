@@ -6,10 +6,9 @@ import {
   convertToLocaleTime,
   isValidTime,
   _metadata,
-} from "../utils/utils";
+} from "../../utils/utils";
 
-/* Collision Animation */
-
+/* Particle Collision */
 export const ParticleCollision = ({
   width = 800,
   height = 600,
@@ -555,6 +554,7 @@ export const ParticleCollision = ({
   );
 };
 
+/* Stars in the background */
 export const Stars = ({ length = 16 }) => {
   function seededRandom(seed) {
     const x = Math.sin(seed) * 10000;
