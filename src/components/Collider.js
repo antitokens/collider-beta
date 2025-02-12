@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   toastContainerConfig,
   toast,
-  emptyBags,
+  emptyHoldings,
   formatCount,
   formatPrecise,
   defaultToken,
@@ -20,6 +20,7 @@ Chart.register(...registerables);
 
 /* Collider Container */
 const Collider = ({
+  prediction = 0,
   wallet,
   antiBalance,
   proBalance,
@@ -33,18 +34,19 @@ const Collider = ({
   clearFields,
   antiData = defaultToken,
   proData = defaultToken,
-  bags = emptyBags,
+  holdings = emptyHoldings,
   inactive = true,
   isMetaLoading = true,
 }) => {
+  const [active, setActive] = useState(inactive);
   const [loading, setLoading] = useState(isMetaLoading);
-  const [antiTokens, setAntiTokens] = useState(0);
-  const [proTokens, setProTokens] = useState(0);
-  const [baryonTokens, setBaryonTokens] = useState(0);
-  const [photonTokens, setPhotonTokens] = useState(0);
-  const [userDistribution, setUserDistribution] = useState(null);
-  const [pastDistribution, setPastDistribution] = useState(null);
-  const [totalDistribution, setTotalDistribution] = useState(null);
+  const [anti, setAnti] = useState(0);
+  const [pro, setPro] = useState(0);
+  const [baryon, setBaryon] = useState(0);
+  const [photon, setPhoton] = useState(0);
+  const [collision, setCollision] = useState(null);
+  const [past, setPast] = useState(null);
+  const [plasma, setPlasma] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
   const [totalInvest, setTotalInvest] = useState(0);
   const [dollarBet, setDollarBet] = useState(0);
@@ -55,6 +57,10 @@ const Collider = ({
   const sliderRef = useRef(null);
 
   useEffect(() => {
+    setActive(!inactive);
+  }, [inactive]);
+
+  useEffect(() => {
     setLoading(isMetaLoading);
   }, [isMetaLoading]);
 
@@ -62,11 +68,11 @@ const Collider = ({
     if (sliderRef.current) {
       let percentage = 50;
       if (totalInvest > 0) {
-        percentage = (proTokens / totalInvest) * 100;
+        percentage = (pro / totalInvest) * 100;
       }
       handleSliderInput(percentage);
     }
-  }, []);
+  }, [pro, totalInvest]);
 
   useEffect(() => {
     if (antiData && proData) {
@@ -79,10 +85,10 @@ const Collider = ({
   // Clear input fields when `clearFields` changes
   useEffect(() => {
     if (clearFields) {
-      setAntiTokens(0);
-      setProTokens(0);
-      setBaryonTokens(0);
-      setPhotonTokens(0);
+      setAnti(0);
+      setPro(0);
+      setBaryon(0);
+      setPhoton(0);
       setTotalInvest(0);
       setDollarBet(0);
       setSplitPercentage(50);
@@ -93,84 +99,85 @@ const Collider = ({
   // Prepare line chart data
   useEffect(() => {
     // Calculate expected rewardCurrents
-    let myBag = -1;
+    let myHolding = -1;
     if (wallet.publicKey) {
       const rewardCurrent =
-        bags !== emptyBags
+        holdings !== emptyHoldings
           ? equalise(
-              bags.baryon,
-              bags.photon,
-              bags.anti,
-              bags.pro,
-              bags.antiPool,
-              bags.proPool,
+              holdings.baryon,
+              holdings.photon,
+              holdings.anti,
+              holdings.pro,
+              holdings.antiPool,
+              holdings.proPool,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [1, 1],
-              bags.wallets,
+              holdings.wallets,
               [antiUsage > proUsage ? 1 : 0, antiUsage < proUsage ? 1 : 0]
             )
           : undefined;
-      myBag = rewardCurrent
+      myHolding = rewardCurrent
         ? rewardCurrent.change.wallets.indexOf(wallet.publicKey.toString())
         : -1;
-      if (proData && antiData && myBag >= 0) {
+      if (proData && antiData && myHolding >= 0) {
         const originalPosition =
           proUsage * proData.priceUsd + antiUsage * antiData.priceUsd;
         if (!wallet.disconnecting) {
           setGain(
             originalPosition !== 0 && (baryonBalance > 0 || photonBalance > 0)
-              ? (rewardCurrent.change.gain[myBag] / originalPosition) * 100
+              ? (rewardCurrent.change.gain[myHolding] / originalPosition) * 100
               : 0
           );
         } else {
           setGain(0);
         }
-      } else if (proData && antiData && myBag < 0 && totalInvest > 0) {
-        let myFutureBag = -1;
-        let pseudoBags = {
-          baryon: [...bags.baryon],
-          photon: [...bags.photon],
-          baryonPool: bags.baryonPool + baryonTokens,
-          photonPool: bags.photonPool + photonTokens,
-          anti: [...bags.anti],
-          pro: [...bags.pro],
-          antiPool: bags.antiPool + antiTokens,
-          proPool: bags.proPool + proTokens,
-          wallets: [...bags.wallets],
+      } else if (proData && antiData && myHolding < 0 && totalInvest > 0) {
+        let myFutureHolding = -1;
+        let pseudoHoldings = {
+          baryon: [...holdings.baryon],
+          photon: [...holdings.photon],
+          baryonPool: holdings.baryonPool + baryon,
+          photonPool: holdings.photonPool + photon,
+          anti: [...holdings.anti],
+          pro: [...holdings.pro],
+          antiPool: holdings.antiPool + anti,
+          proPool: holdings.proPool + pro,
+          wallets: [...holdings.wallets],
         };
-        pseudoBags.anti.push(antiTokens);
-        pseudoBags.pro.push(proTokens);
-        pseudoBags.baryon.push(baryonTokens);
-        pseudoBags.photon.push(photonTokens);
-        pseudoBags.wallets.push(wallet.publicKey.toString());
+        pseudoHoldings.anti.push(anti);
+        pseudoHoldings.pro.push(pro);
+        pseudoHoldings.baryon.push(baryon);
+        pseudoHoldings.photon.push(photon);
+        pseudoHoldings.wallets.push(wallet.publicKey.toString());
 
         const rewardFuture =
-          pseudoBags !== emptyBags
+          pseudoHoldings !== emptyHoldings
             ? equalise(
-                pseudoBags.baryon,
-                pseudoBags.photon,
-                pseudoBags.anti,
-                pseudoBags.pro,
-                pseudoBags.antiPool,
-                pseudoBags.proPool,
+                pseudoHoldings.baryon,
+                pseudoHoldings.photon,
+                pseudoHoldings.anti,
+                pseudoHoldings.pro,
+                pseudoHoldings.antiPool,
+                pseudoHoldings.proPool,
                 antiData && proData
                   ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                   : [1, 1],
-                pseudoBags.wallets,
-                [antiTokens > proTokens ? 1 : 0, antiTokens < proTokens ? 1 : 0]
+                pseudoHoldings.wallets,
+                [anti > pro ? 1 : 0, anti < pro ? 1 : 0]
               )
             : undefined;
-        myFutureBag = rewardFuture
+        myFutureHolding = rewardFuture
           ? rewardFuture.change.wallets.indexOf(wallet.publicKey.toString())
           : -1;
         const originalPosition =
-          proTokens * proData.priceUsd + antiTokens * antiData.priceUsd;
+          pro * proData.priceUsd + anti * antiData.priceUsd;
 
         if (!wallet.disconnecting) {
           setNewGain(
-            originalPosition !== 0 && (baryonTokens > 0 || photonTokens > 0)
-              ? (rewardFuture.change.gain[myFutureBag] / originalPosition) * 100
+            originalPosition !== 0 && (baryon > 0 || photon > 0)
+              ? (rewardFuture.change.gain[myFutureHolding] / originalPosition) *
+                  100
               : 0
           );
         } else {
@@ -179,62 +186,62 @@ const Collider = ({
       }
     }
 
-    if (userDistribution && totalDistribution && dollarStake) {
+    if (collision && plasma && dollarStake) {
       // Trial
       const F = 1;
       const G = 1;
-      setBaryonTokens(totalInvest > 0 ? F * totalDistribution.u : 0);
-      setPhotonTokens(totalInvest > 0 ? G * totalDistribution.s : 0);
+      setBaryon(totalInvest > 0 ? F * plasma.mean : 0);
+      setPhoton(totalInvest > 0 ? G * plasma.stddev : 0);
 
       // Create new arrays with updated values
-      const updatedBaryonBags = [...bags.baryon];
-      const updatedPhotonBags = [...bags.photon];
-      const updatedAntiBags = [...bags.anti];
-      const updatedProBags = [...bags.pro];
+      const updatedBaryonHoldings = [...holdings.baryon];
+      const updatedPhotonHoldings = [...holdings.photon];
+      const updatedAntiHoldings = [...holdings.anti];
+      const updatedProHoldings = [...holdings.pro];
 
-      if (myBag >= 0) {
-        updatedBaryonBags[myBag] =
-          totalInvest > 0 ? F * totalDistribution.u : baryonTokens;
-        updatedPhotonBags[myBag] =
-          totalInvest > 0 ? F * totalDistribution.u : photonTokens;
-        updatedAntiBags[myBag] += antiTokens;
-        updatedProBags[myBag] += proTokens;
+      if (myHolding >= 0) {
+        updatedBaryonHoldings[myHolding] =
+          totalInvest > 0 ? F * plasma.mean : baryon;
+        updatedPhotonHoldings[myHolding] =
+          totalInvest > 0 ? F * plasma.mean : photon;
+        updatedAntiHoldings[myHolding] += anti;
+        updatedProHoldings[myHolding] += pro;
       }
 
       const rewardUpdated =
-        bags !== emptyBags
+        holdings !== emptyHoldings
           ? equalise(
-              updatedBaryonBags,
-              updatedPhotonBags,
-              updatedAntiBags,
-              updatedProBags,
-              bags.antiPool + antiTokens,
-              bags.proPool + proTokens,
+              updatedBaryonHoldings,
+              updatedPhotonHoldings,
+              updatedAntiHoldings,
+              updatedProHoldings,
+              holdings.antiPool + anti,
+              holdings.proPool + pro,
               antiData && proData
                 ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
                 : [1, 1],
-              bags.wallets,
+              holdings.wallets,
               [
-                antiUsage + antiTokens > proUsage + proTokens ? 1 : 0,
-                antiUsage + antiTokens < proUsage + proTokens ? 1 : 0,
+                antiUsage + anti > proUsage + pro ? 1 : 0,
+                antiUsage + anti < proUsage + pro ? 1 : 0,
               ]
             )
           : undefined;
 
-      if (myBag >= 0) {
+      if (myHolding >= 0) {
         setNewGain(
           dollarStake !== 0 &&
-            !inactive &&
+            !active &&
             !wallet.disconnecting &&
             totalInvest > 0
-            ? (rewardUpdated.change.gain[myBag] / dollarStake) * 100
+            ? (rewardUpdated.change.gain[myHolding] / dollarStake) * 100
             : 0
         );
       }
 
       setLineChartData({
         type: "line",
-        labels: userDistribution.short.map((value) =>
+        labels: collision.xShort.map((value) =>
           value > 0 ? formatPrecise(value) : ""
         ),
         datasets: [
@@ -243,7 +250,7 @@ const Collider = ({
             data:
               totalInvest <= 0
                 ? []
-                : userDistribution.curve.map((item) => item.value),
+                : collision.yShort.map((item) => item.value),
             borderColor: "#ffffff",
             backgroundColor: "#ffffff",
             pointStyle: "line",
@@ -254,8 +261,8 @@ const Collider = ({
             data:
               totalInvest <= 0
                 ? []
-                : pastDistribution
-                ? pastDistribution.curve.map((item) => item.value)
+                : past
+                ? past.yShort.map((item) => item.value)
                 : [],
             borderColor: "#44c1cf",
             backgroundColor: "#44c1cf",
@@ -267,8 +274,8 @@ const Collider = ({
             data:
               totalInvest <= 0
                 ? []
-                : totalDistribution
-                ? totalDistribution.curve.map((item) => item.value)
+                : plasma
+                ? plasma.yShort.map((item) => item.value)
                 : [],
             borderColor: "#fcba03",
             backgroundColor: "#fcba03",
@@ -328,9 +335,9 @@ const Collider = ({
                 display: false,
                 callback: function (value, index) {
                   // Map index to a new labels array for the second axis
-                  return userDistribution
-                    ? userDistribution.short[index]
-                      ? formatCount(userDistribution.short[index], false)
+                  return collision
+                    ? collision.xShort[index]
+                      ? formatCount(collision.xShort[index], false)
                       : undefined
                     : undefined;
                 },
@@ -352,9 +359,9 @@ const Collider = ({
                 display: false,
                 callback: function (value, index) {
                   // Map index to a new labels array for the second axis
-                  return userDistribution
-                    ? totalDistribution.short[index]
-                      ? formatCount(totalDistribution.short[index], false)
+                  return collision
+                    ? plasma.xShort[index]
+                      ? formatCount(plasma.xShort[index], false)
                       : undefined
                     : undefined;
                 },
@@ -376,9 +383,9 @@ const Collider = ({
                 display: false,
                 callback: function (value, index) {
                   // Map index to a new labels array for the second axis
-                  return userDistribution
-                    ? pastDistribution.short[index]
-                      ? formatCount(pastDistribution.short[index], false)
+                  return collision
+                    ? past.xShort[index]
+                      ? formatCount(past.xShort[index], false)
                       : undefined
                     : undefined;
                 },
@@ -448,11 +455,11 @@ const Collider = ({
       });
     }
   }, [
-    userDistribution,
-    pastDistribution,
-    totalDistribution,
-    antiTokens,
-    proTokens,
+    collision,
+    past,
+    plasma,
+    anti,
+    pro,
     antiData,
     proData,
     dollarStake,
@@ -461,13 +468,13 @@ const Collider = ({
     dollarBet,
     totalInvest,
     wallet,
-    bags,
+    holdings,
     wallet.disconnecting,
     antiBalance,
     proBalance,
     splitPercentage,
-    baryonTokens,
-    photonTokens,
+    baryon,
+    photon,
   ]);
 
   const handlePrediction = async () => {
@@ -477,36 +484,34 @@ const Collider = ({
       setLoading(true);
 
       // Validate input
-      if (antiTokens <= 0 && proTokens <= 0) {
+      if (anti <= 0 && pro <= 0) {
         toast.error("You must predict with at least some tokens!");
         return;
       }
 
-      if (
-        Math.abs(antiTokens - proTokens) < 1 &&
-        Math.abs(antiTokens - proTokens) !== 0
-      ) {
+      if (Math.abs(anti - pro) < 1 && Math.abs(anti - pro) !== 0) {
         toast.error("Token difference must be larger than 1, or exactly 0!");
         return;
       }
 
-      if (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0) {
+      if (anti + pro < 1 && anti + pro !== 0) {
         toast.error("Token sum must be larger than 1, or exactly 0!");
         return;
       }
 
-      if (antiTokens > antiBalance || proTokens > proBalance) {
+      if (anti > antiBalance || pro > proBalance) {
         toast.error("You cannot predict with more tokens than you have!");
         return;
       }
 
       // Prompt for Solana signature
       const message = `Requesting signature to predict with:
-        ${antiTokens.toFixed(2)} $ANTI,
-        ${proTokens.toFixed(2)} $PRO,
+        ${anti.toFixed(2)} $ANTI,
+        ${pro.toFixed(2)} $PRO,
         for
-        ${baryonTokens.toFixed(2)} $BARYON,
-        ${photonTokens.toFixed(2)} $PHOTON
+        ${baryon.toFixed(2)} $BARYON,
+        ${photon.toFixed(2)} $PHOTON,
+        on prediction ${prediction} with Collider-beta,
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
@@ -514,26 +519,30 @@ const Collider = ({
       const signature = btoa(String.fromCharCode(...signatureUint8Array));
       const timestamp = new Date().toISOString();
       // Record the prediction
-      await recordPrediction(wallet.publicKey.toString(), {
-        antiTokens: antiTokens + antiUsage,
-        proTokens: proTokens + proUsage,
-        baryonTokens: baryonTokens,
-        photonTokens: photonTokens,
-        signature,
-        timestamp,
-      });
-      // Create prediction data object
-      const prediction = {
-        antiTokens: antiTokens + antiUsage,
-        proTokens: proTokens + proUsage,
-        baryonTokens: baryonTokens,
-        photonTokens: photonTokens,
+      await recordPrediction(
+        wallet.publicKey.toString(),
+        {
+          anti: anti + antiUsage,
+          pro: pro + proUsage,
+          baryon: baryon,
+          photon: photon,
+          signature,
+          timestamp,
+        },
+        prediction
+      );
+      // Create prediction record data object
+      const record = {
+        anti: anti + antiUsage,
+        pro: pro + proUsage,
+        baryon: baryon,
+        photon: photon,
         signature,
         timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
       };
       setGain(newGain);
-      onPredictionSubmitted(true, prediction);
+      onPredictionSubmitted(true, record);
       toast.success("Your prediction has been recorded!");
     } catch (error) {
       console.error("VOTE_SUBMISSION_FAILED:", error);
@@ -546,14 +555,12 @@ const Collider = ({
   };
 
   useEffect(() => {
-    setPastDistribution(collide(baryonBalance, photonBalance, true));
+    setPast(collide(baryonBalance, photonBalance, true));
     if (totalInvest > 0) {
-      setTotalDistribution(
-        collide(antiUsage + antiTokens, proUsage + proTokens)
-      );
-      setUserDistribution(collide(antiTokens, proTokens));
+      setPlasma(collide(antiUsage + anti, proUsage + pro));
+      setCollision(collide(anti, pro));
     } else {
-      setUserDistribution({
+      setCollision({
         u: 0,
         s: 0,
         range: [0, 1],
@@ -561,25 +568,15 @@ const Collider = ({
           { x: 0, value: 0 },
           { x: 1, value: 0 },
         ],
-        short: [0, 1],
-        curve: [
+        xShort: [0, 1],
+        yShort: [
           { x: 0, value: 0 },
           { x: 1, value: 0 },
         ],
       });
-      setTotalDistribution(
-        collide(baryonBalance, photonBalance, true)
-      );
+      setPlasma(collide(baryonBalance, photonBalance, true));
     }
-  }, [
-    antiTokens,
-    proTokens,
-    baryonTokens,
-    photonTokens,
-    baryonBalance,
-    photonBalance,
-    totalInvest,
-  ]);
+  }, [anti, pro, baryon, photon, baryonBalance, photonBalance, totalInvest]);
 
   const handleTimeframeChange = (timeframe) => {
     setPredictionHistoryTimeframe(timeframe);
@@ -587,8 +584,8 @@ const Collider = ({
   };
 
   const updateSplit = (total, percentage) => {
-    const pro = (percentage / 100) * total;
-    const anti = total - pro;
+    const pro = parseFloat(((percentage / 100) * total).toFixed(2));
+    const anti = parseFloat((total - pro).toFixed(2));
     if (!proData || !antiData) {
       return;
     }
@@ -597,8 +594,8 @@ const Collider = ({
       (proUsage + pro) * proData.priceUsd +
         (antiUsage + anti) * antiData.priceUsd
     );
-    setProTokens(pro);
-    setAntiTokens(anti);
+    setPro(pro);
+    setAnti(anti);
   };
 
   const handleTotalInvestChange = (e) => {
@@ -614,22 +611,22 @@ const Collider = ({
     handleSliderInput(percentage);
   };
 
-  const handleProTokensChange = (e) => {
+  const handleProChange = (e) => {
     const pro = Math.abs(Number(e.target.value));
-    const newTotal = pro + antiTokens;
-    updateForm(newTotal, pro, antiTokens);
+    const newTotal = pro + anti;
+    updateForm(newTotal, pro, anti);
   };
 
-  const handleAntiTokensChange = (e) => {
+  const handleAntiChange = (e) => {
     const anti = Math.abs(Number(e.target.value));
-    const newTotal = proTokens + anti;
-    updateForm(newTotal, proTokens, anti);
+    const newTotal = pro + anti;
+    updateForm(newTotal, pro, anti);
   };
 
   const updateForm = (total, pro, anti) => {
     setTotalInvest(total);
-    setProTokens(pro);
-    setAntiTokens(anti);
+    setPro(pro);
+    setAnti(anti);
 
     let percentage = 50;
     if (total != 0) {
@@ -652,7 +649,7 @@ const Collider = ({
               <div className="relative group">
                 <div className="cursor-pointer">&#9432;&nbsp;</div>
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  Displays your tokens in the pool
+                  Displays your tokens in the prediction pool
                 </span>
               </div>
               <div>&nbsp;{`Total`}:&nbsp;</div>
@@ -700,7 +697,7 @@ const Collider = ({
                 </span>
               </div>
               <div>
-                &nbsp;{" "}USD:{" "}
+                &nbsp; USD:{" "}
                 <span className="text-[11px] text-white font-sfmono">
                   <span className="text-gray-400">$</span>
                   {dollarStake >= 1e4
@@ -756,7 +753,7 @@ const Collider = ({
             value={Math.abs(totalInvest) || ""}
             onChange={handleTotalInvestChange}
             onWheel={(e) => e.target.blur()}
-            disabled={inactive}
+            disabled={!active}
             placeholder="0"
             className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
           />
@@ -770,7 +767,7 @@ const Collider = ({
             max="100"
             value={splitPercentage}
             onChange={handlePercentageChange}
-            disabled={inactive}
+            disabled={!active}
           />
           <div className="flex flex-row items-center justify-between text-[14px]">
             <span className="text-accent-secondary font-sfmono">
@@ -785,31 +782,33 @@ const Collider = ({
           <div className="flex flex-col items-start gap-0 w-full">
             <div className="flex items-center bg-black px-3 py-2 rounded gap-2 w-full">
               <label
-                htmlFor="proTokens"
+                htmlFor="pro"
                 className="text-accent-secondary font-medium text-sm relative group"
                 onClick={() => copyText(process.env.NEXT_PUBLIC_PRO_TOKEN_MINT)}
               >
-                {`${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}PRO`}
+                {`${
+                  process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""
+                }PRO`}
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-0 lg:-translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
                   {`Click to copy CA`}
                 </span>
               </label>
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <input
-                id="proTokens"
+                id="pro"
                 type="number"
                 min="0"
                 max={proBalance}
-                value={Math.abs(proTokens) || ""}
-                onChange={handleProTokensChange}
+                value={Math.abs(pro) || ""}
+                onChange={handleProChange}
                 onFocus={(e) => e.target.select()}
-                onMouseDown={(e) => setProTokens(0)}
+                onMouseDown={(e) => setPro(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-sm"
-                disabled={inactive}
+                disabled={!active}
               />
             </div>
-            <div className={inactive ? "hidden" : "text-xs"}>
+            <div className={!active ? "hidden" : "text-xs"}>
               <img
                 src={`${BASE_URL}/assets/pro.png`}
                 alt="pro-logo"
@@ -828,33 +827,35 @@ const Collider = ({
           <div className="flex flex-col items-end gap-1/2 w-full">
             <div className="flex items-center bg-black px-3 py-2 rounded gap-2 w-full">
               <input
-                id="antiTokens"
+                id="anti"
                 type="number"
                 min="0"
                 max={antiBalance}
-                value={Math.abs(antiTokens) || ""}
-                onChange={handleAntiTokensChange}
+                value={Math.abs(anti) || ""}
+                onChange={handleAntiChange}
                 onFocus={(e) => e.target.select()}
-                onMouseDown={(e) => setAntiTokens(0)}
+                onMouseDown={(e) => setAnti(0)}
                 placeholder="0"
                 className="w-full font-sfmono bg-black text-white text-xs sm:text-sm text-right"
-                disabled={inactive}
+                disabled={!active}
               />
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <label
-                htmlFor="antiTokens"
+                htmlFor="anti"
                 className="text-accent-orange font-medium text-sm relative group"
                 onClick={() =>
                   copyText(process.env.NEXT_PUBLIC_ANTI_TOKEN_MINT)
                 }
               >
-                {`${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}ANTI`}
+                {`${
+                  process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""
+                }ANTI`}
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
                   {`Click to copy CA`}
                 </span>
               </label>
             </div>
-            <div className={inactive ? "hidden" : "text-xs"}>
+            <div className={!active ? "hidden" : "text-xs"}>
               <img
                 src={`${BASE_URL}/assets/anti.png`}
                 alt="anti-logo"
@@ -883,7 +884,7 @@ const Collider = ({
       </div>
 
       {/* User Distribution */}
-      {userDistribution && lineChartData && totalInvest > 0 && (
+      {collision && lineChartData && totalInvest > 0 && (
         <>
           <div className="flex flex-row justify-center gap-2 items-center font-grotesk text-gray-200 mt-4">
             <div className="-mt-1">Your Predictions</div>
@@ -898,7 +899,7 @@ const Collider = ({
           </div>
           <div
             className={
-              inactive
+              !active
                 ? "hidden"
                 : "h-[200px] border border-gray-800 rounded-md px-2 pb-4"
             }
@@ -911,23 +912,21 @@ const Collider = ({
       {/* Submit Button */}
       <button
         onClick={handlePrediction}
-        disabled={loading || inactive}
+        disabled={loading || !active || !wallet.connected}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           loading ||
-          inactive ||
-          (antiTokens === 0 && proTokens === 0) ||
-          (Math.abs(antiTokens - proTokens) < 1 &&
-            Math.abs(antiTokens - proTokens) !== 0) ||
-          (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
+          !active ||
+          (anti === 0 && pro === 0) ||
+          (Math.abs(anti - pro) < 1 && Math.abs(anti - pro) !== 0) ||
+          (anti + pro < 1 && anti + pro !== 0)
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
       >
-        {inactive
+        {!active
           ? "Closed"
-          : (Math.abs(antiTokens - proTokens) < 1 &&
-              Math.abs(antiTokens - proTokens) !== 0) ||
-            (antiTokens + proTokens < 1 && antiTokens + proTokens !== 0)
+          : (Math.abs(anti - pro) < 1 && Math.abs(anti - pro) !== 0) ||
+            (anti + pro < 1 && anti + pro !== 0)
           ? "Submit"
           : loading
           ? isMetaLoading

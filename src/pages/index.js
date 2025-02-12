@@ -485,10 +485,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           setIsMetaLoading(true);
           const blobBalance = await getBalances();
           const blobWithdrawal = await getWithdrawals();
-          const dataBalance = decompressMetadata(
-            JSON.parse(blobBalance.message)
-          );
-          const dataWithdrawal = decompressMetadata(
+          const deposits = decompressMetadata(JSON.parse(blobBalance.message));
+          const inversions = decompressMetadata(
             JSON.parse(blobWithdrawal.message)
           );
 
@@ -507,58 +505,58 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               : emptyGaussian;
 
           const plasma =
-            dataBalance.plasma.mean >= 0 && dataBalance.plasma.stddev >= 0
+            deposits.plasma.mean >= 0 && deposits.plasma.stddev >= 0
               ? collide(
-                  dataBalance.emission.baryon,
-                  dataBalance.emission.photon,
+                  deposits.emission.baryon,
+                  deposits.emission.photon,
                   true
                 )
               : emptyGaussian;
 
           setBalances({
-            startTime: dataBalance.startTime,
-            endTime: dataBalance.endTime,
+            startTime: deposits.startTime,
+            endTime: deposits.endTime,
             collider: collider,
             plasma: plasma,
-            emission: dataBalance.emission,
-            collision: dataBalance.collision,
-            events: dataBalance.events,
+            emission: deposits.emission,
+            collision: deposits.collision,
+            events: deposits.events,
           });
 
           setHoldings({
-            baryon: dataBalance.plasma.holdings.baryon,
-            photon: dataBalance.plasma.holdings.photon,
-            baryonPool: dataBalance.emission.baryon,
-            photonPool: dataBalance.emission.photon,
-            anti: dataBalance.plasma.holdings.anti,
-            pro: dataBalance.plasma.holdings.pro,
-            antiPool: dataBalance.collision.anti,
-            proPool: dataBalance.collision.pro,
-            wallets: dataBalance.plasma.wallets,
+            baryon: deposits.plasma.balances.baryon,
+            photon: deposits.plasma.balances.photon,
+            baryonPool: deposits.emission.baryon,
+            photonPool: deposits.emission.photon,
+            anti: deposits.plasma.balances.anti,
+            pro: deposits.plasma.balances.pro,
+            antiPool: deposits.collision.anti,
+            proPool: deposits.collision.pro,
+            wallets: deposits.plasma.wallets,
           });
 
           const thisAntiUsage = wallet.publicKey
-            ? dataBalance.plasma.holdings.anti[
-                dataBalance.plasma.wallets.indexOf(wallet.publicKey.toString())
+            ? deposits.plasma.balances.anti[
+                deposits.plasma.wallets.indexOf(wallet.publicKey.toString())
               ]
             : 0;
           const thisProUsage = wallet.publicKey
-            ? dataBalance.plasma.holdings.pro[
-                dataBalance.plasma.wallets.indexOf(wallet.publicKey.toString())
+            ? deposits.plasma.balances.pro[
+                deposits.plasma.wallets.indexOf(wallet.publicKey.toString())
               ]
             : 0;
 
           const rewardCurrent = equalise(
-            dataBalance.plasma.holdings.baryon,
-            dataBalance.plasma.holdings.photon,
-            dataBalance.plasma.holdings.anti,
-            dataBalance.plasma.holdings.pro,
-            dataBalance.collision.anti,
-            dataBalance.collision.pro,
+            deposits.plasma.balances.baryon,
+            deposits.plasma.balances.photon,
+            deposits.plasma.balances.anti,
+            deposits.plasma.balances.pro,
+            deposits.collision.anti,
+            deposits.collision.pro,
             antiData && proData
               ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-              : [1, 1],
-            dataBalance.plasma.wallets,
+              : [0, 0], // TODO: Handle case of no price data
+            deposits.plasma.wallets,
             [
               thisAntiUsage > thisProUsage ? 1 : 0,
               thisAntiUsage < thisProUsage ? 1 : 0,
@@ -566,16 +564,16 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           );
 
           const rewardFinal = equalise(
-            dataBalance.plasma.holdings.baryon,
-            dataBalance.plasma.holdings.photon,
-            dataBalance.plasma.holdings.anti,
-            dataBalance.plasma.holdings.pro,
-            dataBalance.collision.anti,
-            dataBalance.collision.pro,
+            deposits.plasma.balances.baryon,
+            deposits.plasma.balances.photon,
+            deposits.plasma.balances.anti,
+            deposits.plasma.balances.pro,
+            deposits.collision.anti,
+            deposits.collision.pro,
             antiData && proData
               ? [Number(antiData.priceUsd), Number(proData.priceUsd)]
-              : [1, 1],
-            dataBalance.plasma.wallets,
+              : [0, 0], // TODO: Handle case of no price data
+            deposits.plasma.wallets,
             truth
           );
 
@@ -583,13 +581,13 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           setDynamicsFinal(rewardFinal ? rewardFinal.normalised : []);
 
           setWithdrawals({
-            startTime: dataWithdrawal.startTime,
-            endTime: dataWithdrawal.endTime,
+            startTime: inversions.startTime,
+            endTime: inversions.endTime,
             collider: collider,
             plasma: plasma,
-            emission: dataWithdrawal.emission,
-            collision: dataWithdrawal.collision,
-            events: dataWithdrawal.events,
+            emission: inversions.emission,
+            collision: inversions.collision,
+            events: inversions.events,
           });
         } catch (err) {
           console.error("Error fetching metadata:", err);
@@ -1946,6 +1944,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                   </button>
                 </div>
                 <Inverter
+                  prediction={prediction}
                   wallet={wallet}
                   antiBalance={antiBalance}
                   proBalance={proBalance}

@@ -18,6 +18,7 @@ Chart.register(...registerables);
 
 /* Inverter Container */
 const Inverter = ({
+  prediction = 0,
   wallet,
   antiBalance,
   proBalance,
@@ -33,16 +34,16 @@ const Inverter = ({
   proData = defaultToken,
   isMobile = false,
   holdings = emptyHoldings,
-  inactive,
+  inactive = true,
   truth = [],
   balances = emptyMetadata,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [active, setActive] = useState(false);
-  const [antiTokens, setAntiTokens] = useState(0);
-  const [proTokens, setProTokens] = useState(0);
-  const [baryonTokens, setBaryonTokens] = useState(0);
-  const [photonTokens, setPhotonTokens] = useState(0);
+  const [active, setActive] = useState(inactive);
+  const [anti, setAnti] = useState(0);
+  const [pro, setPro] = useState(0);
+  const [baryon, setBaryon] = useState(0);
+  const [photon, setPhoton] = useState(0);
   const [change, setChange] = useState([0, 0, 0]);
   const [updatedBalances, setUpdatedBalances] = useState([0, 0]);
   const [gain, setGain] = useState(0);
@@ -102,7 +103,7 @@ const Inverter = ({
             ? [0, 0]
             : [0, 0]
         );
-        setAntiTokens(
+        setAnti(
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
@@ -111,7 +112,7 @@ const Inverter = ({
             ? 0
             : 0
         );
-        setProTokens(
+        setPro(
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
@@ -121,7 +122,7 @@ const Inverter = ({
             : 0
         );
 
-        setBaryonTokens(
+        setBaryon(
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
@@ -130,7 +131,7 @@ const Inverter = ({
             ? 0
             : 0
         );
-        setPhotonTokens(
+        setPhoton(
           truth.length > 0 &&
             !wallet.disconnecting &&
             (photonBalance > 0 || baryonBalance > 0)
@@ -156,15 +157,23 @@ const Inverter = ({
         );
       }
     }
-  }, [antiData, proData, holdings, truth, wallet, wallet.disconnecting, active]);
+  }, [
+    antiData,
+    proData,
+    holdings,
+    truth,
+    wallet,
+    wallet.disconnecting,
+    active,
+  ]);
 
   // Clear input fields when `clearFields` changes
   useEffect(() => {
     if (clearFields) {
-      setAntiTokens(0);
-      setProTokens(0);
-      setBaryonTokens(0);
-      setPhotonTokens(0);
+      setAnti(0);
+      setPro(0);
+      setBaryon(0);
+      setPhoton(0);
     }
   }, [clearFields]);
 
@@ -178,41 +187,38 @@ const Inverter = ({
     try {
       setLoading(true);
       // Validate input
-      if (baryonTokens <= 0 && photonTokens <= 0) {
+      if (baryon <= 0 && photon <= 0) {
         toast.error("You must withdrawal with at least some tokens!");
         return;
       }
 
-      if (
-        antiTokens !== updatedBalances[1] ||
-        proTokens !== updatedBalances[0]
-      ) {
+      if (anti !== updatedBalances[1] || pro !== updatedBalances[0]) {
         toast.error("You can only withdrawal maximum available balance!");
         return;
       }
 
-      if (antiTokens > updatedBalances[1] || proTokens > updatedBalances[0]) {
+      if (anti > updatedBalances[1] || pro > updatedBalances[0]) {
         toast.error("You cannot withdrawal with more tokens than you have!");
         return;
       }
 
-      if (photonTokens < 0) {
+      if (photon < 0) {
         toast.error("Photons must be larger 0!");
         return;
       }
 
-      if (baryonTokens < 0) {
+      if (baryon < 0) {
         toast.error("Baryons must be larger 0!");
         return;
       }
 
       // Prompt for Solana signature
       const message = `Requesting signature to withdrawal with:
-        ${baryonTokens.toFixed(2)} $BARYON,
-        ${photonTokens.toFixed(2)} $PHOTON,
+        ${baryon.toFixed(2)} $BARYON,
+        ${photon.toFixed(2)} $PHOTON,
         for
-        ${antiTokens.toFixed(2)} $ANTI,
-        ${proTokens.toFixed(2)} $PRO
+        ${anti.toFixed(2)} $ANTI,
+        ${pro.toFixed(2)} $PRO
         with account ${wallet.publicKey.toString()}`;
       const signatureUint8Array = await wallet.signMessage(
         new TextEncoder().encode(message)
@@ -221,19 +227,19 @@ const Inverter = ({
       const timestamp = new Date().toISOString();
       // Record the withdrawal
       await recordWithdrawal(wallet.publicKey.toString(), {
-        antiTokens: antiTokens,
-        proTokens: proTokens,
-        baryonTokens: baryonTokens,
-        photonTokens: photonTokens,
+        anti: anti,
+        pro: pro,
+        baryon: baryon,
+        photon: photon,
         signature,
         timestamp,
       });
       // Create withdrawal data object
       const withdrawal = {
-        antiTokens: antiTokens,
-        proTokens: proTokens,
-        baryonTokens: baryonTokens,
-        photonTokens: photonTokens,
+        anti: anti,
+        pro: pro,
+        baryon: baryon,
+        photon: photon,
         signature,
         timestamp: timestamp,
         wallet: wallet.publicKey.toString(),
@@ -247,10 +253,10 @@ const Inverter = ({
     } finally {
       setLoading(false);
       setUpdatedBalances([0, 0]);
-      setAntiTokens(0);
-      setProTokens(0);
-      setBaryonTokens(0);
-      setPhotonTokens(0);
+      setAnti(0);
+      setPro(0);
+      setBaryon(0);
+      setPhoton(0);
     }
   };
 
@@ -433,7 +439,7 @@ const Inverter = ({
             <div className="flex flex-col items-start justify-between w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <label
-                  htmlFor="antiTokens"
+                  htmlFor="anti"
                   className="text-accent-secondary font-medium text-xs sm:text-sm"
                 >
                   ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}
@@ -441,16 +447,12 @@ const Inverter = ({
                 </label>
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <input
-                  id="proTokens"
+                  id="pro"
                   type="number"
                   min="0"
                   disabled={true}
                   value={
-                    fill
-                      ? Number(proTokens) > 0
-                        ? Number(proTokens).toFixed(2)
-                        : ""
-                      : ""
+                    fill ? (Number(pro) > 0 ? Number(pro).toFixed(2) : "") : ""
                   }
                   placeholder="-"
                   className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
@@ -476,13 +478,13 @@ const Inverter = ({
             <div className="flex flex-col items-end justify-between w-full">
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <input
-                  id="antiTokens"
+                  id="anti"
                   type="number"
                   min="0"
                   value={
                     fill
-                      ? Number(antiTokens) > 0
-                        ? Number(antiTokens).toFixed(2)
+                      ? Number(anti) > 0
+                        ? Number(anti).toFixed(2)
                         : ""
                       : ""
                   }
@@ -493,7 +495,7 @@ const Inverter = ({
                 />
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <label
-                  htmlFor="antiTokens"
+                  htmlFor="anti"
                   className="text-accent-orange font-medium text-xs sm:text-sm"
                 >
                   ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}
@@ -520,10 +522,10 @@ const Inverter = ({
       )}
       <div className="flex flex-row justify-between text-sm text-gray-500 w-full mt-4">
         <div>
-          Tokens:{" "}
+          :{" "}
           <span className="text-[12px] text-white font-sfmono">
-            {Number(antiTokens) + Number(proTokens) > 0 && fill
-              ? (Number(antiTokens) + Number(proTokens)).toFixed(2)
+            {Number(anti) + Number(pro) > 0 && fill
+              ? (Number(anti) + Number(pro)).toFixed(2)
               : "0"}
           </span>
         </div>
@@ -531,10 +533,10 @@ const Inverter = ({
           USD:{" "}
           <span className="text-[12px] text-white font-sfmono">
             <span className="text-gray-400">$</span>
-            {Number(antiTokens) + Number(proTokens) > 0 && fill
+            {Number(anti) + Number(pro) > 0 && fill
               ? (
-                  antiData.priceUsd * Number(antiTokens) +
-                  proData.priceUsd * Number(proTokens)
+                  antiData.priceUsd * Number(anti) +
+                  proData.priceUsd * Number(pro)
                 ).toFixed(2)
               : "0.00"}
           </span>
@@ -549,7 +551,7 @@ const Inverter = ({
           loading ||
           !active ||
           !fill ||
-          (photonTokens < 1 && photonTokens !== 0)
+          (photon < 1 && photon !== 0)
             ? "bg-gray-500 text-gray-300 cursor-not-allowed"
             : "bg-accent-primary text-white hover:bg-accent-secondary hover:text-black"
         }`}
