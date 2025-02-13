@@ -582,7 +582,7 @@ const Collider = ({
 
   const handleTimeframeChange = (timeframe) => {
     setPredictionHistoryTimeframe(timeframe);
-    // TODO: reload data with a different timeframe
+    // TODO: Reload data with a different timeframe
   };
 
   const updateSplit = (total, percentage) => {

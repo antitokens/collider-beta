@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import TokenBalance from "./TokenBalance";
+import TokenBalance from "./Balance";
 
 /* Navbar */
 const Navbar = (trigger) => {
@@ -126,7 +126,7 @@ const Navbar = (trigger) => {
               onMouseLeave={closePapersDropdown}
             >
               <button className="text-gray-300 hover:text-accent-primary transition-colors flex items-center">
-                Technology
+                <span className="tracking-tight">Technology</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className={`h-4 w-4 ml-1 transition-transform ${
@@ -233,7 +233,7 @@ const Navbar = (trigger) => {
               onMouseLeave={closeAppsDropdown}
             >
               <button className="text-gray-300 hover:text-accent-primary transition-colors flex items-center">
-                Apps
+                <span className="tracking-tight">Apps</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className={`h-4 w-4 ml-1 transition-transform ${
@@ -352,7 +352,7 @@ const Navbar = (trigger) => {
               onMouseLeave={closeCommunityDropdown}
             >
               <button className="text-gray-300 hover:text-accent-primary transition-colors flex items-center">
-                Community
+                <span className="tracking-tight">Community</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className={`h-4 w-4 ml-1 transition-transform ${

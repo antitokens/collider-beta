@@ -1,5 +1,6 @@
-/* API to web2 Database */
+/* API to Database and Milton AI */
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
+const API_MILTON = process.env.NEXT_PUBLIC_MILTON_AI;
 
 export const addPrediction = async (wallet, config, prediction) => {
   const response = await fetch(`${API_URL}/add`, {
@@ -82,6 +83,15 @@ export const recordWithdrawal = async (wallet, config, prediction) => {
   } else {
     return { message: await response.text() }; // Fallback for plain text responses
   }
+};
+
+// Get resolution from Milton AI
+export const getResolution = async (prediction) => {
+  const response = await fetch(`${API_MILTON}/resolution/${prediction}/`);
+  if (!response.ok) {
+    throw new Error(`FAILED_TO_GET_RESOLUTION: ${response.status}`);
+  }
+  return response.json();
 };
 
 // Get token balances from KV for a wallet

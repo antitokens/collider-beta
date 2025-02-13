@@ -24,6 +24,10 @@ button.wallet-adapter-modal-list-more {
   @apply font-grotesk tracking-tight;
 }
 
+button.wallet-adapter-dropdown-list {
+  @apply font-grotesk tracking-tight;
+}
+
 h1 {
   @apply font-grotesk tracking-tight;
 }

@@ -50,6 +50,12 @@ export const predictionsInit = {
   },
 };
 
+// Resolution init
+export const resolutionInit = {
+  prediction: 0,
+  milton: "",
+};
+
 // Metadata init
 export const metadataInit = (supply = 1e9) => {
   return {
@@ -339,6 +345,11 @@ export const formatPrecise = (_value, _decimal = 1) => {
     .toFixed(_decimal)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+export const formatTruth = (_truth) => {
+  // TODO: Parse truth properly
+  return _truth.join(",");
 };
 
 export const PROGRAM_ID = ""; // FIX!

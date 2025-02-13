@@ -33,6 +33,7 @@ import {
   useIsMobile,
   emptyMetadata,
   metadataInit,
+  resolutionInit,
   emptyGaussian,
   emptyHoldings,
   emptyConfig,
@@ -52,6 +53,7 @@ import {
   predictionsInit,
   getPlotColor,
   getAllPlotColor,
+  formatTruth,
   addRepetitionMarkers,
 } from "../utils/utils";
 import {
@@ -60,13 +62,13 @@ import {
   getWithdrawal,
   getWithdrawals,
   getPredictions,
+  getResolution,
   addPrediction,
   checkPredictions,
 } from "../utils/api";
 import { decompressMetadata } from "../utils/compress";
 import { collide } from "../utils/collider";
 import "@solana/wallet-adapter-react-ui/styles.css";
-import { TwitterIcon } from "lucide-react";
 
 /* Main Page */
 const Home = ({ BASE_URL }) => {
@@ -177,9 +179,12 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [loading, setLoading] = useState(isMetaLoading);
   const [, setDynamicsCurrent] = useState([]);
   const [, setDynamicsFinal] = useState([]);
-  const [truth] = useState([0, 0]); // ANTI-PRO
+  const [truth, setTruth] = useState([0, 0]); // ANTI-PRO
   const [triggerAddPrediction, setTriggerAddPrediction] = useState(false);
   const isMobile = useIsMobile();
+  const [resolved, setResolved] = useState(false);
+  const [triggerResolution, setTriggerResolution] = useState(false);
+  const [resolution, setResolution] = useState(null);
   const [predictionHistoryChartData, setPredictionHistoryChartData] =
     useState(null);
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
@@ -221,6 +226,34 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
         setPredictions(predictionsInit);
       });
   }, [refresh, newPredictionPosted]);
+
+  useEffect(() => {
+    const fetchResolution = async () => {
+      const blobResolution = await getResolution(prediction);
+      const dataResolution = JSON.parse(blobResolution.message);
+      const addResolution =
+        JSON.stringify(dataResolution) === "{}"
+          ? resolutionInit
+          : dataResolution;
+      return addResolution;
+    };
+
+    if (triggerResolution) {
+      // Wait for the Promise to resolve before setting the state
+      fetchResolution()
+        .then((result) => {
+          setResolution(result.resolution);
+          setTruth(result.truth);
+          setResolved(true);
+        })
+        .catch((error) => {
+          console.error("Error fetching resolution:", error);
+          toast.error("Failed to resolve prediction!");
+          setResolution(resolutionInit);
+          setResolved(false);
+        });
+    }
+  }, [triggerResolution, prediction]);
 
   useEffect(() => {
     // Update metadata based on some condition or data
@@ -1438,8 +1471,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               />
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
-              Predict with <span className="text-accent-primary">$ANTI</span>{" "}
-              and <span className="text-accent-secondary">$PRO</span>
+              Predict with <span className="text-accent-primary">ANTI</span> and{" "}
+              <span className="text-accent-secondary">PRO</span>
             </h1>
           </div>
           <div
@@ -1479,7 +1512,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     </svg>
                     <span className="cursor-pointer">
                       <span
-                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-2/3 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                        className={`absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-44 -translate-x-2/3 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                       >
                         {`Previous Prediction`}
                       </span>
@@ -1509,7 +1542,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     </svg>
                     <span className="cursor-pointer">
                       <span
-                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-full lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                        className={`absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-44 -translate-x-full lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                       >
                         {`Next Prediction`}
                       </span>
@@ -1728,17 +1761,76 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           <div className={isMobile ? `pt-0` : `-mt-[2.5px]`}>
                             {!isMobile && <TimeTicker isMobile={isMobile} />}
                           </div>
-                          <div className={isMobile ? `pt-1` : `pt-[4px]`}>
-                            <TimeCompletionPie
-                              startTime={
-                                predictions[prediction]?.schedule?.[0] || ""
-                              }
-                              endTime={
-                                predictions[prediction]?.schedule?.[1] || ""
-                              }
-                              size={isMobile ? 20 : 20}
-                            />
+                          <div
+                            className={`${isMobile ? "pt-[6px]" : "pt-[6px]"}`}
+                          >
+                            <div className="relative group cursor-pointer">
+                              <TimeCompletionPie
+                                startTime={
+                                  predictions[prediction]?.schedule?.[0] || ""
+                                }
+                                endTime={
+                                  predictions[prediction]?.schedule?.[1] || ""
+                                }
+                                size={isMobile ? 20 : 20}
+                              />
+                              <span className="cursor-pointer">
+                                <span
+                                  className={`absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-44 -translate-x-2/3 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                                >
+                                  {`Time to start: `}
+                                </span>
+                              </span>
+                            </div>
                           </div>
+                          <button
+                            className={`ml-4 ${
+                              resolved
+                                ? "text-accent-secondary"
+                                : !started
+                                ? "text-gray-400"
+                                : !isOver
+                                ? "text-accent-primary"
+                                : "text-blue-400"
+                            } ${isMobile ? "pt-[5.8px]" : "mt-1"}`}
+                            onClick={() => setTriggerResolution(true)}
+                          >
+                            <div className={`relative group cursor-pointer`}>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 32 32"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                class="lucide lucide-orbit"
+                              >
+                                <circle cx="12" cy="12" r="3" />
+                                <circle cx="19" cy="5" r="2" />
+                                <circle cx="5" cy="19" r="2" />
+                                <path d="M10.4 21.9a10 10 0 0 0 9.941-15.416" />
+                                <path d="M13.5 2.1a10 10 0 0 0-9.841 15.416" />
+                              </svg>
+                              <span className="cursor-pointer">
+                                <span
+                                  className={`absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-2/3 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                                >
+                                  {`Resolution Status: ${
+                                    resolution
+                                      ? "Resolved"
+                                      : !started
+                                      ? "Unknown"
+                                      : !isOver
+                                      ? "Pending"
+                                      : "Awaiting Confirmation"
+                                  }`}
+                                </span>
+                              </span>
+                            </div>
+                          </button>
                         </div>
                       </div>
                       <div
@@ -1858,7 +1950,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                       ? "Yes"
                       : truth.join(",") === "1,0" && isOver
                       ? "No"
-                      : "Unknown"
+                      : truth.join(",") === "0,0" && isOver
+                      ? "Unresolved"
+                      : formatTruth(truth)
                   }
                   tellers="ChatGPT-o1/o3-mini, Claude Sonnet 3.5, Grok 2"
                   isMobile={isMobile}

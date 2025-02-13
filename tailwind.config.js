@@ -10,7 +10,7 @@ export default {
   theme: {
     extend: {
       letterSpacing: {
-        tight: "-0.1em",
+        mine: "-0.1em",
         word: "-0.05em",
       },
       backgroundImage: {

@@ -36,6 +36,20 @@
   font-display: swap;
 }
 
+.rotating {
+  animation: rotation 2s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes float {
   0%,
   100% {
