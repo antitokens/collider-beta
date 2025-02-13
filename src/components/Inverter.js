@@ -291,8 +291,6 @@ const Inverter = ({
                 <span className="text-gray-400">$</span>
                 {formatCount(dollarGain.toFixed(2))}
               </span>
-            </div>
-            <div className="flex items-center pl-1 pt-[0px] lg:pt-[2px]">
               <span className="text-[11px] text-gray-400 font-sfmono">
                 (
                 <span
@@ -306,12 +304,14 @@ const Inverter = ({
                 >
                   {formatCount(gain.toFixed(2))}%
                 </span>
-                )
+                )&nbsp;
               </span>
-              <span className="relative group flex items-center ml-1 pb-[2px]">
-                <div className="cursor-pointer text-xs">&#9432;</div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                  {`Displays your current realised profit or loss`}
+              <span className="relative group">
+                <span className="cursor-pointer">
+                  &#9432;
+                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                    {`Displays your current realised profit or loss`}
+                  </span>
                 </span>
               </span>
             </div>
@@ -345,7 +345,7 @@ const Inverter = ({
               <span>Change:&nbsp;</span>
               <span className="text-[11px] text-white font-sfmono">
                 <span
-                  className={`font-sfmono text-${
+                  className={`text-${
                     Number(change[0]) > 0
                       ? "accent-secondary"
                       : Number(change[0]) < 0

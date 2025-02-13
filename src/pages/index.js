@@ -1444,7 +1444,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               isMetaLoading ? "items-center" : ""
             }`}
           >
-            <div className="flex flex-col w-full lg:w-3/4 lg:-mt-8">
+            <div className="flex flex-col w-full lg:w-2/3 lg:-mt-8">
               <div className="flex flex-row justify-between">
                 {isMobile && (
                   <div className="-ml-2">
@@ -1479,7 +1479,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     </svg>
                     <span className="cursor-pointer">
                       <span
-                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-2/3 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                       >
                         {`Previous Prediction`}
                       </span>
@@ -1519,7 +1519,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               </div>
               <div className="bg-dark-card p-4 rounded-lg w-full mb-4 border border-gray-800">
                 <div className="flex flex-row justify-between items-center mb-2">
-                  <div className="flex flex-row items-center mb-2 w-3/4">
+                  <div className="flex flex-row items-center mb-2 w-2/3">
                     <div className="text-2xl text-gray-300 text-left font-medium">
                       {predictions[prediction]
                         ? predictions[prediction].title
@@ -1850,8 +1850,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               </div>
             </div>
             {showCollider ? (
-              <div>
-                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
+              <div className="w-1/3">
+                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800 w-full">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
                     Predict
                   </h2>
@@ -1912,8 +1912,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                 />
               </div>
             ) : (
-              <div>
-                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
+              <div className="w-1/3">
+                <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800 w-full">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
                     Claim
                   </h2>

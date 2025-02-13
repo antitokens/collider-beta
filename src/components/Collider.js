@@ -644,16 +644,16 @@ const Collider = ({
 
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
-      <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full mb-4">
+      <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full mb-4 gap-2">
         <div className="flex flex-row justify-between items-center text-sm text-gray-500 w-full">
           <div className="flex flex-row items-center text-left text-xs">
             <div className="relative group">
               <div className="cursor-pointer">&#9432;&nbsp;</div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Displays your tokens in the prediction pool
               </span>
             </div>
-            <div>&nbsp;{`Total`}:&nbsp;</div>
+            <div>{`Total`}:&nbsp;</div>
             <div className="flex flex-row items-center font-sfmono pt-[0px] lg:pt-[2px]">
               <div className={`text-accent-secondary text-[11px] opacity-95`}>
                 {proUsage > 0 ? "+" : ""}
@@ -669,7 +669,7 @@ const Collider = ({
 
           <div className="flex items-center text-[12px]">
             <div className="flex items-center">
-              <span>&nbsp;P/L:&nbsp;</span>
+              P/L:&nbsp;
               <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[2px]">
                 <span
                   className={`text-${
@@ -690,29 +690,27 @@ const Collider = ({
             </div>
           </div>
         </div>
-        <div className="flex flex-row justify-between text-[12px] text-gray-500 w-full">
-          <div className="flex flex-row text-right">
-            <div className="flex flex-row text-right">
-              <span className="relative group">
-                <div className="cursor-pointer text-xs mt-[1px]">&#9432;</div>
+        <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full -mt-2">
+          <div className="text-[12px] text-gray-500 text-left">
+            <span className="relative group">
+              <span className="cursor-pointer">
+                &#9432;
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {`Displays your current dollar stake`}
                 </span>
               </span>
-            </div>
-            <div>
-              &nbsp; USD:{" "}
-              <span className="text-[11px] text-white font-sfmono">
-                <span className="text-gray-400">$</span>
-                {dollarStake >= 1e4
-                  ? formatCount(dollarStake.toFixed(2))
-                  : dollarStake.toFixed(2)}
-              </span>
-            </div>
+            </span>
+            <span>&nbsp;USD: </span>
+            <span className="font-sfmono text-gray-400 text-[11px]">
+              <span className="text-gray-400">$</span>
+              {dollarStake >= 1e4
+                ? formatCount(dollarStake.toFixed(2))
+                : dollarStake.toFixed(2)}
+            </span>
           </div>
-          <div className="flex flex-row text-right">
+          <div className="flex flex-row text-right text-[12px]">
             <div>
-              ↓{" "}
+              <span>↓&nbsp;</span>
               <span className="text-[11px] text-white font-sfmono">
                 <span className="text-gray-400">$</span>
                 {dollarBet >= 1e4
@@ -736,7 +734,7 @@ const Collider = ({
                 </span>
               </div>
               <span className="relative group">
-                <div className="cursor-pointer text-xs mt-[1px]">&#9432;</div>
+                <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
                 <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {`Displays your current bet and updated maximum gain`}
                 </span>
