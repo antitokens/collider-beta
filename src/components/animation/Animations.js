@@ -5,7 +5,6 @@ import {
   randomiseTextEffect,
   convertToLocaleTime,
   isValidTime,
-  _metadata,
 } from "../../utils/utils";
 
 /* Particle Collision */
@@ -18,7 +17,7 @@ export const ParticleCollision = ({
   maxLoops = 1,
   inverse = false,
   isMobile = false,
-  metadata = { _metadata },
+  metadata = "",
   onComplete = () => {},
 }) => {
   const canvasRef = useRef(null);

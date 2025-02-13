@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
 import { BadgeCheck, CircleAlert } from "lucide-react";
-import { debounce, mean } from "lodash";
+import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
 // Convert month abbreviation to number
@@ -41,8 +41,8 @@ export const monthsReverse = {
 export const predictionsInit = {
   1: {
     prediction: 1,
-    title: "...",
-    description: "...",
+    title: "Some Random Title",
+    description: "Some description that is sufficiently long",
     schedule: ["1901-01-17T00:00:00.000Z", "1901-01-28T00:00:00.000Z"],
     wallet: "",
     signature: "",
@@ -51,76 +51,78 @@ export const predictionsInit = {
 };
 
 // Metadata init
-export const metadataInit = {
-  startTime: "-",
-  endTime: "-",
-  collider: {
-    mean: 0,
-    stddev: 0,
-    xLong: [],
-    yLong: [],
-    xShort: [],
-    yShort: [],
-  },
-  plasma: {
-    mean: 0,
-    stddev: 0,
-    holdings: {
-      pro: [],
-      anti: [],
-      photon: [],
-      baryon: [],
+export const metadataInit = (supply = 1e9) => {
+  return {
+    startTime: "-",
+    endTime: "-",
+    collider: {
+      mean: 0,
+      stddev: 0,
+      xLong: [],
+      yLong: [],
+      xShort: [],
+      yShort: [],
     },
-    wallets: [],
-  },
-  emission: {
-    total: 0,
-    photon: 0,
-    baryon: 0,
-  },
-  collision: {
-    total: supply,
-    pro: 0,
-    anti: 0,
-  },
-  events: {
-    timestamps: ["", "", "", "", ""],
+    plasma: {
+      mean: 0,
+      stddev: 0,
+      balances: {
+        pro: [],
+        anti: [],
+        photon: [],
+        baryon: [],
+      },
+      wallets: [],
+    },
+    emission: {
+      total: 0,
+      photon: 0,
+      baryon: 0,
+    },
+    collision: {
+      total: supply,
+      pro: 0,
+      anti: 0,
+    },
     events: {
-      pro: [],
-      anti: [],
-      photon: [],
-      baryon: [],
+      timestamps: ["", "", "", "", ""],
+      events: {
+        pro: [],
+        anti: [],
+        photon: [],
+        baryon: [],
+      },
+      ranges: {
+        pro: {
+          "0-100k": 0,
+          "100k-1m": 0,
+          "1-10m": 0,
+        },
+        anti: {
+          "0-100k": 0,
+          "100k-1m": 0,
+          "1-10m": 0,
+        },
+        photon: {
+          "0-100k": 0,
+          "100k-1m": 0,
+          "1-10m": 0,
+        },
+        baryon: {
+          "0-100k": 0,
+          "100k-1m": 0,
+          "1-10m": 0,
+        },
+      },
+      cumulative: {
+        timestamps: [],
+        pro: [],
+        anti: [],
+        photon: [],
+        baryon: [],
+      },
     },
-    ranges: {
-      pro: {
-        "0-100k": 0,
-        "100k-1m": 0,
-        "1-10m": 0,
-      },
-      anti: {
-        "0-100k": 0,
-        "100k-1m": 0,
-        "1-10m": 0,
-      },
-      photon: {
-        "0-100k": 0,
-        "100k-1m": 0,
-        "1-10m": 0,
-      },
-      baryon: {
-        "0-100k": 0,
-        "100k-1m": 0,
-        "1-10m": 0,
-      },
-    },
-    cumulative: {
-      timestamps: [],
-      pro: [],
-      anti: [],
-      photon: [],
-      baryon: [],
-    },
-  },
+  };
 };
 
 // Metadata placeholder

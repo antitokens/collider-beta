@@ -483,8 +483,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       const fetchBalancesWithWithdrawals = async () => {
         try {
           setIsMetaLoading(true);
-          const blobBalance = await getBalances();
-          const blobWithdrawal = await getWithdrawals();
+          const blobBalance = await getBalances(String(prediction));
+          const blobWithdrawal = await getWithdrawals(String(prediction));
           const deposits = decompressMetadata(JSON.parse(blobBalance.message));
           const inversions = decompressMetadata(
             JSON.parse(blobWithdrawal.message)
@@ -590,8 +590,12 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
             events: inversions.events,
           });
         } catch (err) {
-          console.error("Error fetching metadata:", err);
-          setMetaError(err);
+          if (predictions.length > 0) {
+            console.error("Error fetching metadata:", err);
+            setMetaError(err);
+          } else {
+            console.log("Found no predictions in the database");
+          }
         } finally {
           setIsMetaLoading(false);
           setIsMetaLoaded(true);
@@ -613,6 +617,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     }
   }, [
     prediction,
+    predictions,
     refresh,
     baryonBalance,
     photonBalance,
@@ -736,9 +741,12 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
 
   useEffect(() => {
     const checkBalance = async () => {
-      const _balance = await getBalance(wallet.publicKey);
+      const _balance = await getBalance(wallet.publicKey, String(prediction));
       const balance = JSON.parse(_balance.message);
-      const _withdrawal = await getWithdrawal(wallet.publicKey);
+      const _withdrawal = await getWithdrawal(
+        wallet.publicKey,
+        String(prediction)
+      );
       const withdrawal = JSON.parse(_withdrawal.message);
       setAntiBalance(
         !wallet.disconnecting
@@ -780,7 +788,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       );
     };
 
-    if (wallet.publicKey || dataUpdated) {
+    if ((wallet.publicKey || dataUpdated) && prediction >= 0) {
       checkBalance();
     }
   }, [
@@ -1279,6 +1287,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               color: "rgba(255, 255, 255, 0.05)",
             },
             ticks: {
+              display: labels.length > 0,
               padding: isMobile ? 5 : 15,
               callback: function (value) {
                 return value === 0
@@ -1327,6 +1336,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               color: "rgba(255, 255, 255, 0.1)",
             },
             ticks: {
+              display: labels.length > 0,
               padding: isMobile ? 5 : 15,
               callback: function (value) {
                 return value === 0
@@ -1434,7 +1444,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               isMetaLoading ? "items-center" : ""
             }`}
           >
-            <div className="flex flex-col w-full lg:w-3/4">
+            <div className="flex flex-col w-full lg:w-3/4 lg:-mt-8">
               <div className="flex flex-row justify-between">
                 {isMobile && (
                   <div className="-ml-2">
@@ -1469,7 +1479,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     </svg>
                     <span className="cursor-pointer">
                       <span
-                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-3/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-3/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                       >
                         {`Previous Prediction`}
                       </span>
@@ -1499,7 +1509,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     </svg>
                     <span className="cursor-pointer">
                       <span
-                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-full lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                        className={`absolute text-sm p-2 bg-gray-800 rounded-md w-40 -translate-x-full lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                       >
                         {`Next Prediction`}
                       </span>
@@ -1519,7 +1529,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     <span className="relative group">
                       <span className="cursor-pointer text-sm text-gray-400">
                         &#9432;
-                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md min-w-64 max-w-auto -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                           {predictions[prediction]
                             ? predictions[prediction].description
                             : ""}
@@ -1534,7 +1544,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                       alreadyPosted || !wallet.connected || wallet.disconnecting
                     }
                   >
-                    Add Prediction
+                    Add New
                   </button>
                 </div>
                 <div className="flex flex-row justify-between">
@@ -1854,7 +1864,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-                      <div className="mr-1">Switch to Withdrawal</div>
+                      <div className="mr-1">Switch to Claim</div>
                       <svg
                         width="13"
                         height="13"
@@ -1905,7 +1915,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               <div>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800">
                   <h2 className="text-xl text-gray-300 text-left font-medium">
-                    Withdrawal
+                    Claim
                   </h2>
                   <button
                     className="text-sm text-accent-primary hover:text-gray-300"

@@ -5,10 +5,9 @@ import {
   getTokenBalance,
   PRO_TOKEN_MINT,
 } from "../utils/solana";
-import { getBalance, getClaim } from "../utils/api";
+import { getBalance, getWithdrawal } from "../utils/api";
 
 /* Token Balances Navbar */
-
 const TokenBalance = (trigger) => {
   const wallet = useWallet();
   const [antiBalance, setAntiBalance] = useState(0);
@@ -19,18 +18,19 @@ const TokenBalance = (trigger) => {
 
   useEffect(() => {
     const checkBalance = async () => {
-      const [antiBalanceResult, proBalanceResult] = await Promise.all([
+      const [antiBalanceLive, proBalanceLive] = await Promise.all([
         getTokenBalance(wallet.publicKey, ANTI_TOKEN_MINT),
         getTokenBalance(wallet.publicKey, PRO_TOKEN_MINT),
       ]);
-      const blobBalance = await getBalance(wallet.publicKey);
-      const blobClaim = await getClaim(wallet.publicKey);
-      const dataBalance = JSON.parse(blobBalance.message);
-      const dataClaim = JSON.parse(blobClaim.message);
-      setAntiBalance(antiBalanceResult - dataBalance.anti + dataClaim.anti);
-      setProBalance(proBalanceResult - dataBalance.pro + dataClaim.pro);
-      setBaryonBalance(dataClaim.baryon ? 0 : dataBalance.baryon);
-      setPhotonBalance(dataClaim.photon ? 0 : dataBalance.photon);
+      const _prediction_ = String(0); // Forces global balances
+      const _balance = await getBalance(wallet.publicKey, _prediction_);
+      const balance = JSON.parse(_balance.message);
+      const _withdrawal = await getWithdrawal(wallet.publicKey, _prediction_);
+      const withdrawal = JSON.parse(_withdrawal.message);
+      setAntiBalance(antiBalanceLive - balance.anti + withdrawal.anti);
+      setProBalance(proBalanceLive - balance.pro + withdrawal.pro);
+      setBaryonBalance(withdrawal.baryon ? 0 : balance.baryon);
+      setPhotonBalance(withdrawal.photon ? 0 : balance.photon);
     };
 
     if (wallet.publicKey) checkBalance();

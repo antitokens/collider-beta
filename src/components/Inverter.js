@@ -177,24 +177,24 @@ const Inverter = ({
     active,
   ]);
 
-  const handleRewithdrawal = async () => {
+  const handleWithdrawal = async () => {
     if (disabled || loading) return;
 
     try {
       setLoading(true);
       // Validate input
       if (baryon <= 0 && photon <= 0) {
-        toast.error("You must withdrawal with at least some tokens!");
+        toast.error("You must claim with at least some tokens!");
         return;
       }
 
       if (anti !== updatedBalances[1] || pro !== updatedBalances[0]) {
-        toast.error("You can only withdrawal maximum available balance!");
+        toast.error("You can only claim maximum available balance!");
         return;
       }
 
       if (anti > updatedBalances[1] || pro > updatedBalances[0]) {
-        toast.error("You cannot withdrawal with more tokens than you have!");
+        toast.error("You cannot claim with more tokens than you have!");
         return;
       }
 
@@ -209,7 +209,7 @@ const Inverter = ({
       }
 
       // Prompt for Solana signature
-      const message = `Requesting signature to withdrawal with:
+      const message = `Requesting signature to claim with:
         ${baryon.toFixed(2)} $BARYON,
         ${photon.toFixed(2)} $PHOTON,
         for
@@ -236,7 +236,7 @@ const Inverter = ({
         prediction
       );
       // Create withdrawal data object
-      const withdrawal = {
+      const record = {
         anti: anti,
         pro: pro,
         baryon: baryon,
@@ -246,7 +246,7 @@ const Inverter = ({
         wallet: wallet.publicKey.toString(),
       };
       // Emit the updated data
-      onWithdrawalSubmitted(true, withdrawal);
+      onWithdrawalSubmitted(true, record);
       toast.success("Your withdrawal has been recorded!");
     } catch (error) {
       console.error("CLAIM_SUBMISSION_FAILED:", error);
@@ -263,25 +263,23 @@ const Inverter = ({
 
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
-      <div className="flex flex-col items-center justify-between bg-dark-card w-full p-4 rounded gap-2">
+      <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full gap-2">
         <div className="flex flex-row justify-between items-center text-sm text-gray-500 w-full">
-          <div className="flex items-center text-left text-xs">
-            <div className="relative group flex items-center">
+          <div className="flex flex-row items-center text-left text-xs">
+            <div className="relative group">
               <div className="cursor-pointer">&#9432;&nbsp;</div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-1/2 -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
-                Displays your tokens in rewithdrawal
+              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                Displays your tokens in withdrawal
               </span>
             </div>
-            <div className="flex items-center">
-              <div>&nbsp;Withdrawal:&nbsp;</div>
-              <div className="flex items-center font-sfmono pt-[0px] lg:pt-[2px]">
-                <div className="text-accent-secondary text-[11px] opacity-95">
-                  {!active ? "0.0" : formatCount(updatedBalances[0])}
-                </div>
-                <div>/</div>
-                <div className="text-accent-primary text-[11px] opacity-95">
-                  {!active ? "0.0" : formatCount(updatedBalances[1])}
-                </div>
+            <div>&nbsp;{`Claim`}:&nbsp;</div>
+            <div className="flex flex-row items-center font-sfmono pt-[0px] lg:pt-[2px]">
+              <div className="text-accent-secondary text-[11px] opacity-95">
+                {!active ? "0.0" : formatCount(updatedBalances[0])}
+              </div>
+              <div>/</div>
+              <div className="text-accent-primary text-[11px] opacity-95">
+                {!active ? "0.0" : formatCount(updatedBalances[1])}
               </div>
             </div>
           </div>
@@ -294,7 +292,7 @@ const Inverter = ({
                 {formatCount(dollarGain.toFixed(2))}
               </span>
             </div>
-            <div className="flex items-center ml-1 pt-[0px] lg:pt-[2px]">
+            <div className="flex items-center pl-1 pt-[0px] lg:pt-[2px]">
               <span className="text-[11px] text-gray-400 font-sfmono">
                 (
                 <span
@@ -327,7 +325,7 @@ const Inverter = ({
                 <span
                   className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                 >
-                  {`Rewithdrawal opening date & time: ${
+                  {`Claims opening date & time: ${
                     balances.endTime !== "-" && balances.startTime !== "-"
                       ? parseToUTC(balances.endTime, isMobile) + " UTC"
                       : "..."
@@ -404,7 +402,7 @@ const Inverter = ({
             </span>
           </div>
         </div>
-        {/* Submit Button */}
+        {/* Fill Button */}
         <button
           onClick={() => setFill(!fill)}
           disabled={
@@ -523,7 +521,7 @@ const Inverter = ({
       )}
       <div className="flex flex-row justify-between text-sm text-gray-500 w-full mt-4">
         <div>
-          :{" "}
+          Tokens:{" "}
           <span className="text-[12px] text-white font-sfmono">
             {Number(anti) + Number(pro) > 0 && fill
               ? (Number(anti) + Number(pro)).toFixed(2)
@@ -545,7 +543,7 @@ const Inverter = ({
       </div>
       {/* Submit Button */}
       <button
-        onClick={handleRewithdrawal}
+        onClick={handleWithdrawal}
         disabled={loading || !active || !fill}
         className={`w-full mt-4 py-3 rounded-full transition-all ${
           disabled ||
@@ -570,7 +568,7 @@ const Inverter = ({
           wallet.connected ? "text-gray-300" : "text-red-500 animate-pulse"
         }`}
       >
-        {wallet.connected ? "" : "Connect your wallet to enable rewithdrawals"}
+        {wallet.connected ? "" : "Connect your wallet to enable claims"}
       </p>
       <ToastContainer {...toastContainerConfig} />
     </div>
