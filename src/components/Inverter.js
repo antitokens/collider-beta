@@ -263,17 +263,19 @@ const Inverter = ({
 
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
-      <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full gap-2">
-        <div className="flex flex-row justify-between items-center text-sm text-gray-500 w-full">
+      <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full">
+        <div className="flex flex-row justify-between items-center text-xs text-gray-500 w-full">
           <div className="flex flex-row items-center text-left text-xs">
             <div className="relative group">
-              <div className="cursor-pointer">&#9432;&nbsp;</div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <div className="cursor-pointer">
+                &#9432;<span className="text-[10px]">&nbsp;</span>
+              </div>
+              <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Displays your tokens in withdrawal
               </span>
             </div>
-            <div>&nbsp;{`Claim`}:&nbsp;</div>
-            <div className="flex flex-row items-center font-sfmono pt-[0px] lg:pt-[2px]">
+            <div className="text-[11px] tracking-tight">{`Claim`}:&nbsp;</div>
+            <div className="flex flex-row items-center font-sfmono">
               <div className="text-accent-secondary text-[11px] opacity-95">
                 {!active ? "0.0" : formatCount(updatedBalances[0])}
               </div>
@@ -284,10 +286,10 @@ const Inverter = ({
             </div>
           </div>
 
-          <div className="flex items-center text-[12px]">
+          <div className="flex items-center text-[11px]">
             <div className="flex items-center">
-              P/L:&nbsp;
-              <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[2px]">
+              <span className="tracking-tight">P/L:</span>&nbsp;
+              <span className="text-[11px] text-white font-sfmono">
                 <span className="text-gray-400">$</span>
                 {formatCount(dollarGain.toFixed(2))}
               </span>
@@ -306,10 +308,10 @@ const Inverter = ({
                 </span>
                 )&nbsp;
               </span>
-              <span className="relative group">
+              <span className="relative group text-xs">
                 <span className="cursor-pointer">
                   &#9432;
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                     {`Displays your current realised profit or loss`}
                   </span>
                 </span>
@@ -317,13 +319,13 @@ const Inverter = ({
             </div>
           </div>
         </div>
-        <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full -mt-2">
-          <div className="text-[12px] text-gray-500 text-left">
+        <div className="flex flex-row justify-between items-end text-xs text-gray-500 w-full">
+          <div className="text-[11px] text-gray-500 text-left">
             <span className="relative group">
-              <span className="cursor-pointer">
+              <span className="cursor-pointer text-xs">
                 &#9432;
                 <span
-                  className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                  className={`absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                 >
                   {`Claims opening date & time: ${
                     balances.endTime !== "-" && balances.startTime !== "-"
@@ -333,16 +335,16 @@ const Inverter = ({
                 </span>
               </span>
             </span>{" "}
-            <span>&nbsp;Start: </span>
+            <span className="text-[11px] tracking-tight">Start</span>:&nbsp;
             <span className="font-sfmono text-gray-400 text-[11px]">
               {balances.endTime !== "-"
                 ? parseToUTC(balances.endTime, isMobile).split(",")[0]
                 : "..."}
             </span>{" "}
           </div>
-          <div className="flex flex-row text-right text-[12px]">
+          <div className="flex flex-row text-right text-[11px]">
             <div>
-              <span>Change:&nbsp;</span>
+              <span className="text-[11px] tracking-tight">Change</span>:&nbsp;
               <span className="text-[11px] text-white font-sfmono">
                 <span
                   className={`text-${
@@ -392,11 +394,11 @@ const Inverter = ({
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                   : "0.0"}
               </span>
-              &nbsp;&nbsp;
+              &nbsp;
             </div>
             <span className="relative group">
-              <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <div className="cursor-pointer text-xs">&#9432;</div>
+              <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 {`Displays your current realised changes in PRO & ANTI`}
               </span>
             </span>
@@ -408,7 +410,7 @@ const Inverter = ({
           disabled={
             loading || !active || updatedBalances[0] + updatedBalances[1] <= 0
           }
-          className={`w-1/4 my-2 py-1 rounded-3xl transition-all ${
+          className={`w-1/4 my-2 py-1 pt-2 rounded-3xl transition-all text-sm tracking-tight ${
             disabled ||
             loading ||
             !active ||
@@ -439,7 +441,7 @@ const Inverter = ({
               <div className="flex flex-row items-center gap-2 bg-black px-3 py-2 rounded w-full">
                 <label
                   htmlFor="anti"
-                  className="text-accent-secondary font-medium text-xs sm:text-sm"
+                  className="text-accent-secondary font-medium text-xs sm:text-xs"
                 >
                   ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}
                   PRO
@@ -454,7 +456,7 @@ const Inverter = ({
                     fill ? (Number(pro) > 0 ? Number(pro).toFixed(2) : "") : ""
                   }
                   placeholder="-"
-                  className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed"
+                  className="font-sfmono bg-black text-white text-xs sm:text-xs w-full disabled:cursor-not-allowed"
                   readOnly
                 />
               </div>
@@ -462,9 +464,9 @@ const Inverter = ({
                 <img
                   src={`${BASE_URL}/assets/pro.png`}
                   alt="pro-logo"
-                  className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
+                  className="w-[10px] h-[10px] mr-1 inline-block opacity-75"
                 />
-                BAL:{" "}
+                <span className="text-[10px] tracking-tight">BAL:</span>{" "}
                 <span className="font-sfmono text-accent-secondary text-opacity-75">
                   {Number(proBalance)
                     .toFixed(0)
@@ -489,13 +491,13 @@ const Inverter = ({
                   }
                   placeholder="-"
                   disabled={true}
-                  className="font-sfmono bg-black text-white text-xs sm:text-sm w-full disabled:cursor-not-allowed text-right"
+                  className="font-sfmono bg-black text-white text-xs sm:text-xs w-full disabled:cursor-not-allowed text-right"
                   readOnly
                 />
                 <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
                 <label
                   htmlFor="anti"
-                  className="text-accent-orange font-medium text-xs sm:text-sm"
+                  className="text-accent-orange font-medium text-xs sm:text-xs"
                 >
                   ${process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""}
                   ANTI
@@ -505,9 +507,9 @@ const Inverter = ({
                 <img
                   src={`${BASE_URL}/assets/anti.png`}
                   alt="anti-logo"
-                  className="w-3 h-3 mt-[-2px] mr-1 inline-block opacity-75"
+                  className="w-[10px] h-[10px] mr-1 inline-block opacity-75"
                 />
-                BAL:{" "}
+                <span className="text-[10px] tracking-tight">BAL:</span>{" "}
                 <span className="font-sfmono text-accent-primary text-opacity-90">
                   {Number(antiBalance)
                     .toFixed(0)
@@ -519,9 +521,9 @@ const Inverter = ({
           </div>
         </div>
       )}
-      <div className="flex flex-row justify-between text-sm text-gray-500 w-full mt-4">
+      <div className="flex flex-row justify-between text-[12px] text-gray-500 w-full mt-4">
         <div>
-          Tokens:{" "}
+          <span className="tracking-tight">Tokens:</span>{" "}
           <span className="text-[12px] text-white font-sfmono">
             {Number(anti) + Number(pro) > 0 && fill
               ? (Number(anti) + Number(pro)).toFixed(2)
@@ -529,7 +531,7 @@ const Inverter = ({
           </span>
         </div>
         <div>
-          USD:{" "}
+          <span className="tracking-tight">USD:</span>{" "}
           <span className="text-[12px] text-white font-sfmono">
             <span className="text-gray-400">$</span>
             {Number(anti) + Number(pro) > 0 && fill
@@ -545,7 +547,7 @@ const Inverter = ({
       <button
         onClick={handleWithdrawal}
         disabled={loading || !active || !fill}
-        className={`w-full mt-4 py-3 rounded-full transition-all ${
+        className={`w-full mt-4 py-3 rounded-full transition-all tracking-tight ${
           disabled ||
           loading ||
           !active ||

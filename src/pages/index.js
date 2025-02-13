@@ -69,7 +69,6 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 import { TwitterIcon } from "lucide-react";
 
 /* Main Page */
-
 const Home = ({ BASE_URL }) => {
   const [trigger, setTrigger] = useState(null); // Shared state
   const [metadata, setMetadata] = useState({
@@ -178,7 +177,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [loading, setLoading] = useState(isMetaLoading);
   const [, setDynamicsCurrent] = useState([]);
   const [, setDynamicsFinal] = useState([]);
-  const [truth] = useState([0, 1]); // ANTI-PRO
+  const [truth] = useState([0, 0]); // ANTI-PRO
   const [triggerAddPrediction, setTriggerAddPrediction] = useState(false);
   const isMobile = useIsMobile();
   const [predictionHistoryChartData, setPredictionHistoryChartData] =
@@ -1417,7 +1416,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                 />
               </svg>
             </div>
-            <p className="text-left">
+            <p className="text-left tracking-tight text-sm">
               The prediction program is built off-chain for demonstration
               purposes. No funds will be deducted from your wallet.
             </p>
@@ -1431,7 +1430,11 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               <img
                 src={`${BASE_URL}/assets/antitoken_logo_large.webp`}
                 alt="Antitoken Logo"
-                className="w-32 h-32 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+                className={
+                  isMobile
+                    ? "w-24 h-24 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+                    : "w-32 h-32 rounded-full object-cover border-4 border-gray-800/50 relative z-10 transition-transform duration-200 ease-out"
+                }
               />
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 text-gray-300 font-bold font-outfit">
@@ -1448,10 +1451,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               <div className="flex flex-row justify-between">
                 {isMobile && (
                   <div className="-ml-2">
-                    <TimeTicker
-                      fontSize={isMobile ? 12 : 12}
-                      isMobile={isMobile}
-                    />
+                    <TimeTicker isMobile={isMobile} />
                   </div>
                 )}
                 {!isMobile && <div> </div>}
@@ -1520,7 +1520,11 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               <div className="bg-dark-card p-4 rounded-lg w-full mb-4 border border-gray-800">
                 <div className="flex flex-row justify-between items-center mb-2">
                   <div className="flex flex-row items-center mb-2 w-2/3">
-                    <div className="text-2xl text-gray-300 text-left font-medium">
+                    <div
+                      className={`${
+                        isMobile ? "text-lg" : "text-2xl"
+                      } tracking-word text-gray-300 text-left font-medium`}
+                    >
                       {predictions[prediction]
                         ? predictions[prediction].title
                         : ""}
@@ -1529,7 +1533,11 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     <span className="relative group">
                       <span className="cursor-pointer text-sm text-gray-400">
                         &#9432;
-                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        <span
+                          className={`absolute ${
+                            isMobile ? "text-xs" : "text-sm"
+                          } tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-full lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                        >
                           {predictions[prediction]
                             ? predictions[prediction].description
                             : ""}
@@ -1538,22 +1546,24 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     </span>
                   </div>
                   <button
-                    className="bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 rounded-md text-sm font-normal disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
+                    className={`bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 pt-2 rounded-md ${
+                      isMobile ? "text-xs pt-2" : "text-sm"
+                    } font-normal disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed`}
                     onClick={() => setTriggerAddPrediction(true)}
                     disabled={
                       alreadyPosted || !wallet.connected || wallet.disconnecting
                     }
                   >
-                    Add New
+                    <span className="tracking-tight">Add New</span>
                   </button>
                 </div>
-                <div className="flex flex-row justify-between">
-                  <div className="text-[12px] text-gray-500 text-left">
+                <div className="flex flex-row justify-between text-xs">
+                  <div className="text-[11px] text-gray-500 text-left">
                     <span className="relative group">
                       <span className="cursor-pointer">
                         &#9432;
                         <span
-                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                          className={`absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                         >
                           {`Prediction market opening date & time: ${
                             predictionConfig.startTime !== "-"
@@ -1570,8 +1580,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           }`}
                         </span>
                       </span>
-                    </span>{" "}
-                    &nbsp;Start:{" "}
+                    </span>
+                    &nbsp;<span className="tracking-tight">Start</span>:{" "}
                     <span
                       className={`font-sfmono text-gray-400 text-[11px] ${
                         loading ? "animate-pulse" : ""
@@ -1586,15 +1596,15 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           : parseToUTC(predictionConfig.startTime, isMobile)
                         : "..."}
                     </span>
-                    &nbsp;
+                    <span className="text-[4px]"> </span>
                     {predictionConfig.startTime !== "-" && !isMobile && (
                       <span className="font-sfmono text-gray-600 text-[10px]">
                         UTC
                       </span>
                     )}{" "}
                   </div>
-                  <div className={`text-[12px] text-gray-500 text-right`}>
-                    Close:{" "}
+                  <div className={`text-[11px] text-gray-500 text-right`}>
+                    <span className="tracking-tight">Close</span>:{" "}
                     <span
                       className={`font-sfmono text-gray-400 text-[11px] ${
                         loading ? "animate-pulse" : ""
@@ -1609,18 +1619,17 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           : parseToUTC(predictionConfig.endTime, isMobile)
                         : "..."}
                     </span>
-                    &nbsp;&nbsp;
+                    <span className="text-[4px]"> </span>
                     {predictionConfig.endTime !== "-" && !isMobile && (
                       <span className="font-sfmono text-gray-600 text-[10px]">
                         UTC
                       </span>
                     )}{" "}
-                    &nbsp;
                     <span className="relative group">
                       <span className="cursor-pointer">
                         &#9432;
                         <span
-                          className={`absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[107px] lg:translate-x-[31px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                          className={`absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[107px] lg:translate-x-[31px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                         >
                           {`Prediction market closing date & time: ${
                             predictionConfig.endTime !== "-"
@@ -1641,14 +1650,14 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                   </div>
                 </div>
                 <div className="flex flex-row justify-between">
-                  <div className="text-[12px] text-gray-500 text-left">
+                  <div className="text-[11px] text-gray-500 text-left">
                     <span className="relative group">
                       <span className="cursor-pointer">&#9432;</span>
-                      <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                      <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                         Total amount of PRO & ANTI in the prediction pool
                       </span>
                     </span>{" "}
-                    &nbsp;Global Pool:{" "}
+                    <span className="tracking-tight">Global Pool</span>:{" "}
                     <span className="font-sfmono text-accent-secondary text-[11px] text-opacity-80">
                       {formatCount(predictionConfig.proLive)}
                     </span>
@@ -1672,8 +1681,11 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                       {""}
                     </span>
                   </div>
-                  <div className="text-[12px] text-gray-500 text-right">
-                    {isMobile ? "Ratio:" : "Token Ratio:"}{" "}
+                  <div className="text-[11px] text-gray-500 text-right">
+                    <span className="tracking-tight">
+                      {isMobile ? "Ratio" : "Token Ratio"}
+                    </span>
+                    {": "}
                     <span className="font-sfmono text-gray-400 text-[11px]">
                       {predictionConfig.antiLive > 0 &&
                       predictionConfig.proLive > 0
@@ -1682,11 +1694,10 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           ).toFixed(3)
                         : "0.000"}
                     </span>{" "}
-                    &nbsp;
                     <span className="relative group">
                       <span className="cursor-pointer">
                         &#9432;
-                        <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[149px] lg:-translate-x-[40px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 z-10 -translate-x-[149px] lg:-translate-x-[40px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                           Ratio PRO:ANTI in the prediction pool
                         </span>
                       </span>
@@ -1715,12 +1726,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                             {isMobile && <div>&nbsp;&nbsp;&nbsp;</div>}
                           </div>
                           <div className={isMobile ? `pt-0` : `-mt-[2.5px]`}>
-                            {!isMobile && (
-                              <TimeTicker
-                                fontSize={isMobile ? 12 : 12}
-                                isMobile={isMobile}
-                              />
-                            )}
+                            {!isMobile && <TimeTicker isMobile={isMobile} />}
                           </div>
                           <div className={isMobile ? `pt-1` : `pt-[4px]`}>
                             <TimeCompletionPie
@@ -1745,7 +1751,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                             <span className="cursor-pointer text-xs text-gray-500">
                               &#9432;
                             </span>
-                            <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                            <span className="absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-1/2 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                               {`Displays the global expectation of the outcome over time`}
                             </span>
                           </span>
@@ -1758,7 +1764,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           }
                           onClick={() => {}}
                         >
-                          <span className="text-xs opacity-75">1H</span>
+                          <span className="text-xs opacity-75">
+                            1<span className="text-[10px]">H</span>
+                          </span>
                         </div>
                         <div
                           className={
@@ -1768,7 +1776,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           }
                           onClick={() => {}}
                         >
-                          <span className="text-xs opacity-75">6H</span>
+                          <span className="text-xs opacity-75">
+                            6<span className="text-[10px]">H</span>
+                          </span>
                         </div>
                         <div
                           className={
@@ -1778,7 +1788,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           }
                           onClick={() => {}}
                         >
-                          <span className="text-xs opacity-75">12H</span>
+                          <span className="text-xs opacity-75">
+                            12<span className="text-[10px]">H</span>
+                          </span>
                         </div>
                         <div
                           className={
@@ -1788,7 +1800,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           }
                           onClick={() => {}}
                         >
-                          <span className="text-xs opacity-75">1D</span>
+                          <span className="text-xs opacity-75">
+                            1<span className="text-[10px]">D</span>
+                          </span>
                         </div>
                         <div
                           className={
@@ -1798,7 +1812,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           }
                           onClick={() => {}}
                         >
-                          <span className="text-xs opacity-75">1W</span>
+                          <span className="text-xs opacity-75">
+                            1<span className="text-[10px]">W</span>
+                          </span>
                         </div>
                         <div
                           className={
@@ -1844,15 +1860,15 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                       ? "No"
                       : "Unknown"
                   }
-                  tellers="ChatGPT-o1, Claude Sonnet 3.5, Grok 2"
+                  tellers="ChatGPT-o1/o3-mini, Claude Sonnet 3.5, Grok 2"
                   isMobile={isMobile}
                 />
               </div>
             </div>
             {showCollider ? (
-              <div className="w-1/3">
+              <div className={isMobile ? `w-full` : `w-1/3`}>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800 w-full">
-                  <h2 className="text-xl text-gray-300 text-left font-medium">
+                  <h2 className="text-lg text-gray-300 text-left font-medium tracking-word">
                     Predict
                   </h2>
                   <button
@@ -1864,7 +1880,12 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-                      <div className="mr-1">Switch to Claim</div>
+                      <div className="mr-1 tracking-word">
+                        <span className="opacity-75 text-[11px]">
+                          Switch to
+                        </span>{" "}
+                        Claim
+                      </div>
                       <svg
                         width="13"
                         height="13"
@@ -1912,9 +1933,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                 />
               </div>
             ) : (
-              <div className="w-1/3">
+              <div className={isMobile ? `w-full` : `w-1/3`}>
                 <div className="flex justify-between items-center px-5 py-2 backdrop-blur-sm bg-dark-card rounded-t-lg border border-gray-800 w-full">
-                  <h2 className="text-xl text-gray-300 text-left font-medium">
+                  <h2 className="text-lg text-gray-300 text-left font-medium tracking-word">
                     Claim
                   </h2>
                   <button
@@ -1926,7 +1947,12 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     }}
                   >
                     <div className="flex flex-row items-center text-accent-orange hover:text-white transition-colors">
-                      <div className="mr-1">Switch to Predict</div>
+                      <div className="mr-1 tracking-word">
+                        <span className="opacity-75 text-[11px]">
+                          Switch to
+                        </span>{" "}
+                        Predict
+                      </div>
                       <svg
                         width="13"
                         height="13"
@@ -1981,13 +2007,13 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
 
         <div className="backdrop-blur-xl bg-dark-card/50 mt-20 p-12 rounded-2xl border border-gray-800 text-center">
           <h2 className="font-grotesk text-3xl font-bold mb-6 bg-gradient-to-r from-accent-primary from-20% to-accent-secondary to-90% bg-clip-text text-transparent">
-            Ready to dive in?
+            Ready to dive in
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-gray-300 mb-8 tracking-word">
             Join the future of prediction markets
           </p>
           <button
-            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-full text-lg font-semibold"
+            className="bg-accent-primary hover:opacity-90 text-gray-300 px-8 py-3 rounded-full text-lg font-semibold tracking-tight"
             onClick={() => setShowBuyTokensModal(true)}
           >
             Buy Tokens

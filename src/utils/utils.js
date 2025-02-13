@@ -597,11 +597,9 @@ export function addRepetitionMarkers(arr, marker = "₁") {
 export const TimeTicker = ({
   showSeconds = false,
   className = "",
-  fontSize = 12,
   isMobile = true,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [font, setFont] = useState(fontSize);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -610,10 +608,6 @@ export const TimeTicker = ({
 
     return () => clearInterval(timer);
   }, []);
-
-  useEffect(() => {
-    setFont(fontSize);
-  }, [fontSize]);
 
   const formatUTCDateTime = (date) => {
     // Format date
@@ -642,10 +636,12 @@ export const TimeTicker = ({
     >
       <div className="flex items-center space-x-2">
         <span className={`font-mono text-gray-300`}>
-          <span className={`text-[${font.toString()}px]`}>
+          <span className={`text-[12px]`}>
             {formatUTCDateTime(currentTime)}
           </span>
-          <span className={`ml-1 text-[11px] text-gray-500`}>UTC</span>
+          <span className={`ml-1 text-[11px] text-gray-500`}>
+            <span className="text-[4px]"> </span>UTC
+          </span>
         </span>
       </div>
     </div>

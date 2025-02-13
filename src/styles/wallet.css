@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.wallet-button {
+  border: 2px solid black !important;
+  color: black !important;
+}
+
+.wallet-button:hover {
+  border: 2px solid grey !important;
+  color: white !important;
+}
+
+button.wallet-adapter-button-trigger {
+  @apply font-grotesk tracking-tight;
+}
+
+button.wallet-adapter-button {
+  @apply font-grotesk tracking-tight;
+}
+
+button.wallet-adapter-modal-list-more {
+  @apply font-grotesk tracking-tight;
+}
+
+h1 {
+  @apply font-grotesk tracking-tight;
+}

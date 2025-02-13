@@ -6,7 +6,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear().toString();
 
   return (
-    <footer className="border-t border-gray-800/50 backdrop-blur-xl bg-dark-card/95 w-full">
+    <footer className="border-t border-gray-800/50 backdrop-blur-xl bg-dark-card/95 w-full tracking-tight">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Description */}
@@ -16,17 +16,17 @@ const Footer = () => {
               alt="Antitoken Logo"
               className="h-12 w-auto rounded-full border border-gray-800/50"
             />
-            <p className="text-gray-400">
+            <p className="text-gray-400 text-sm">
               Quantum-inspired token pair for the future of DeSci
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-300">
+            <h3 className="text-md font-semibold mb-4 text-gray-300">
               Quick Links
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-2 text-sm">
               <Link
                 href="#benefits"
                 className="block text-gray-400 hover:text-accent-primary transition-colors"
@@ -50,10 +50,10 @@ const Footer = () => {
 
           {/* Community */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-300">
+            <h3 className="text-md font-semibold mb-4 text-gray-300">
               Community
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-2 text-sm">
               <a
                 href="https://x.com/antitokens"
                 target="_blank"
@@ -110,8 +110,8 @@ const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-300">Legal</h3>
-            <div className="space-y-2">
+            <h3 className="text-md font-semibold mb-4 text-gray-300">Legal</h3>
+            <div className="space-y-2 text-sm">
               <Link
                 href="#"
                 className="block text-gray-400 hover:text-accent-primary transition-colors"
@@ -128,7 +128,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+        <div className="border-t text-xs border-gray-800 mt-12 pt-8 text-center text-gray-400">
           <p>&copy; {currentYear} Antitoken. All rights reserved.</p>
         </div>
       </div>

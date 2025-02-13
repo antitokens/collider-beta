@@ -645,16 +645,18 @@ const Collider = ({
   return (
     <div className="flex flex-col items-center justify-center w-full bg-black border-x border-b border-gray-800 rounded-b-lg p-5 relative">
       <div className="flex flex-col items-center bg-dark-card p-4 rounded w-full mb-4 gap-2">
-        <div className="flex flex-row justify-between items-center text-sm text-gray-500 w-full">
+        <div className="flex flex-row justify-between items-center text-xs text-gray-500 w-full">
           <div className="flex flex-row items-center text-left text-xs">
             <div className="relative group">
-              <div className="cursor-pointer">&#9432;&nbsp;</div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+              <div className="cursor-pointer">
+                &#9432;<span className="text-[10px]">&nbsp;</span>
+              </div>
+              <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                 Displays your tokens in the prediction pool
               </span>
             </div>
-            <div>{`Total`}:&nbsp;</div>
-            <div className="flex flex-row items-center font-sfmono pt-[0px] lg:pt-[2px]">
+            <div className="text-[11px] tracking-tight">{`Total`}:&nbsp;</div>
+            <div className="flex flex-row items-center font-sfmono">
               <div className={`text-accent-secondary text-[11px] opacity-95`}>
                 {proUsage > 0 ? "+" : ""}
                 {formatCount(proUsage.toFixed(2))}
@@ -667,10 +669,10 @@ const Collider = ({
             </div>
           </div>
 
-          <div className="flex items-center text-[12px]">
+          <div className="flex items-center text-[11px]">
             <div className="flex items-center">
-              P/L:&nbsp;
-              <span className="text-[11px] text-white font-sfmono pt-[0px] lg:pt-[2px]">
+              <span className="tracking-tight">P/L:</span>&nbsp;
+              <span className="text-[11px] text-white font-sfmono">
                 <span
                   className={`text-${
                     gain >= 0 ? "accent-secondary" : "accent-primary"
@@ -680,9 +682,9 @@ const Collider = ({
                 </span>
               </span>
               <span className="relative group">
-                <span className="cursor-pointer">
+                <span className="cursor-pointer text-xs">
                   &#9432;
-                  <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                  <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                     {`Displays your current maximum gain`}
                   </span>
                 </span>
@@ -690,27 +692,27 @@ const Collider = ({
             </div>
           </div>
         </div>
-        <div className="flex flex-row justify-between items-end text-sm text-gray-500 w-full -mt-2">
-          <div className="text-[12px] text-gray-500 text-left">
+        <div className="flex flex-row justify-between items-end text-xs text-gray-500 w-full -mt-2">
+          <div className="text-[11px] text-gray-500 text-left">
             <span className="relative group">
-              <span className="cursor-pointer">
+              <span className="cursor-pointer text-xs">
                 &#9432;
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {`Displays your current dollar stake`}
                 </span>
               </span>
             </span>
-            <span>&nbsp;USD: </span>
-            <span className="font-sfmono text-gray-400 text-[11px]">
+            <span className="tracking-tight">&nbsp;USD: </span>
+            <span className="font-sfmono text-white text-[11px]">
               <span className="text-gray-400">$</span>
               {dollarStake >= 1e4
                 ? formatCount(dollarStake.toFixed(2))
                 : dollarStake.toFixed(2)}
             </span>
           </div>
-          <div className="flex flex-row text-right text-[12px]">
+          <div className="flex flex-row text-right text-[11px]">
             <div>
-              <span>↓&nbsp;</span>
+              <span className="tracking-tight">Now:&nbsp;</span>
               <span className="text-[11px] text-white font-sfmono">
                 <span className="text-gray-400">$</span>
                 {dollarBet >= 1e4
@@ -718,11 +720,10 @@ const Collider = ({
                   : dollarBet.toFixed(2)}
               </span>
             </div>
-            &nbsp;
             <div className="flex flex-row text-right">
               <div>
-                &nbsp;P/L:{" "}
-                <span className="text-[11px] text-white font-sfmono pt-[2px]">
+                &nbsp;<span className="tracking-tight">P/L:</span>{" "}
+                <span className="text-[11px] text-white font-sfmono">
                   <span
                     className={`text-${
                       newGain >= 0 ? "accent-secondary" : "accent-primary"
@@ -734,8 +735,8 @@ const Collider = ({
                 </span>
               </div>
               <span className="relative group">
-                <div className="cursor-pointer text-xs mt-[2px]">&#9432;</div>
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                <div className="cursor-pointer text-xs">&#9432;</div>
+                <span className="absolute tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-[224px] lg:-translate-x-[55px] -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                   {`Displays your current bet and updated maximum gain`}
                 </span>
               </span>
@@ -756,7 +757,7 @@ const Collider = ({
             onWheel={(e) => e.target.blur()}
             disabled={!active}
             placeholder="0"
-            className="w-full text-center text-sm text-white font-sfmono bg-black rounded px-2 py-2"
+            className="w-full text-center text-xs text-white font-sfmono bg-black rounded px-2 py-2"
           />
           <input
             className="w-full"
@@ -784,13 +785,13 @@ const Collider = ({
             <div className="flex items-center bg-black px-3 py-2 rounded gap-2 w-full">
               <label
                 htmlFor="pro"
-                className="text-accent-secondary font-medium text-sm relative group"
+                className="text-accent-secondary font-medium text-xs relative group"
                 onClick={() => copyText(process.env.NEXT_PUBLIC_PRO_TOKEN_MINT)}
               >
                 {`${
                   process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""
                 }PRO`}
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-0 lg:-translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
+                <span className="absolute text-xs p-2 bg-gray-800 rounded-md w-32 -translate-x-0 lg:-translate-x-1/4 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
                   {`Click to copy CA`}
                 </span>
               </label>
@@ -805,7 +806,7 @@ const Collider = ({
                 onFocus={(e) => e.target.select()}
                 onMouseDown={(e) => setPro(0)}
                 placeholder="0"
-                className="w-full font-sfmono bg-black text-white text-sm"
+                className="w-full font-sfmono bg-black text-white text-xs"
                 disabled={!active}
               />
             </div>
@@ -837,13 +838,13 @@ const Collider = ({
                 onFocus={(e) => e.target.select()}
                 onMouseDown={(e) => setAnti(0)}
                 placeholder="0"
-                className="w-full font-sfmono bg-black text-white text-xs sm:text-sm text-right"
+                className="w-full font-sfmono bg-black text-white text-xs sm:text-xs text-right"
                 disabled={!active}
               />
               <span className="border-l border-gray-400/50 h-[0.8rem]"></span>
               <label
                 htmlFor="anti"
-                className="text-accent-orange font-medium text-sm relative group"
+                className="text-accent-orange font-medium text-xs relative group"
                 onClick={() =>
                   copyText(process.env.NEXT_PUBLIC_ANTI_TOKEN_MINT)
                 }
@@ -851,7 +852,7 @@ const Collider = ({
                 {`${
                   process.env.NEXT_PUBLIC_TEST_TOKENS === "true" ? "t" : ""
                 }ANTI`}
-                <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-32 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
+                <span className="absolute text-xs p-2 bg-gray-800 rounded-md w-32 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block font-normal">
                   {`Click to copy CA`}
                 </span>
               </label>
@@ -893,7 +894,7 @@ const Collider = ({
               <div className="cursor-pointer text-xs text-gray-400">
                 &#9432;
               </div>
-              <span className="absolute text-sm p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block z-50">
+              <span className="absolute text-xs p-2 bg-gray-800 rounded-md w-64 -translate-x-3/4 lg:-translate-x-1/2 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block z-50">
                 {`Displays your current, past and net predictions`}
               </span>
             </div>
@@ -914,7 +915,7 @@ const Collider = ({
       <button
         onClick={handlePrediction}
         disabled={loading || !active || !wallet.connected}
-        className={`w-full mt-4 py-3 rounded-full transition-all ${
+        className={`w-full mt-4 py-3 rounded-full transition-all tracking-tight ${
           loading ||
           !active ||
           (anti === 0 && pro === 0) ||

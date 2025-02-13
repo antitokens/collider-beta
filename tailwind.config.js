@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
     extend: {
+      letterSpacing: {
+        tight: "-0.1em",
+        word: "-0.05em",
+      },
       backgroundImage: {
         "custom-gradient":
           "linear-gradient(94deg, rgba(255,0,0,1) 0%, rgba(1,200,196,1) 33%, rgba(198,124,37,1) 66%, rgba(1,196,146,1) 100%)",
@@ -23,8 +27,9 @@ export default {
         "accent-cement": "rgb(58, 182, 193)",
       },
       fontFamily: {
-        grotesk: ["Space Grotesk", "sans-serif"],
-        outfit: ["Outfit", "sans-serif"],
+        grotesk: ["OCR A Std", "sans-serif"],
+        outfit: ["OCR A Std", "sans-serif"],
+        poppins: ["Poppins", "sans-serif"],
         ocr: ["OCR A Std", "monospace"],
         sfmono: ["SF Mono Round", "monospace"],
       },
