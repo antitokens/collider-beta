@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
-import { BadgeCheck, CircleAlert } from "lucide-react";
+import { BadgeCheck, CircleAlert, Binoculars } from "lucide-react";
 import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -41,20 +41,19 @@ export const monthsReverse = {
 export const predictionsInit = {
   1: {
     prediction: 1,
-    title: "Some Random Title",
-    description: "Some description that is sufficiently long",
+    title: "Will 2 + 2 = 4?",
+    description: "Predict the future value of 2 + 2",
     schedule: ["1901-01-17T00:00:00.000Z", "1901-01-28T00:00:00.000Z"],
     wallet: "",
     signature: "",
     timestamp: "",
+    resolved: false,
+    truth: [0, 0],
   },
 };
 
 // Resolution init
-export const resolutionInit = {
-  prediction: 0,
-  milton: "",
-};
+export const resolutionInit = {};
 
 // Metadata init
 export const metadataInit = (supply = 1e9) => {
@@ -161,6 +160,24 @@ export const toastContainerConfig = {
 
 // Custom toast functions with styled notifications
 export const toast = {
+  info: (message) => {
+    toastify(message, {
+      position: "top-right",
+      style: {
+        background: "#111212",
+        color: "rgb(0, 157, 255)",
+        fontFamily: "SF Mono Round",
+        fontSize: "18px",
+        border: "2px solid rgba(0, 157, 255, 0.8)",
+        borderRadius: "8px",
+      },
+      progressStyle: {
+        background: "rgba(0, 157, 255, 0.8)",
+      },
+      icon: <Binoculars className="stroke-[rgb(0, 157, 255)]" />,
+    });
+  },
+
   success: (message) => {
     toastify(message, {
       position: "top-right",
@@ -347,12 +364,45 @@ export const formatPrecise = (_value, _decimal = 1) => {
     .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-export const formatTruth = (_truth) => {
-  // TODO: Parse truth properly
-  return _truth.join(",");
+export const formatTruth = (truth, resolved, isOver) => {
+  // Convert truth[0] to a number.
+  const value = parseFloat(truth[1]); // $PRO value
+  if (!isOver) {
+    return "Pending";
+  }
+
+  if (resolved) {
+    if (value === 0) {
+      return "Hell No";
+    } else if (value > 0 && value <= 0.05) {
+      return "No";
+    } else if (value > 0.05 && value <= 0.25) {
+      return "Strong No";
+    } else if (value > 0.25 && value < 0.5) {
+      return "Kinda No";
+    } else if (value === 0.5) {
+      return "Split";
+    } else if (value > 0.5 && value <= 0.75) {
+      return "Kinda Yes";
+    } else if (value > 0.75 && value <= 0.95) {
+      return "Strong Yes";
+    } else if (value > 0.95 && value < 1) {
+      return "Yes";
+    } else if (value === 1) {
+      return "Hell Yes";
+    } else {
+      return "Invalid value";
+    }
+  }
+
+  if (!resolved) {
+    return "Unresolved";
+  }
+
+  return "";
 };
 
-export const PROGRAM_ID = ""; // FIX!
+export const PROGRAM_ID = "AMXPSQ9nWyHUqq7dB1KaPf3Wm9SMTofi7jFFGYp6pfFW";
 
 export const emptyConfig = {
   startTime: "-",

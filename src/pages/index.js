@@ -17,6 +17,7 @@ import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/animation/Animations";
 import { equalise } from "../utils/equaliser";
 import Metadata from "../components/Metadata";
+import { Resolution } from "../components/Resolution";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import TimeCompletionPie from "../components/animation/TimePie";
@@ -183,8 +184,10 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [triggerAddPrediction, setTriggerAddPrediction] = useState(false);
   const isMobile = useIsMobile();
   const [resolved, setResolved] = useState(false);
-  const [triggerResolution, setTriggerResolution] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [triggerResolution, setTriggerResolution] = useState(true);
   const [resolution, setResolution] = useState(null);
+  const [showResolution, setShowResolution] = useState(false);
   const [predictionHistoryChartData, setPredictionHistoryChartData] =
     useState(null);
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
@@ -229,31 +232,48 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
 
   useEffect(() => {
     const fetchResolution = async () => {
-      const blobResolution = await getResolution(prediction);
-      const dataResolution = JSON.parse(blobResolution.message);
-      const addResolution =
+      const query = {
+        question: predictions[prediction] ? predictions[prediction].title : "",
+        context: predictions[prediction]
+          ? predictions[prediction].description
+          : "",
+      };
+      const blobResolution = await getResolution(query);
+      const dataResolution = JSON.parse(blobResolution.prediction);
+      const thisResolution =
         JSON.stringify(dataResolution) === "{}"
           ? resolutionInit
           : dataResolution;
-      return addResolution;
+      return thisResolution;
     };
 
     if (triggerResolution) {
       // Wait for the Promise to resolve before setting the state
+      setConfirmed(predictions[prediction].resolved);
       fetchResolution()
         .then((result) => {
-          setResolution(result.resolution);
-          setTruth(result.truth);
+          setResolution(result);
+          const number = Number(result.probabilityAssessment.probability);
+          if (!isNaN(number) && number >= 0 && number <= 100) {
+            setTruth([
+              1 - result.probabilityAssessment.probability / 100,
+              result.probabilityAssessment.probability / 100,
+            ]);
+          } else {
+            setTruth([0, 0]);
+          }
+          setTriggerResolution(false);
           setResolved(true);
         })
         .catch((error) => {
           console.error("Error fetching resolution:", error);
           toast.error("Failed to resolve prediction!");
+          setTriggerResolution(false);
           setResolution(resolutionInit);
           setResolved(false);
         });
     }
-  }, [triggerResolution, prediction]);
+  }, [triggerResolution, prediction, predictions]);
 
   useEffect(() => {
     // Update metadata based on some condition or data
@@ -489,6 +509,10 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     setTimeout(() => setShowAnimation(state), 100);
   };
 
+  const handleShowResolution = () => {
+    setShowResolution(true);
+  };
+
   useEffect(() => {
     if (wallet.disconnecting) {
       setShowCollider(true);
@@ -509,6 +533,11 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       setIsOver(new Date() > new Date(predictions[prediction].schedule[1]));
     }
   }, [predictions, prediction]);
+
+  useEffect(() => {
+    if (triggerResolution && !isMetaLoading)
+      toast.info("Milton AI is thinking ...");
+  }, [triggerResolution, isMetaLoading]);
 
   useEffect(() => {
     if (refresh && !wallet.disconnecting) {
@@ -1559,8 +1588,15 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                       } tracking-word text-gray-300 text-left font-medium`}
                     >
                       {predictions[prediction]
-                        ? predictions[prediction].title
+                        ? predictions[prediction].title.split("?")[0]
                         : ""}
+                      <span
+                        className={`${
+                          isMobile ? "text-lg" : "text-2xl"
+                        } ml-[2px] font-mono`}
+                      >
+                        ?
+                      </span>
                       &nbsp;
                     </div>
                     <span className="relative group">
@@ -1579,8 +1615,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                     </span>
                   </div>
                   <button
-                    className={`bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 py-1 pt-2 rounded-md ${
-                      isMobile ? "text-xs pt-2" : "text-sm"
+                    className={`bg-transparent border border-accent-primary hover:border-gray-300 text-accent-primary hover:text-gray-300 px-2 pt-1 mb-2 rounded-md ${
+                      isMobile ? "text-xs pt-1" : "text-sm"
                     } font-normal disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed`}
                     onClick={() => setTriggerAddPrediction(true)}
                     disabled={
@@ -1762,7 +1798,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                             {!isMobile && <TimeTicker isMobile={isMobile} />}
                           </div>
                           <div
-                            className={`${isMobile ? "pt-[6px]" : "pt-[6px]"}`}
+                            className={`${isMobile ? "pt-[7px]" : "pt-[7px]"}`}
                           >
                             <div className="relative group cursor-pointer">
                               <TimeCompletionPie
@@ -1785,47 +1821,60 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                           </div>
                           <button
                             className={`ml-4 ${
-                              resolved
+                              triggerResolution ? "animate-pulse" : ""
+                            } ${
+                              confirmed
                                 ? "text-accent-secondary"
+                                : resolved
+                                ? "text-blue-400"
                                 : !started
                                 ? "text-gray-400"
                                 : !isOver
                                 ? "text-accent-primary"
-                                : "text-blue-400"
-                            } ${isMobile ? "pt-[5.8px]" : "mt-1"}`}
-                            onClick={() => setTriggerResolution(true)}
+                                : "text-white"
+                            }`}
+                            disabled={!isOver || !started || triggerResolution}
+                            onClick={() =>
+                              confirmed
+                                ? handleShowResolution()
+                                : setTriggerResolution(true)
+                            }
                           >
                             <div className={`relative group cursor-pointer`}>
                               <svg
+                                className="w-6 h-6"
+                                aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
                                 height="24"
-                                viewBox="0 0 32 32"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                class="lucide lucide-orbit"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
                               >
-                                <circle cx="12" cy="12" r="3" />
-                                <circle cx="19" cy="5" r="2" />
-                                <circle cx="5" cy="19" r="2" />
-                                <path d="M10.4 21.9a10 10 0 0 0 9.941-15.416" />
-                                <path d="M13.5 2.1a10 10 0 0 0-9.841 15.416" />
+                                <path d="M11.209 3.816a1 1 0 0 0-1.966.368l.325 1.74a5.338 5.338 0 0 0-2.8 5.762l.276 1.473.055.296c.258 1.374-.228 2.262-.63 2.998-.285.52-.527.964-.437 1.449.11.586.22 1.173.75 1.074l12.7-2.377c.528-.1.418-.685.308-1.27-.103-.564-.636-1.123-1.195-1.711-.606-.636-1.243-1.306-1.404-2.051-.233-1.085-.275-1.387-.303-1.587-.009-.063-.016-.117-.028-.182a5.338 5.338 0 0 0-5.353-4.39l-.298-1.592Z" />
+                                <path
+                                  fillRule="evenodd"
+                                  d="M6.539 4.278a1 1 0 0 1 .07 1.412c-1.115 1.23-1.705 2.605-1.83 4.26a1 1 0 0 1-1.995-.15c.16-2.099.929-3.893 2.342-5.453a1 1 0 0 1 1.413-.069Z"
+                                  clipRule="evenodd"
+                                />
+                                <path d="M8.95 19.7c.7.8 1.7 1.3 2.8 1.3 1.6 0 2.9-1.1 3.3-2.5l-6.1 1.2Z" />
                               </svg>
+
                               <span className="cursor-pointer">
                                 <span
                                   className={`absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-64 -translate-x-2/3 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
                                 >
                                   {`Resolution Status: ${
-                                    resolution
-                                      ? "Resolved"
+                                    triggerResolution
+                                      ? "Milton AI is thinking ..."
+                                      : confirmed
+                                      ? "Confirmed"
+                                      : resolved
+                                      ? "Resolved! Awaiting Confirmation"
                                       : !started
                                       ? "Unknown"
                                       : !isOver
                                       ? "Pending"
-                                      : "Awaiting Confirmation"
+                                      : "Unresolved"
                                   }`}
                                 </span>
                               </span>
@@ -1945,17 +1994,10 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                 <Metadata
                   type="Binary"
                   oracle="Milton AI Agent"
-                  truth={
-                    truth.join(",") === "0,1" && isOver
-                      ? "Yes"
-                      : truth.join(",") === "1,0" && isOver
-                      ? "No"
-                      : truth.join(",") === "0,0" && isOver
-                      ? "Unresolved"
-                      : formatTruth(truth)
-                  }
-                  tellers="ChatGPT-o1/o3-mini, Claude Sonnet 3.5, Grok 2"
+                  truth={formatTruth(truth, resolved, isOver)}
+                  tellers="ChatGPT o1/o3-mini, Claude 3.5 Sonnet, Grok 2"
                   isMobile={isMobile}
+                  onResolutionShow={handleShowResolution}
                 />
               </div>
             </div>
@@ -2117,6 +2159,11 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       <BuyTokenModal
         isVisible={showBuyTokensModal}
         setIsVisible={setShowBuyTokensModal}
+      />
+      <Resolution
+        isVisible={showResolution}
+        setIsVisible={setShowResolution}
+        resolution={JSON.stringify(resolution)}
       />
       <PredictionMetaModal
         wallet={wallet}

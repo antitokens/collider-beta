@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       letterSpacing: {
-        mine: "-0.1em",
-        word: "-0.05em",
+        tight: "-0.1em",
+        word: "-0.12em",
       },
       backgroundImage: {
         "custom-gradient":

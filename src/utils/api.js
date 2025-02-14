@@ -86,8 +86,16 @@ export const recordWithdrawal = async (wallet, config, prediction) => {
 };
 
 // Get resolution from Milton AI
-export const getResolution = async (prediction) => {
-  const response = await fetch(`${API_MILTON}/resolution/${prediction}/`);
+export const getResolution = async (query) => {
+  const message = JSON.stringify({
+    question: query.question,
+    context: query.context,
+  });
+  const response = await fetch(`${API_MILTON}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: message,
+  });
   if (!response.ok) {
     throw new Error(`FAILED_TO_GET_RESOLUTION: ${response.status}`);
   }
