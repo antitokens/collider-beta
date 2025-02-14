@@ -1,5 +1,4 @@
-import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 // Creates a new poll on-chain.
 // pollDetails should include:

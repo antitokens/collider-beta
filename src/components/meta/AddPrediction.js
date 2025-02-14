@@ -3,7 +3,13 @@ import { TimeTicker } from "../../utils/utils";
 import { createPoll } from "../../utils/solana";
 import UTCDateTimePicker from "../utils/DatePicker";
 
-const PredictionMetaModal = ({ wallet, isVisible, setIsVisible, onSubmit }) => {
+const PredictionMetaModal = ({
+  program,
+  wallet,
+  isVisible,
+  setIsVisible,
+  onSubmit,
+}) => {
   const emptyForm = {
     title: "",
     description: "",

@@ -13,7 +13,9 @@ import {
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import * as anchor from "@coral-xyz/anchor";
-import { PublicKey } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
+import { PublicKey, Connection, SystemProgram } from "@solana/web3.js";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import idl from "../utils/idl/collider_beta.json";
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
@@ -60,6 +62,7 @@ import {
   formatTruth,
   addRepetitionMarkers,
   PROGRAM_ID,
+  ANCHOR_PROVIDER_URL,
 } from "../utils/utils";
 import {
   getBalance,
@@ -192,16 +195,31 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [triggerResolution, setTriggerResolution] = useState(true);
   const [resolution, setResolution] = useState(null);
   const [showResolution, setShowResolution] = useState(false);
+  const [program, setProgram] = useState(null);
   const [predictionHistoryChartData, setPredictionHistoryChartData] =
     useState(null);
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
     useState("1D");
 
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
+  useEffect(() => {
+    async function initProgram() {
+      // Create a provider manually
+      const providerUrl =
+        ANCHOR_PROVIDER_URL || "https://api.devnet.solana.com";
+      const connection = new Connection(providerUrl);
+      const provider = new anchor.AnchorProvider(connection, wallet, {
+        commitment: "confirmed",
+      });
+      anchor.setProvider(provider);
+      const programId = new PublicKey(PROGRAM_ID);
+      const anchorProgram = new anchor.Program(idl, programId, provider);
+      setProgram(anchorProgram);
+    }
 
-  const programId = new PublicKey(PROGRAM_ID);
-  const program = new anchor.Program(idl, programId, provider);
+    if (typeof window !== "undefined" && wallet.publicKey) {
+      initProgram();
+    }
+  }, [wallet]);
 
   useEffect(() => {
     // Check if this is a page reload
@@ -2178,6 +2196,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
         resolution={JSON.stringify(resolution)}
       />
       <PredictionMetaModal
+        program={program}
         wallet={wallet}
         isVisible={triggerAddPrediction}
         setIsVisible={setTriggerAddPrediction}

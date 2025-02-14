@@ -4,6 +4,10 @@ import { BadgeCheck, CircleAlert, Binoculars } from "lucide-react";
 import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
+// Solana utils
+export const PROGRAM_ID = "AMXPSQ9nWyHUqq7dB1KaPf3Wm9SMTofi7jFFGYp6pfFW";
+export const ANCHOR_PROVIDER_URL = "https://api.devnet.solana.com";
+
 // Convert month abbreviation to number
 export const months = {
   Jan: 0,
@@ -401,8 +405,6 @@ export const formatTruth = (truth, resolved, isOver) => {
 
   return "";
 };
-
-export const PROGRAM_ID = "AMXPSQ9nWyHUqq7dB1KaPf3Wm9SMTofi7jFFGYp6pfFW";
 
 export const emptyConfig = {
   startTime: "-",
