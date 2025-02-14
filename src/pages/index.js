@@ -12,6 +12,9 @@ import {
   TorusWalletAdapter,
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
+import * as anchor from "@coral-xyz/anchor";
+import { PublicKey } from "@solana/web3.js";
+import idl from "../utils/idl/collider_beta.json";
 import Collider from "../components/Collider";
 import Inverter from "../components/Inverter";
 import { Stars, ParticleCollision } from "../components/animation/Animations";
@@ -56,6 +59,7 @@ import {
   getAllPlotColor,
   formatTruth,
   addRepetitionMarkers,
+  PROGRAM_ID,
 } from "../utils/utils";
 import {
   getBalance,
@@ -192,6 +196,12 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     useState(null);
   const [predictionHistoryTimeframe, setPredictionHistoryTimeframe] =
     useState("1D");
+
+  const provider = anchor.AnchorProvider.env();
+  anchor.setProvider(provider);
+
+  const programId = new PublicKey(PROGRAM_ID);
+  const program = new anchor.Program(idl, programId, provider);
 
   useEffect(() => {
     // Check if this is a page reload
@@ -2049,6 +2059,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                   </button>
                 </div>
                 <Collider
+                  program={program}
                   prediction={prediction}
                   wallet={wallet}
                   antiBalance={antiBalance}
@@ -2116,6 +2127,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                   </button>
                 </div>
                 <Inverter
+                  program={program}
                   prediction={prediction}
                   wallet={wallet}
                   antiBalance={antiBalance}

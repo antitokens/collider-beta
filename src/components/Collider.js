@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { recordPrediction } from "../utils/api";
+import { depositTokens } from "../utils/solana";
 import { collide } from "../utils/collider";
 import { equalise } from "../utils/equaliser";
 import BinaryOrbit from "./animation/BinaryOrbit";
@@ -21,6 +22,7 @@ Chart.register(...registerables);
 
 /* Collider Container */
 const Collider = ({
+  program,
   prediction = 0,
   wallet,
   antiBalance,

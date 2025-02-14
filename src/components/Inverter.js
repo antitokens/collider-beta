@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { recordWithdrawal } from "../utils/api";
+import { withdrawTokens } from "../utils/solana";
 import { equalise } from "../utils/equaliser";
 import { ToastContainer } from "react-toastify";
 import { Chart, registerables } from "chart.js";
@@ -18,6 +19,7 @@ Chart.register(...registerables);
 
 /* Inverter Container */
 const Inverter = ({
+  program,
   prediction = 0,
   wallet,
   antiBalance,
