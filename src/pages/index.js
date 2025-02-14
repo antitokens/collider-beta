@@ -13,7 +13,6 @@ import {
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import * as anchor from "@coral-xyz/anchor";
-import { BN } from "@coral-xyz/anchor";
 import { PublicKey, Connection, SystemProgram } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import idl from "../utils/idl/collider_beta.json";
@@ -212,8 +211,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       });
       anchor.setProvider(provider);
       const programId = new PublicKey(PROGRAM_ID);
-      const anchorProgram = new anchor.Program(idl, programId, provider);
-      setProgram(anchorProgram);
+      //const anchorProgram = new anchor.Program(idl, programId, provider);
+      //setProgram(anchorProgram);
     }
 
     if (typeof window !== "undefined" && wallet.publicKey) {
@@ -1863,7 +1862,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                             }`}
                             disabled={!isOver || !started || triggerResolution}
                             onClick={() =>
-                              confirmed
+                              resolved
                                 ? handleShowResolution()
                                 : setTriggerResolution(true)
                             }
@@ -2194,6 +2193,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
         isVisible={showResolution}
         setIsVisible={setShowResolution}
         resolution={JSON.stringify(resolution)}
+        isMobile={isMobile}
       />
       <PredictionMetaModal
         program={program}
