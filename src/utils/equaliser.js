@@ -32,7 +32,7 @@ export const equalise = (
       return (
         (parity *
           Math.exp(
-            -Math.pow(Math.log(2e9 - baryon), 2) /
+            -Math.pow(Math.log(2e9 - baryon), 2) / // TODO: Move to continuous
               (2 * Math.pow(photon <= 1 ? 1 : 1 + Math.log(photon), 2))
           )) /
         norm

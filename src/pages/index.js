@@ -184,7 +184,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [loading, setLoading] = useState(isMetaLoading);
   const [, setDynamicsCurrent] = useState([]);
   const [, setDynamicsFinal] = useState([]);
-  const [truth, setTruth] = useState([0, 0]); // ANTI-PRO
+  const [truth, setTruth] = useState([]); // ANTI-PRO
   const [triggerAddPrediction, setTriggerAddPrediction] = useState(false);
   const isMobile = useIsMobile();
   const [resolved, setResolved] = useState(false);
@@ -270,7 +270,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               result.probabilityAssessment.probability / 100,
             ]);
           } else {
-            setTruth([0, 0]);
+            setTruth([]);
           }
           setTriggerResolution(false);
           setResolved(true);
