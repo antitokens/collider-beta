@@ -86,10 +86,11 @@ export const recordWithdrawal = async (wallet, config, prediction) => {
 };
 
 // Get resolution from Milton AI
-export const getResolution = async (query) => {
+export const getResolution = async (query, prediction) => {
   const message = JSON.stringify({
     question: query.question,
     context: query.context,
+    index: prediction,
   });
   const response = await fetch(`${API_MILTON}`, {
     method: "POST",

@@ -191,7 +191,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const isMobile = useIsMobile();
   const [resolved, setResolved] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
-  const [triggerResolution, setTriggerResolution] = useState(true);
+  const [triggerResolution, setTriggerResolution] = useState(false);
   const [resolution, setResolution] = useState(null);
   const [showResolution, setShowResolution] = useState(false);
   const [program, setProgram] = useState(null);
@@ -265,7 +265,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           ? predictions[prediction].description
           : "",
       };
-      const blobResolution = await getResolution(query);
+      const blobResolution = await getResolution(query, prediction);
       const dataResolution = JSON.parse(blobResolution.prediction);
       const thisResolution =
         JSON.stringify(dataResolution) === "{}"
@@ -274,33 +274,31 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       return thisResolution;
     };
 
-    if (triggerResolution) {
+    if (triggerResolution && !resolved) {
       // Wait for the Promise to resolve before setting the state
-      setConfirmed(predictions[prediction].resolved);
+      setResolved(true);
+      setConfirmed(predictions[prediction].confirmed);
       fetchResolution()
         .then((result) => {
+          setTriggerResolution(false);
+          toast.info("Milton AI finished thinking!");
           setResolution(result);
           const number = Number(result.probabilityAssessment.probability);
           if (!isNaN(number) && number >= 0 && number <= 100) {
-            setTruth([
-              1 - result.probabilityAssessment.probability / 100,
-              result.probabilityAssessment.probability / 100,
-            ]);
+            setTruth([1 - number / 100, number / 100]);
           } else {
             setTruth([]);
           }
-          setTriggerResolution(false);
-          setResolved(true);
         })
         .catch((error) => {
+          setTriggerResolution(false);
           console.error("Error fetching resolution:", error);
           toast.error("Failed to resolve prediction!");
-          setTriggerResolution(false);
           setResolution(resolutionInit);
           setResolved(false);
         });
     }
-  }, [triggerResolution, prediction, predictions]);
+  }, [triggerResolution, prediction, predictions, resolved]);
 
   useEffect(() => {
     // Update metadata based on some condition or data
@@ -562,9 +560,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   }, [predictions, prediction]);
 
   useEffect(() => {
-    if (triggerResolution && !isMetaLoading)
-      toast.info("Milton AI is thinking ...");
-  }, [triggerResolution, isMetaLoading]);
+    if (triggerResolution) toast.default("Milton AI is thinking...");
+  }, [triggerResolution]);
 
   useEffect(() => {
     if (refresh && !wallet.disconnecting) {
@@ -688,6 +685,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           setIsMetaLoading(false);
           setIsMetaLoaded(true);
           setRefresh(false);
+          setTriggerResolution(true);
         }
       };
       // Fetch whenever prediction changes or refresh is triggered
@@ -1892,7 +1890,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                                 >
                                   {`Resolution Status: ${
                                     triggerResolution
-                                      ? "Milton AI is thinking ..."
+                                      ? "Milton AI is thinking..."
                                       : confirmed
                                       ? "Confirmed"
                                       : resolved

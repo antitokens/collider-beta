@@ -52,7 +52,8 @@ export const predictionsInit = {
     signature: "",
     timestamp: "",
     resolved: false,
-    truth: [0, 0],
+    confirmed: false,
+    truth: [],
   },
 };
 
@@ -164,6 +165,24 @@ export const toastContainerConfig = {
 
 // Custom toast functions with styled notifications
 export const toast = {
+  default: (message) => {
+    toastify(message, {
+      position: "top-right",
+      style: {
+        background: "#111212",
+        color: "rgb(255, 255, 255)",
+        fontFamily: "SF Mono Round",
+        fontSize: "18px",
+        border: "2px solid rgba(255, 255, 255, 0.8)",
+        borderRadius: "8px",
+      },
+      progressStyle: {
+        background: "rgba(255, 255, 255, 0.8)",
+      },
+      icon: <Binoculars className="stroke-[rgb(255, 255, 255)]" />,
+    });
+  },
+
   info: (message) => {
     toastify(message, {
       position: "top-right",
@@ -178,7 +197,7 @@ export const toast = {
       progressStyle: {
         background: "rgba(0, 157, 255, 0.8)",
       },
-      icon: <Binoculars className="stroke-[rgb(0, 157, 255)]" />,
+      icon: <BadgeCheck className="stroke-[rgb(0, 157, 255)]" />,
     });
   },
 
