@@ -13,6 +13,7 @@ import {
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import * as anchor from "@coral-xyz/anchor";
+import { Program, BN } from "@coral-xyz/anchor";
 import { PublicKey, Connection, SystemProgram } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import idl from "../utils/idl/collider_beta.json";
@@ -210,9 +211,13 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
         commitment: "confirmed",
       });
       anchor.setProvider(provider);
-      const programId = new PublicKey(PROGRAM_ID);
-      //const anchorProgram = new anchor.Program(idl, programId, provider);
-      //setProgram(anchorProgram);
+      // Try creating program with string ID
+      const anchorProgram = new Program(
+        idl,
+        "AMXPSQ9nWyHUqq7dB1KaPf3Wm9SMTofi7jFFGYp6pfFW",
+        provider
+      );
+      setProgram(anchorProgram);
     }
 
     if (typeof window !== "undefined" && wallet.publicKey) {
@@ -1504,8 +1509,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               </svg>
             </div>
             <p className="text-left tracking-tight text-sm">
-              The prediction program is built off-chain for demonstration
-              purposes. No funds will be deducted from your wallet.
+              The prediction program is built on devnet for demonstration
+              purposes. No funds will be deducted from your mainnet wallet.
             </p>
           </div>
         </div>

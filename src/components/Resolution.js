@@ -42,7 +42,7 @@ export const Resolution = ({
               </svg>
             </button>
 
-            <h3 className="text-xl font-bold text-gray-300 mb-8 mt-8 text-center">
+            <h3 className="text-2xl font-bold text-gray-300 mb-8 mt-8 text-center">
               Milton AI:
             </h3>
             {/* Scrollable content container */}
@@ -62,8 +62,8 @@ export const Resolution = ({
 export const Section = ({ title, data, isMobile }) => {
   return (
     <div className="mb-3 p-2">
-      <h2 className="text-md font-mono mb-1 capitalize text-accent-steel">
-        {addSpaces(title)}
+      <h2 className="text-md font-ocr tracking-tight mb-1 capitalize text-accent-steel">
+        {"⦿ " + addSpaces(title)}
       </h2>
       <div className="space-y-1">
         {typeof data === "object" && data !== null ? (
@@ -72,17 +72,29 @@ export const Section = ({ title, data, isMobile }) => {
               <span
                 className={`${
                   isMobile ? "w-28" : "w-40"
-                } font-mono capitalize text-xs text-gray-400`}
+                } font-ocr capitalize text-xs tracking-tight text-gray-400`}
               >
                 {addSpaces(key)}:
               </span>
-              <span className="flex-1 font-mono text-xs bg-black rounded-sm py-[2px] px-2">
-                {Array.isArray(value) ? value.join(", ") : String(value)}
+              <span
+                className={`flex-1 font-mono text-xs bg-black rounded-sm py-[2px] px-2 ${
+                  key === "probability" || key === "level"
+                    ? "text-green-400"
+                    : key === "question"
+                    ? "text-accent-cement"
+                    : "text-gray-400"
+                }`}
+              >
+                {Array.isArray(value)
+                  ? value.join(". ")
+                  : key === "probability"
+                  ? String(value) + "%"
+                  : String(value)}
               </span>
             </div>
           ))
         ) : (
-          <p className="font-mono text-xs bg-black rounded-sm py-[4px] px-2">
+          <p className="font-mono text-xs bg-black rounded-sm py-[4px] px-2 text-accent-cement">
             {String(data)}
           </p>
         )}

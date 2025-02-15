@@ -35,22 +35,24 @@ const BuyTokenModal = ({ isVisible, setIsVisible }) => {
               </svg>
             </button>
 
-            <h3 className="text-2xl font-bold text-gray-300 mb-4">
+            <h3 className="text-2xl font-bold text-gray-300 mb-4 tracking-tight">
               Buy Tokens
             </h3>
-            <p className="text-gray-400 mb-6">Choose a token to purchase:</p>
+            <p className="text-gray-400 mb-6 tracking-tight">
+              Choose a token to purchase:
+            </p>
             <div className="space-y-4">
               <a
                 target="_blank"
                 href="https://raydium.io/swap/?inputMint=sol&outputMint=HB8KrN7Bb3iLWUPsozp67kS4gxtbA4W5QJX4wKPvpump"
-                className="block text-center bg-accent-primary hover:bg-accent-primary/90 text-white px-6 py-3 rounded-lg"
+                className="block text-center bg-accent-primary hover:bg-accent-primary/90 text-white px-6 py-3 rounded-lg tracking-tight"
               >
                 Buy <span className="font-bold text-lg">$ANTI</span> Token
               </a>
               <a
                 target="_blank"
                 href="https://raydium.io/swap/?inputMint=sol&outputMint=CWFa2nxUMf5d1WwKtG9FS9kjUKGwKXWSjH8hFdWspump"
-                className="block text-center bg-accent-secondary/90 hover:bg-accent-secondary/80 text-white px-6 py-3 rounded-lg"
+                className="block text-center bg-accent-secondary/70 hover:bg-accent-secondary/80 text-white px-6 py-3 rounded-lg tracking-tight"
               >
                 Buy <span className="font-bold text-lg">$PRO</span> Token
               </a>
