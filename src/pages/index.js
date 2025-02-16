@@ -5,6 +5,8 @@ import {
   ConnectionProvider,
   WalletProvider,
   useWallet,
+  useAnchorWallet,
+  useConnection,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import {
@@ -12,9 +14,14 @@ import {
   TorusWalletAdapter,
   LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
-import * as anchor from "@coral-xyz/anchor";
-import { Program, BN } from "@coral-xyz/anchor";
-import { PublicKey, Connection, SystemProgram } from "@solana/web3.js";
+import {
+  Program,
+  BN,
+  AnchorProvider,
+  setProvider,
+  Wallet,
+} from "@coral-xyz/anchor";
+import { PublicKey, Keypair, Connection, SystemProgram } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import idl from "../utils/idl/collider_beta.json";
 import Collider from "../components/Collider";
@@ -150,6 +157,7 @@ const Home = ({ BASE_URL }) => {
 
 const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const wallet = useWallet();
+  const anchorWallet = useAnchorWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const [prediction, setPrediction] = useState(1);
   const [alreadyPosted, setAlreadyPosted] = useState(false);
@@ -207,16 +215,11 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       const providerUrl =
         ANCHOR_PROVIDER_URL || "https://api.devnet.solana.com";
       const connection = new Connection(providerUrl);
-      const provider = new anchor.AnchorProvider(connection, wallet, {
+      const provider = new AnchorProvider(connection, anchorWallet, {
         commitment: "confirmed",
       });
-      anchor.setProvider(provider);
-      // Try creating program with string ID
-      const anchorProgram = new Program(
-        idl,
-        "AMXPSQ9nWyHUqq7dB1KaPf3Wm9SMTofi7jFFGYp6pfFW",
-        provider
-      );
+      setProvider(provider);
+      const anchorProgram = new Program(idl, PROGRAM_ID, provider);
       setProgram(anchorProgram);
     }
 
