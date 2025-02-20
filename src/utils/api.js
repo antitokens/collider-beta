@@ -1,7 +1,7 @@
 import {
   createPrediction,
-  depositTokens, 
-  withdrawTokens, 
+  depositTokens,
+  withdrawTokens,
   derivePDAs,
 } from "./solana";
 
@@ -20,12 +20,12 @@ export const addPrediction = async (program, wallet, config, prediction) => {
 
     // Execute the transaction to create a poll
     const tx = await createPrediction(program, predictionConfig, wallet);
-    
+
     // Only call the API if the transaction succeeds.
     if (!tx) {
       throw new Error("FAILED_TO_CREATE_POLL");
     }
-    
+
     const response = await fetch(`${API_URL}/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -39,12 +39,12 @@ export const addPrediction = async (program, wallet, config, prediction) => {
         timestamp: config.timestamp,
       }),
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(errorText || "FAILED_TO_ADD_PREDICTION");
     }
-    
+
     if (response.headers.get("Content-Type")?.includes("application/json")) {
       return await response.json();
     } else {

@@ -69,6 +69,7 @@ import {
   addRepetitionMarkers,
   PROGRAM_ID,
   ANCHOR_PROVIDER_URL,
+  AI_MODELS,
 } from "../utils/utils";
 import {
   getBalance,
@@ -193,7 +194,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [loading, setLoading] = useState(isMetaLoading);
   const [, setDynamicsCurrent] = useState([]);
   const [, setDynamicsFinal] = useState([]);
-  const [truth, setTruth] = useState([]); // ANTI-PRO
+  const [truth, setTruth] = useState([]); // [$ANTI, $PRO]
   const [triggerAddPrediction, setTriggerAddPrediction] = useState(false);
   const isMobile = useIsMobile();
   const [resolved, setResolved] = useState(false);
@@ -272,7 +273,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           : "",
       };
       const blobResolution = await getResolution(query, prediction);
-      const dataResolution = JSON.parse(blobResolution.prediction);
+      const dataResolution = blobResolution.predictions;
       const thisResolution =
         JSON.stringify(dataResolution) === "{}"
           ? resolutionInit
@@ -289,7 +290,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           setTriggerResolution(false);
           toast.info("Milton AI finished thinking!");
           setResolution(result);
-          const number = Number(result.probabilityAssessment.probability);
+          const number = Number(result.aggregate.meanProbability);
           if (!isNaN(number) && number >= 0 && number <= 100) {
             setTruth([1 - number / 100, number / 100]);
           } else {
@@ -567,7 +568,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   }, [predictions, prediction]);
 
   useEffect(() => {
-    if (triggerResolution) toast.default("Milton AI is thinking...");
+    if (triggerResolution) toast.default(`Milton AI is consulting `);
   }, [triggerResolution]);
 
   useEffect(() => {
@@ -2027,7 +2028,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                   type="Binary"
                   oracle="Milton AI Agent"
                   truth={formatTruth(truth, resolved, isOver)}
-                  tellers="ChatGPT o1/o3-mini, Claude 3.5 Sonnet, Grok 2"
+                  tellers={AI_MODELS.map((model) => model.name).join(", ")}
                   isMobile={isMobile}
                   onResolutionShow={handleShowResolution}
                 />

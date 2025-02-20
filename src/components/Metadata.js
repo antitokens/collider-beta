@@ -1,4 +1,5 @@
 import React from "react";
+import { AI_MODELS } from "../utils/utils";
 
 // Helper function to determine the text color class
 const getTextColor = (truth, value) => {
@@ -111,7 +112,7 @@ const Metadata = ({
   type = "Binary",
   oracle = "Milton AI Agent",
   truth = "Unresolved",
-  tellers = "ChatGPT o1/o3-mini, Claude 3.5 Sonnet, Grok 2",
+  tellers = AI_MODELS.map(model => model.name).join(', '),
   isMobile = false,
   onResolutionShow,
 }) => {

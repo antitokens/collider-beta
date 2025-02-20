@@ -6,8 +6,19 @@ import "react-toastify/dist/ReactToastify.css";
 
 // Solana utils
 export const PROGRAM_ID = "AMXPSQ9nWyHUqq7dB1KaPf3Wm9SMTofi7jFFGYp6pfFW";
-export const ANTITOKEN_MULTISIG = "BVkN9PdWJA8YYJCHdkd46Y4HUPhvSUf38qcHYgFUopBh";
+export const ANTITOKEN_MULTISIG =
+  "BVkN9PdWJA8YYJCHdkd46Y4HUPhvSUf38qcHYgFUopBh";
 export const ANCHOR_PROVIDER_URL = "https://api.devnet.solana.com";
+
+// Define the models to query
+export const AI_MODELS = [
+  { name: "ChatGPT-4o-mini", id: "openai/gpt-4o-mini" },
+  { name: "Grok 2", id: "x-ai/grok-2" },
+  { name: "Claude 3.5 Sonnet", id: "anthropic/claude-3.5-sonnet" },
+  { name: "DeepSeek R1", id: "deepseek/deepseek-r1:free" },
+  { name: "Perplexity R1", id: "perplexity/r1-1776" },
+  { name: "Gemini 2.0 Flash", id: "google/gemini-2.0-flash-001" },
+];
 
 // Convert month abbreviation to number
 export const months = {

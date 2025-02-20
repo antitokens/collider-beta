@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
-import { PublicKey, SystemProgram, Keypair } from "@solana/web3.js";
+import { PublicKey, SystemProgram, Keypair, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { ANTITOKEN_MULTISIG } from "./utils";
 
@@ -54,7 +54,8 @@ export function derivePDAs(program, pollIndex) {
  */
 export async function createPrediction(program, predictionConfig, creator) {
   const { title, description, startTime, endTime } = predictionConfig;
-  const { statePda, pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(program);
+  const { statePda, pollPda, pollAntiTokenPda, pollProTokenPda } =
+    derivePDAs(program);
 
   const accounts = {
     state: statePda,
@@ -84,8 +85,18 @@ export async function createPrediction(program, predictionConfig, creator) {
  * @returns {Promise<string>} The transaction signature.
  */
 export async function depositTokens(program, depositConfig, user) {
-  const { pollIndex, anti, pro, depositTimestamp, userAntiToken, userProToken } = depositConfig;
-  const { pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(program, pollIndex);
+  const {
+    pollIndex,
+    anti,
+    pro,
+    depositTimestamp,
+    userAntiToken,
+    userProToken,
+  } = depositConfig;
+  const { pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(
+    program,
+    pollIndex
+  );
 
   const accounts = {
     poll: pollPda,
@@ -112,8 +123,16 @@ export async function depositTokens(program, depositConfig, user) {
  * @param {Array} signers - An array of signer keypairs required for the withdrawal.
  * @returns {Promise<string>} The transaction signature.
  */
-export async function withdrawTokens(program, pollIndexValue, remainingAccounts, signers) {
-  const { pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(program, pollIndexValue);
+export async function withdrawTokens(
+  program,
+  pollIndexValue,
+  remainingAccounts,
+  signers
+) {
+  const { pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(
+    program,
+    pollIndexValue
+  );
 
   const accounts = {
     poll: pollPda,
