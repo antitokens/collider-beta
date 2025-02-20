@@ -5,7 +5,6 @@ import {
   ConnectionProvider,
   WalletProvider,
   useWallet,
-  useAnchorWallet,
   useConnection,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
@@ -157,7 +156,6 @@ const Home = ({ BASE_URL }) => {
 
 const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const wallet = useWallet();
-  const anchorWallet = useAnchorWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const [prediction, setPrediction] = useState(1);
   const [alreadyPosted, setAlreadyPosted] = useState(false);
@@ -215,12 +213,12 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       const providerUrl =
         ANCHOR_PROVIDER_URL || "https://api.devnet.solana.com";
       const connection = new Connection(providerUrl);
-      const provider = new AnchorProvider(connection, anchorWallet, {
+      const provider = new AnchorProvider(connection, wallet, {
         commitment: "confirmed",
       });
       setProvider(provider);
-      const anchorProgram = new Program(idl, PROGRAM_ID, provider);
-      setProgram(anchorProgram);
+      const newProgram = new Program(idl, PROGRAM_ID, provider);
+      setProgram(newProgram);
     }
 
     if (typeof window !== "undefined" && wallet.publicKey) {
@@ -484,7 +482,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     try {
       setTriggerAddPrediction(false);
       const blobNewPrediction = await addPrediction(
-        wallet.publicKey,
+        program,
+        wallet,
         formData,
         predictions.length + 1
       );

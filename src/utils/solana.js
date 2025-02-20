@@ -1,99 +1,9 @@
-import { Connection, PublicKey } from "@solana/web3.js";
+import * as anchor from "@coral-xyz/anchor";
+import { BN } from "@coral-xyz/anchor";
+import { PublicKey, SystemProgram, Keypair } from "@solana/web3.js";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { ANTITOKEN_MULTISIG } from "./utils";
 
-// Creates a new poll on-chain.
-// pollDetails should include:
-//   - title (string)
-//   - description (string)
-//   - startTime (string, e.g., ISO date)
-//   - endTime (string, e.g., ISO date)
-//   - fixedTimestamp (BN, a fixed timestamp for testing or use-case)
-export async function createPoll(
-  program,
-  pollDetails,
-  accounts,
-  creatorSigner
-) {
-  const { title, description, startTime, endTime, fixedTimestamp } =
-    pollDetails;
-
-  // The accounts object should contain:
-  // {
-  //   state: statePda,
-  //   poll: pollPda,
-  //   authority: creatorPublicKey,
-  //   pollAntiToken: pollAntiTokenPda,
-  //   pollProToken: pollProTokenPda,
-  //   antiMint: antiMintPublicKey,
-  //   proMint: proMintPublicKey,
-  //   vault: vaultPublicKey,
-  //   tokenProgram: TOKEN_PROGRAM_ID,
-  //   systemProgram: SystemProgram.programId,
-  // }
-  return await program.methods
-    .createPoll(title, description, startTime, endTime, null, fixedTimestamp)
-    .accounts(accounts)
-    .signers([creatorSigner])
-    .rpc();
-}
-
-// Deposits tokens into an existing poll.
-// depositDetails should include:
-//   - pollIndex (BN)
-//   - anti (BN): amount of anti tokens to deposit
-//   - pro (BN): amount of pro tokens to deposit
-//   - depositTimestamp (BN)
-export async function depositTokens(
-  program,
-  depositDetails,
-  accounts,
-  userSigner
-) {
-  const { pollIndex, anti, pro, depositTimestamp } = depositDetails;
-
-  // The accounts object should contain:
-  // {
-  //   poll: pollPda,
-  //   authority: userPublicKey,
-  //   userAntiToken: userAntiTokenAddress,
-  //   userProToken: userProTokenAddress,
-  //   pollAntiToken: pollAntiTokenPda,
-  //   pollProToken: pollProTokenPda,
-  //   tokenProgram: TOKEN_PROGRAM_ID,
-  // }
-  return await program.methods
-    .depositTokens(pollIndex, anti, pro, depositTimestamp)
-    .accounts(accounts)
-    .signers([userSigner])
-    .rpc();
-}
-
-// Withdraws tokens from a poll after equalisation.
-// remainingAccounts is an array of additional account objects (for writable token accounts).
-// signers is an array of signer objects needed for the withdrawal.
-export async function withdrawTokens(
-  program,
-  pollIndex,
-  accounts,
-  remainingAccounts,
-  signers
-) {
-  // The accounts object should contain:
-  // {
-  //   poll: pollPda,
-  //   authority: vaultPublicKey, // e.g. the multisig or admin authority
-  //   pollAntiToken: pollAntiTokenPda,
-  //   pollProToken: pollProTokenPda,
-  //   tokenProgram: TOKEN_PROGRAM_ID,
-  // }
-  return await program.methods
-    .bulkWithdrawTokens(pollIndex)
-    .accounts(accounts)
-    .remainingAccounts(remainingAccounts)
-    .signers(signers)
-    .rpc();
-}
-
-/* Solana API */
 const endpoint = process.env.NEXT_PUBLIC_SOL_RPC;
 const connection = new Connection(endpoint);
 
@@ -104,6 +14,122 @@ export const ANTI_TOKEN_MINT = new PublicKey(
 export const PRO_TOKEN_MINT = new PublicKey(
   process.env.NEXT_PUBLIC_PRO_TOKEN_MINT
 );
+
+/**
+ * Derives PDAs using the given poll index and the program ID.
+ * @param {object} program - The Anchor program instance.
+ * @param {BN} pollIndex - The poll index (BN).
+ * @returns {Object} An object containing the PDAs.
+ */
+export function derivePDAs(program, pollIndex) {
+  const [adminPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("admin")],
+    program.programId
+  );
+  const [statePda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("state")],
+    program.programId
+  );
+  const [pollPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("poll"), pollIndex.toArrayLike(Buffer, "le", 8)],
+    program.programId
+  );
+  const [pollAntiTokenPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("anti_token"), pollIndex.toArrayLike(Buffer, "le", 8)],
+    program.programId
+  );
+  const [pollProTokenPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("pro_token"), pollIndex.toArrayLike(Buffer, "le", 8)],
+    program.programId
+  );
+  return { adminPda, statePda, pollPda, pollAntiTokenPda, pollProTokenPda };
+}
+
+/**
+ * Creates a new poll on-chain.
+ * @param {object} program - The Anchor program instance.
+ * @param {object} predictionConfig - Contains title, description, startTime, endTime, fixedTimestamp (BN).
+ * @param {Keypair} creator - The keypair signing the transaction.
+ * @returns {Promise<string>} The transaction signature.
+ */
+export async function createPrediction(program, predictionConfig, creator) {
+  const { title, description, startTime, endTime } = predictionConfig;
+  const { statePda, pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(program);
+
+  const accounts = {
+    state: statePda,
+    poll: pollPda,
+    authority: creator.publicKey,
+    pollAntiToken: pollAntiTokenPda,
+    pollProToken: pollProTokenPda,
+    antiMint: ANTI_TOKEN_MINT,
+    proMint: PRO_TOKEN_MINT,
+    vault: ANTITOKEN_MULTISIG,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    systemProgram: SystemProgram.programId,
+  };
+
+  return await program.methods
+    .createPoll(title, description, startTime, endTime, null)
+    .accounts(accounts)
+    .signers([creator])
+    .rpc();
+}
+
+/**
+ * Deposits tokens into an existing poll.
+ * @param {object} program - The Anchor program instance.
+ * @param {object} depositConfig - Contains pollIndex (BN), anti (BN), pro (BN), depositTimestamp (BN), userAntiToken, userProToken (public keys).
+ * @param {Keypair} user - The user's keypair signing the transaction.
+ * @returns {Promise<string>} The transaction signature.
+ */
+export async function depositTokens(program, depositConfig, user) {
+  const { pollIndex, anti, pro, depositTimestamp, userAntiToken, userProToken } = depositConfig;
+  const { pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(program, pollIndex);
+
+  const accounts = {
+    poll: pollPda,
+    authority: user.publicKey,
+    userAntiToken: userAntiToken,
+    userProToken: userProToken,
+    pollAntiToken: pollAntiTokenPda,
+    pollProToken: pollProTokenPda,
+    tokenProgram: TOKEN_PROGRAM_ID,
+  };
+
+  return await program.methods
+    .depositTokens(pollIndex, anti, pro, depositTimestamp)
+    .accounts(accounts)
+    .signers([user])
+    .rpc();
+}
+
+/**
+ * Withdraws tokens from a poll after equalisation.
+ * @param {object} program - The Anchor program instance.
+ * @param {BN} pollIndexValue - The poll index (BN).
+ * @param {Array} remainingAccounts - An array of additional account objects (e.g., user token accounts).
+ * @param {Array} signers - An array of signer keypairs required for the withdrawal.
+ * @returns {Promise<string>} The transaction signature.
+ */
+export async function withdrawTokens(program, pollIndexValue, remainingAccounts, signers) {
+  const { pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(program, pollIndexValue);
+
+  const accounts = {
+    poll: pollPda,
+    authority: ANTITOKEN_MULTISIG,
+    pollAntiToken: pollAntiTokenPda,
+    pollProToken: pollProTokenPda,
+    tokenProgram: TOKEN_PROGRAM_ID,
+  };
+
+  return await program.methods
+    .bulkWithdrawTokens(pollIndexValue)
+    .accounts(accounts)
+    .remainingAccounts(remainingAccounts)
+    .signers(signers)
+    .rpc();
+}
 
 export const getTokenBalance = async (walletPublicKey, mint) => {
   const accounts = walletPublicKey

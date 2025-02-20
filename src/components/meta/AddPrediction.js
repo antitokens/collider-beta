@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { TimeTicker } from "../../utils/utils";
-import { createPoll } from "../../utils/solana";
 import UTCDateTimePicker from "../utils/DatePicker";
 
 const PredictionMetaModal = ({

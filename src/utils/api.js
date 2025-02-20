@@ -1,31 +1,58 @@
+import {
+  createPrediction,
+  depositTokens, 
+  withdrawTokens, 
+  derivePDAs,
+} from "./solana";
+
 /* API to Database and Milton AI */
 const API_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL;
 const API_MILTON = process.env.NEXT_PUBLIC_MILTON_AI;
 
-export const addPrediction = async (wallet, config, prediction) => {
-  const response = await fetch(`${API_URL}/add`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      prediction: prediction,
+export const addPrediction = async (program, wallet, config, prediction) => {
+  try {
+    const predictionConfig = {
       title: config.title,
       description: config.description,
-      schedule: [config.startTime, config.endTime],
-      wallet: wallet,
-      signature: config.signature,
-      timestamp: config.timestamp,
-    }),
-  });
+      startTime: config.startTime,
+      endTime: config.endTime,
+    };
 
-  if (!response.ok) {
-    const errorText = await response.text(); // Safely get the error message
-    throw new Error(errorText || "FAILED_TO_ADD_PREDICTION");
-  }
-
-  if (response.headers.get("Content-Type")?.includes("application/json")) {
-    return response.json(); // Parse JSON if the response is JSON
-  } else {
-    return { message: await response.text() }; // Fallback for plain text responses
+    // Execute the transaction to create a poll
+    const tx = await createPrediction(program, predictionConfig, wallet);
+    
+    // Only call the API if the transaction succeeds.
+    if (!tx) {
+      throw new Error("FAILED_TO_CREATE_POLL");
+    }
+    
+    const response = await fetch(`${API_URL}/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prediction: prediction,
+        title: config.title,
+        description: config.description,
+        schedule: [config.startTime, config.endTime],
+        wallet: wallet.publicKey,
+        signature: config.signature,
+        timestamp: config.timestamp,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "FAILED_TO_ADD_PREDICTION");
+    }
+    
+    if (response.headers.get("Content-Type")?.includes("application/json")) {
+      return await response.json();
+    } else {
+      return { message: await response.text() };
+    }
+  } catch (error) {
+    console.error("Error in addPrediction:", error);
+    throw error;
   }
 };
 
