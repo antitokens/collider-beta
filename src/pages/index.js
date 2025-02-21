@@ -33,7 +33,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import TimeCompletionPie from "../components/animation/TimePie";
 import BuyTokenModal from "../components/utils/BuyToken";
-import PredictionMetaModal from "../components/meta/AddPrediction";
+import CreatePrediction from "../components/meta/CreatePrediction";
 import BinaryOrbit from "../components/animation/BinaryOrbit";
 import {
   ANTI_TOKEN_MINT,
@@ -45,10 +45,11 @@ import {
   useIsMobile,
   emptyMetadata,
   metadataInit,
-  resolutionInit,
+  resolutionsInit,
   emptyGaussian,
   emptyHoldings,
   emptyConfig,
+  filter,
   defaultToken,
   detectBinningStrategy,
   generateGradientColor,
@@ -140,6 +141,10 @@ const Home = ({ BASE_URL }) => {
           rel="manifest"
           href={`${BASE_URL}/assets/favicon/site.webmanifest`}
         />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        />
       </Head>
       <div className="bg-dark text-gray-100 min-h-screen relative overflow-x-hidden font-grotesk">
         <Stars length={16} />
@@ -200,7 +205,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const [resolved, setResolved] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [triggerResolution, setTriggerResolution] = useState(false);
-  const [resolution, setResolution] = useState(null);
+  const [resolutions, setResolutions] = useState(resolutionsInit);
+  const [aggregate, setAggregate] = useState({});
   const [showResolution, setShowResolution] = useState(false);
   const [program, setProgram] = useState(null);
   const [predictionHistoryChartData, setPredictionHistoryChartData] =
@@ -272,13 +278,16 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
           ? predictions[prediction].description
           : "",
       };
-      const blobResolution = await getResolution(query, prediction);
-      const dataResolution = blobResolution.predictions;
-      const thisResolution =
-        JSON.stringify(dataResolution) === "{}"
-          ? resolutionInit
-          : dataResolution;
-      return thisResolution;
+      const blobResolutions = await getResolution(query, prediction);
+      const dataResolutions = blobResolutions.predictions;
+
+      const thisResolutions =
+        JSON.stringify(dataResolutions) === "{}"
+          ? resolutionsInit
+          : dataResolutions;
+      return typeof thisResolutions === "string"
+        ? JSON.parse(thisResolutions)
+        : thisResolutions;
     };
 
     if (triggerResolution && !resolved) {
@@ -288,8 +297,14 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       fetchResolution()
         .then((result) => {
           setTriggerResolution(false);
-          toast.info("Milton AI finished thinking!");
-          setResolution(result);
+          toast.info("Milton AI finished consulting!");
+          setResolutions(
+            filter(
+              result,
+              AI_MODELS.map((model) => model.name)
+            )
+          );
+          setAggregate(result.aggregate);
           const number = Number(result.aggregate.meanProbability);
           if (!isNaN(number) && number >= 0 && number <= 100) {
             setTruth([1 - number / 100, number / 100]);
@@ -300,8 +315,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
         .catch((error) => {
           setTriggerResolution(false);
           console.error("Error fetching resolution:", error);
-          toast.error("Failed to resolve prediction!");
-          setResolution(resolutionInit);
+          toast.error("Milton AI failed to resolve prediction!");
+          setResolutions(resolutionsInit);
           setResolved(false);
         });
     }
@@ -568,7 +583,8 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   }, [predictions, prediction]);
 
   useEffect(() => {
-    if (triggerResolution) toast.default(`Milton AI is consulting `);
+    if (triggerResolution)
+      toast.default(`Milton AI will consult with ${AI_MODELS.length} models`);
   }, [triggerResolution]);
 
   useEffect(() => {
@@ -1479,7 +1495,9 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
     // Force a chart update after the initial render
     const timeoutId = setTimeout(() => {
       if (chartRef.current) {
-        chartRef.current.meanpdate("none"); // Update without animation
+        try {
+          chartRef.current.meanpdate("none"); // Update without animation
+        } catch (e) {}
       }
     }, 0);
 
@@ -1898,7 +1916,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
                                 >
                                   {`Resolution Status: ${
                                     triggerResolution
-                                      ? "Milton AI is thinking..."
+                                      ? `Milton AI will consult with ${AI_MODELS.length} models`
                                       : confirmed
                                       ? "Confirmed"
                                       : resolved
@@ -2026,11 +2044,28 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
               <div className="mb-8 mt-0">
                 <Metadata
                   type="Binary"
-                  oracle="Milton AI Agent"
+                  oracle={`Milton AI Agent (<span style='color: #00CC8E;'>${
+                    aggregate?.validModelsCount || "0"
+                  }</span><span style='color: gray;'>/</span><span style='color: rgb(123, 191, 255);'>${
+                    aggregate?.totalModelsCount || AI_MODELS.length
+                  }</span>)`}
                   truth={formatTruth(truth, resolved, isOver)}
-                  tellers={AI_MODELS.map((model) => model.name).join(", ")}
+                  value={truth}
+                  tellers={AI_MODELS.map(
+                    (model) =>
+                      `<span style="color: ${
+                        aggregate?.validModels?.includes(model.name)
+                          ? "#00CC8E"
+                          : "#D13800"
+                      };">${model.name} ${
+                        aggregate?.validModels?.includes(model.name)
+                          ? "<i class='fa-solid fa-check'></i>"
+                          : "<i class='fa-solid fa-xmark'></i>"
+                      }</span><br/>`
+                  ).join("")}
                   isMobile={isMobile}
                   onResolutionShow={handleShowResolution}
+                  loading={triggerResolution}
                 />
               </div>
             </div>
@@ -2198,10 +2233,10 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
       <Resolution
         isVisible={showResolution}
         setIsVisible={setShowResolution}
-        resolution={JSON.stringify(resolution)}
+        resolutions={resolutions}
         isMobile={isMobile}
       />
-      <PredictionMetaModal
+      <CreatePrediction
         program={program}
         wallet={wallet}
         isVisible={triggerAddPrediction}

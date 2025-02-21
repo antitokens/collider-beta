@@ -95,7 +95,7 @@ const UTCDateTimePicker = ({
   return (
     <div className={`flex gap-2 ${className}`}>
       <select
-        className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-100 font-sfmono text-sm"
+        className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 font-sfmono text-sm"
         value={date ? date.toISOString().slice(0, 10) : ""}
         onChange={handleDateChange}
         disabled={disabled}
@@ -112,7 +112,7 @@ const UTCDateTimePicker = ({
       </select>
 
       <select
-        className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-100 font-sfmono text-sm"
+        className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 font-sfmono text-sm"
         value={date ? date.getUTCHours() : ""}
         onChange={handleHourChange}
         disabled={disabled || !date}

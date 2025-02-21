@@ -3,7 +3,7 @@ import { AI_MODELS } from "../utils/utils";
 
 // Helper function to determine the text color class
 const getTextColor = (truth, value) => {
-  if (value === truth) {
+  if (value.startsWith(truth)) {
     switch (truth) {
       case "Hell Yes":
         return "text-accent-secondary";
@@ -51,6 +51,7 @@ const MetadataItem = ({
   truth,
   onResolutionShow,
   isMobile,
+  loading,
 }) => {
   const colorClass = getTextColor(truth, value);
 
@@ -62,10 +63,9 @@ const MetadataItem = ({
     >
       {align === "right" && (
         <div
+          dangerouslySetInnerHTML={{ __html: value }}
           className={`px-2 py-1 bg-black bg-opacity-60 rounded text-xs font-mono ${colorClass} hover:bg-opacity-100 transition-colors relative group ${className}`}
-        >
-          {value}
-        </div>
+        />
       )}
 
       <div
@@ -98,10 +98,9 @@ const MetadataItem = ({
 
       {align === "left" && (
         <div
+          dangerouslySetInnerHTML={{ __html: value }}
           className={`px-2 py-1 bg-black bg-opacity-60 rounded text-xs font-mono ${colorClass} hover:bg-opacity-100 transition-colors relative group ${className}`}
-        >
-          {value}
-        </div>
+        />
       )}
     </div>
   );
@@ -112,10 +111,15 @@ const Metadata = ({
   type = "Binary",
   oracle = "Milton AI Agent",
   truth = "Unresolved",
-  tellers = AI_MODELS.map(model => model.name).join(', '),
+  value = [],
+  tellers = AI_MODELS.map(
+    (model) => `<span className="font-ocr">${model.name}</span><br/>`
+  ).join(""),
   isMobile = false,
   onResolutionShow,
+  loading = true,
 }) => {
+  const truthValue = value.length > 0 ? value[1] * 100 : undefined;
   const tooltips = {
     type: "Prediction outcome is binary",
     oracle: "Autonomous AI agent that aggregates the tellers",
@@ -155,43 +159,53 @@ const Metadata = ({
       >
         <div className={isMobile ? "space-y-1 mb-1" : "space-y-3"}>
           <MetadataItem
-            label="Type&nbsp;&nbsp;&nbsp;"
+            label={`Type${isMobile ? "\u00A0\u00A0\u00A0\u00A0" : "\u00A0"}`}
             value={type}
             align="left"
             tooltip={tooltips.type}
             truth={truth}
             onResolutionShow={onResolutionShow}
             isMobile={isMobile}
+            loading={loading}
           />
           <MetadataItem
-            label="Oracle&nbsp;"
+            label={`Value${isMobile ? "\u00A0\u00A0\u00A0" : ""}`}
             value={oracle}
             align="left"
             tooltip={tooltips.oracle}
             truth={truth}
             onResolutionShow={onResolutionShow}
             isMobile={isMobile}
+            loading={loading}
           />
         </div>
         <div className={isMobile ? "space-y-1" : "space-y-3"}>
           <MetadataItem
-            label={`Value${isMobile ? "\u00A0\u00A0" : "\u00A0\u00A0\u00A0"}`}
-            value={truth}
+            label={`Value${
+              isMobile ? "\u00A0\u00A0\u00A0" : "\u00A0\u00A0\u00A0"
+            }`}
+            value={
+              loading
+                ? "Loading..."
+                : truth + (truthValue ? " (" + String(truthValue) + "%)" : "")
+            }
             align={isMobile ? "left" : "right"}
             tooltip={tooltips.truth}
             truth={truth}
             onResolutionShow={onResolutionShow}
             isMobile={isMobile}
+            loading={loading}
           />
           <MetadataItem
             label="Tellers&nbsp;"
-            value={tellers}
+            value={loading ? "Loading..." : tellers}
             align={isMobile ? "left" : "right"}
             className={isMobile ? "text-left" : "text-right max-w-64"}
             tooltip={tooltips.tellers}
             truth={truth}
             onResolutionShow={onResolutionShow}
             isMobile={isMobile}
+            loading={loading}
           />
         </div>
       </div>

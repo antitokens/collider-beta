@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast as toastify } from "react-toastify";
-import { BadgeCheck, CircleAlert, Binoculars } from "lucide-react";
+import { BadgeCheck, CircleAlert, BellRing, BellRingIcon } from "lucide-react";
 import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -15,7 +15,7 @@ export const AI_MODELS = [
   { name: "ChatGPT-4o-mini", id: "openai/gpt-4o-mini" },
   { name: "Grok 2", id: "x-ai/grok-2" },
   { name: "Claude 3.5 Sonnet", id: "anthropic/claude-3.5-sonnet" },
-  { name: "DeepSeek R1", id: "deepseek/deepseek-r1:free" },
+  { name: "DeepSeek R1", id: "deepseek/deepseek-r1" },
   { name: "Perplexity R1", id: "perplexity/r1-1776" },
   { name: "Gemini 2.0 Flash", id: "google/gemini-2.0-flash-001" },
 ];
@@ -69,8 +69,53 @@ export const predictionsInit = {
   },
 };
 
-// Resolution init
-export const resolutionInit = {};
+// Resolutions init
+export const capitalise = (word) =>
+  word.charAt(0).toUpperCase() + word.slice(1);
+
+export const capitaliseJoin = (arr, delimiter) =>
+  arr
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(delimiter);
+
+export const filter = (object, keys) =>
+  Object.fromEntries(
+    Object.entries(object).filter(([key]) => keys.includes(key))
+  );
+
+export const createObject = (keys) =>
+  Object.fromEntries(keys.map((key) => [key, resolutionInit]));
+
+export const resolutionInit = {
+  questionClarity: {
+    question: "",
+    timeframe: "",
+    thresholds: "",
+  },
+  analysis: {
+    marketConditions: "",
+    metrics: "",
+    keyDataPoints: "",
+  },
+  probabilityAssessment: {
+    probability: "",
+    supportingFactors: "",
+    criticalAssumptions: "",
+  },
+  reasoning: {
+    evidence: "",
+    logicalSteps: "",
+    uncertainties: "",
+  },
+  certaintyLevel: {
+    level: "",
+    explanation: "",
+  },
+  finalVerdict: "",
+  error: false,
+};
+
+export const resolutionsInit = createObject([AI_MODELS["name"]]);
 
 // Metadata init
 export const metadataInit = (supply = 1e9) => {
@@ -191,7 +236,7 @@ export const toast = {
       progressStyle: {
         background: "rgba(255, 255, 255, 0.8)",
       },
-      icon: <Binoculars className="stroke-[rgb(255, 255, 255)]" />,
+      icon: <BellRingIcon className="stroke-[rgb(255, 149, 0)]" />,
     });
   },
 
@@ -729,7 +774,7 @@ export const TimeTicker = ({
       className={`flex items-center bg-transparent rounded-md px-3 py-1 ${className}`}
     >
       <div className="flex items-center space-x-2">
-        <span className={`font-mono text-gray-300`}>
+        <span className={`font-mono text-gray-400`}>
           <span className={`text-[12px]`}>
             {formatUTCDateTime(currentTime)}
           </span>

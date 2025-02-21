@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TimeTicker } from "../../utils/utils";
 import UTCDateTimePicker from "../utils/DatePicker";
 
-const PredictionMetaModal = ({
+const CreatePrediction = ({
   program,
   wallet,
   isVisible,
@@ -122,11 +122,13 @@ const PredictionMetaModal = ({
 
       const hoursDiff = (endDate - startDate) / (1000 * 60 * 60);
       if (hoursDiff < 24) {
-        setTimeError("End time must be at least 24 hours after start time");
+        setTimeError("Close time must be at least 24 hours after start time");
         return false;
       }
       if (hoursDiff % 24 !== 0) {
-        setTimeError("End time must be in 24-hour increments from start time");
+        setTimeError(
+          "Close time must be in 24-hour increments from start time"
+        );
         return false;
       }
     }
@@ -203,15 +205,24 @@ const PredictionMetaModal = ({
           className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
           onClick={handleOutsideClick}
         >
-          <div className="relative bg-dark-card backdrop-blur-xl p-8 rounded-lg border border-black max-w-md w-full mx-4 sm:mx-6 md:mx-8">
+          <div className="relative bg-dark-card backdrop-blur-xl p-12 rounded-lg border border-black max-w-lg w-full mx-4 sm:mx-6 md:mx-8">
+            <h3 className="text-2xl font-bold mb-6 mt-2 text-center text-accent-steel">
+              Add Prediction
+            </h3>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
                   <label
                     htmlFor="title"
-                    className="block text-md font-medium text-gray-200 mb-1"
+                    className="block text-sm font-medium text-gray-300 mb-2 tracking-tight"
                   >
-                    Title<span className="text-xs text-red-400">*</span>
+                    <i className="fa-regular fa-paper-plane text-accent-steel"></i>{" "}
+                    <span className="text-accent-steel">Title</span>
+                    <span className="text-xs text-red-400 font-mono"> *</span>
+                    <span className="text-[12px] text-red-400 font-mono tracking-normal">
+                      {" "}
+                      (maximum 64 characters){" "}
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -219,7 +230,7 @@ const PredictionMetaModal = ({
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-100 font-sfmono text-sm"
+                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 font-sfmono text-sm placeholder:text-gray-600"
                     placeholder="Enter prediction title (required)"
                     required
                     disabled={isSubmitting}
@@ -234,16 +245,22 @@ const PredictionMetaModal = ({
                 <div>
                   <label
                     htmlFor="description"
-                    className="block text-md font-medium text-gray-200 mb-1"
+                    className="block text-sm font-medium text-gray-300 mb-2 tracking-tight"
                   >
-                    Description<span className="text-xs text-red-400">*</span>
+                    <i className="fa-regular fa-message text-accent-steel"></i>{" "}
+                    <span className="text-accent-steel">Description</span>
+                    <span className="text-xs text-red-400 font-mono"> *</span>
+                    <span className="text-[12px] text-red-400 font-mono tracking-normal">
+                      {" "}
+                      (maximum 256 characters){" "}
+                    </span>
                   </label>
                   <textarea
                     id="description"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-100 h-24 font-sfmono text-sm"
+                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 h-24 font-sfmono text-sm placeholder:text-gray-600"
                     placeholder="Enter prediction description (required)"
                     required
                     disabled={isSubmitting}
@@ -256,26 +273,27 @@ const PredictionMetaModal = ({
                 </div>
 
                 <div>
-                  <div className="text-xs text-gray-400 flex flex-row items-center animate-pulse">
-                    <span className="text-[10px]">&#9432;</span>&nbsp;&nbsp;All
-                    times are in UTC
-                  </div>
                   <label
                     htmlFor="startTime"
-                    className="flex flex-row justify-between items-center text-md font-medium text-gray-200 mb-0"
+                    className="flex flex-row justify-between items-center text-sm font-medium text-gray-300 mb-1"
                   >
-                    <div>
-                      Start Time<span className="text-xs text-red-400">*</span>
+                    <div className="tracking-tight">
+                      <i className="fa-regular fa-clock text-accent-steel"></i>{" "}
+                      <span className="text-accent-steel">Start time</span>
+                      <span className="text-xs text-red-400 font-mono">
+                        {" "}
+                        *{" "}
+                      </span>
                       <span className="relative group ml-1">
                         <span className="cursor-pointer text-xs text-gray-400">
                           &#9432;
-                          <span className="font-normal absolute text-sm p-2 bg-gray-800 rounded-md w-72 -translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                          <span className="font-normal absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-72 -translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                             {`Must be a future hour in UTC (minutes will be set to 00)`}
                           </span>
                         </span>
                       </span>
                     </div>
-                    <div className="-mr-2">
+                    <div className="-mr-3">
                       <TimeTicker isMobile={true} fontSize={12} />
                     </div>
                   </label>
@@ -292,13 +310,15 @@ const PredictionMetaModal = ({
                 <div>
                   <label
                     htmlFor="endTime"
-                    className="block text-md font-medium text-gray-200 mb-1"
+                    className="block text-sm font-medium text-gray-300 mb-2.5 tracking-tight"
                   >
-                    Close Time<span className="text-xs text-red-400">*</span>
+                    <i className="fa-solid fa-stopwatch text-accent-steel"></i>{" "}
+                    <span className="text-accent-steel">Close time</span>
+                    <span className="text-xs text-red-400 font-mono"> * </span>
                     <span className="relative group ml-1">
                       <span className="cursor-pointer text-xs text-gray-400">
                         &#9432;
-                        <span className="font-normal absolute text-sm p-2 bg-gray-800 rounded-md w-72 -translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
+                        <span className="font-normal absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-72 -translate-x-0 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block">
                           {`Must be at least 24 hours after start time in UTC, in 24-hour increments`}
                         </span>
                       </span>
@@ -315,8 +335,17 @@ const PredictionMetaModal = ({
                   />
                 </div>
 
+                <div className="text-xs text-gray-500 flex flex-row items-end w-full tracking-tight mb-2 -mt-4">
+                  <div className="ml-auto font-sfmono tracking-normal">
+                    <span className="text-[11px]">&#9432;</span>&nbsp;All times
+                    are in UTC
+                  </div>
+                </div>
+
                 {timeError && (
-                  <div className="text-red-500 text-sm">{timeError}</div>
+                  <div className="text-red-500 text-xs font-mono">
+                    <i className="fa-solid fa-xmark"></i> {timeError}
+                  </div>
                 )}
               </div>
 
@@ -324,7 +353,7 @@ const PredictionMetaModal = ({
                 <button
                   type="button"
                   onClick={() => setIsVisible(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-gray-800 rounded-lg border border-gray-700 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-gray-800 rounded-lg border border-gray-700 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 tracking-tight mt-4"
                   disabled={isSubmitting}
                 >
                   Cancel
@@ -332,14 +361,14 @@ const PredictionMetaModal = ({
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-transparent rounded-lg border border-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-transparent rounded-lg border border-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 tracking-tight mt-4"
                   disabled={isSubmitting}
                 >
                   Reset
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-accent-primary rounded-lg hover:bg-accent-secondary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-white bg-accent-primary rounded-lg hover:bg-accent-secondary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed tracking-tight mt-4"
                   disabled={
                     isSubmitting ||
                     !!timeError ||
@@ -360,4 +389,4 @@ const PredictionMetaModal = ({
   );
 };
 
-export default PredictionMetaModal;
+export default CreatePrediction;
