@@ -75,7 +75,11 @@ export const capitalise = (word) =>
 
 export const capitaliseJoin = (arr, delimiter) =>
   arr
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) =>
+      word.endsWith(".")
+        ? word.charAt(0).toUpperCase() + word.slice(1, word.length - 1)
+        : word.charAt(0).toUpperCase() + word.slice(1)
+    )
     .join(delimiter);
 
 export const filter = (object, keys) =>

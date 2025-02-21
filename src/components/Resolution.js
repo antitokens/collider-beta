@@ -7,6 +7,7 @@ export const Resolution = ({
   resolutions = resolutionsInit,
   isMobile,
 }) => {
+  console.log(resolutions);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const resolutionKeys = Object.keys(resolutions);
   const currentResolutionKey = resolutionKeys[currentIndex];
@@ -63,39 +64,53 @@ export const Resolution = ({
 
             <div className="w-full flex flex-row justify-between items-center">
               <div>
-                <h3 className="text-4xl font-bold text-accent-steel mb-2 mt-14 ml-9">
+                <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-accent-steel mb-2 mt-14 lg:ml-9 ml-4">
                   Milton AI
                 </h3>
-                <div className="text-gray-300 mb-6 ml-9 font-sfmono text-2xl">
+                <div className="text-gray-300 mb-6 lg:ml-9 ml-4 font-sfmono lg:text-2xl md:text-lg">
                   <span className="text-gray-500 mb-6 font-ocr tracking-tight">
                     Model:
                   </span>{" "}
                   {currentResolutionKey}
-                  <span className="text-gray-500 mb-6 ml-3 font-sfmono text-lg">
+                  <span className="text-gray-500 mb-6 ml-3 font-sfmono lg:text-lg md:text-md text-sm">
                     ({currentIndex + 1}/{resolutionKeys.length})
                   </span>
                 </div>
               </div>
               <div>
                 <button
-                  className="text-gray-300 hover:text-accent-primary mr-3"
+                  className="text-gray-300 hover:text-accent-primary lg:mr-3 mr-1 relative group"
                   onClick={goBackward}
                   aria-label="Previous resolution"
                 >
                   <i className="fa-solid fa-square-caret-left text-accent-primary text-3xl"></i>
+                  <span className="cursor-pointer">
+                    <span
+                      className={`absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-44 -translate-x-full lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                    >
+                      {`Previous Model`}
+                    </span>
+                  </span>
                 </button>
                 <button
-                  className="text-gray-300 hover:text-accent-primary ml-3 mr-10"
+                  className="text-gray-300 hover:text-accent-primary lg:ml-3 ml-1 lg:mr-10 mr-3 relative group"
                   onClick={goForward}
                   aria-label="Next resolution"
                 >
                   <i className="fa-solid fa-square-caret-right text-accent-secondary text-3xl"></i>
+                  <span className="cursor-pointer">
+                    <span
+                      className={`absolute text-xs tracking-tight p-2 bg-gray-800 rounded-md w-44 -translate-x-3/4 lg:translate-x-0 -translate-y-full -mt-6 md:-mt-8 text-center text-gray-300 hidden group-hover:block`}
+                    >
+                      {`Next Model`}
+                    </span>
+                  </span>
                 </button>
               </div>
             </div>
 
             {/* Scrollable content container */}
-            <div className="overflow-y-auto max-h-[70vh]">
+            <div className="overflow-y-auto max-h-[70vh] scrollbar">
               <PrettySchema
                 jsonData={resolutions[currentResolutionKey]}
                 isMobile={isMobile}

@@ -114,6 +114,17 @@ button.wallet-adapter-button-trigger {
   @apply bg-accent-primary rounded-full text-sm w-full justify-center px-4 h-9 font-normal md:w-auto;
 }
 
+.scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: theme("colors.scrollbar"); /* Use Tailwind color */
+  border-radius: 10px;
+}
+.scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 input[type="range"] {
   appearance: none;
   -webkit-appearance: none;
