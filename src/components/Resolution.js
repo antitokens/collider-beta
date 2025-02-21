@@ -7,7 +7,6 @@ export const Resolution = ({
   resolutions = resolutionsInit,
   isMobile,
 }) => {
-  console.log(resolutions);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const resolutionKeys = Object.keys(resolutions);
   const currentResolutionKey = resolutionKeys[currentIndex];

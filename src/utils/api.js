@@ -12,6 +12,7 @@ const API_MILTON = process.env.NEXT_PUBLIC_MILTON_AI;
 export const addPrediction = async (program, wallet, config, prediction) => {
   try {
     const predictionConfig = {
+      index: prediction,
       title: config.title,
       description: config.description,
       startTime: config.startTime,

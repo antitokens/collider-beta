@@ -164,6 +164,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   const wallet = useWallet();
   const [showBuyTokensModal, setShowBuyTokensModal] = useState(false);
   const [prediction, setPrediction] = useState(1);
+  const [init, setInit] = useState(false);
   const [alreadyPosted, setAlreadyPosted] = useState(false);
   const [newPredictionPosted, setNewPredictionPosted] = useState(false);
   const [predictions, setPredictions] = useState(predictionsInit);
@@ -248,21 +249,23 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
   }, []);
 
   useEffect(() => {
-    const fetchBalances = async () => {
+    const fetchPredictions = async () => {
       const blobPredictions = await getPredictions();
       const dataPredictions = JSON.parse(blobPredictions.message);
       const addPredictions =
         JSON.stringify(dataPredictions) === "{}"
           ? predictionsInit
           : dataPredictions;
-      return addPredictions;
+      return { raw: dataPredictions, result: addPredictions };
     };
 
-    // Wait for the Promise to resolve before setting the state
-    fetchBalances()
-      .then((result) => {
+    fetchPredictions()
+      .then((finalPredictions) => {
+        // Assuming finalPredictions has keys 'raw' and 'result'
+        const { raw, result } = finalPredictions;
         setPredictions(result);
-        if (newPredictionPosted) setPrediction(result.length);
+        if (newPredictionPosted) setPrediction(Object.keys(result).length);
+        if (raw && Object.keys(raw).length >= 1) setInit(true);
       })
       .catch((error) => {
         console.error("Error fetching predictions:", error);
@@ -501,7 +504,7 @@ const LandingPage = ({ BASE_URL, setTrigger, setMetadata }) => {
         program,
         wallet,
         formData,
-        predictions.length + 1
+        !init ? prediction - 1 : prediction
       );
       if (blobNewPrediction.status === 202) {
         toast.error(blobNewPrediction.message);

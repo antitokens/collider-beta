@@ -207,7 +207,7 @@ const CreatePrediction = ({
         >
           <div className="relative bg-dark-card backdrop-blur-xl p-12 rounded-lg border border-black max-w-lg w-full mx-4 sm:mx-6 md:mx-8">
             <h3 className="text-2xl font-bold mb-6 mt-2 text-center text-accent-steel">
-              Add Prediction
+              Create Prediction
             </h3>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-5">
@@ -233,6 +233,7 @@ const CreatePrediction = ({
                     className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 font-sfmono text-sm placeholder:text-gray-600"
                     placeholder="Enter prediction title (required)"
                     required
+                    maxLength={64}
                     disabled={isSubmitting}
                   />
                   {formErrors.title && (
@@ -263,6 +264,7 @@ const CreatePrediction = ({
                     className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 h-24 font-sfmono text-sm placeholder:text-gray-600"
                     placeholder="Enter prediction description (required)"
                     required
+                    maxLength={256}
                     disabled={isSubmitting}
                   />
                   {formErrors.description && (

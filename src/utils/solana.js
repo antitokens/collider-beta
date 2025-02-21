@@ -15,6 +15,7 @@ export const PRO_TOKEN_MINT = new PublicKey(
   process.env.NEXT_PUBLIC_PRO_TOKEN_MINT
 );
 
+/// Core functions
 /**
  * Derives PDAs using the given poll index and the program ID.
  * @param {object} program - The Anchor program instance.
@@ -53,9 +54,12 @@ export function derivePDAs(program, pollIndex) {
  * @returns {Promise<string>} The transaction signature.
  */
 export async function createPrediction(program, predictionConfig, creator) {
-  const { title, description, startTime, endTime } = predictionConfig;
-  const { statePda, pollPda, pollAntiTokenPda, pollProTokenPda } =
-    derivePDAs(program);
+  const { index, title, description, startTime, endTime } = predictionConfig;
+  let pollIndex = new BN(index);
+  const { statePda, pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(
+    program,
+    pollIndex
+  );
 
   const accounts = {
     state: statePda,
@@ -73,7 +77,6 @@ export async function createPrediction(program, predictionConfig, creator) {
   return await program.methods
     .createPoll(title, description, startTime, endTime, null)
     .accounts(accounts)
-    .signers([creator])
     .rpc();
 }
 
@@ -111,7 +114,6 @@ export async function depositTokens(program, depositConfig, user) {
   return await program.methods
     .depositTokens(pollIndex, anti, pro, depositTimestamp)
     .accounts(accounts)
-    .signers([user])
     .rpc();
 }
 
@@ -123,11 +125,10 @@ export async function depositTokens(program, depositConfig, user) {
  * @param {Array} signers - An array of signer keypairs required for the withdrawal.
  * @returns {Promise<string>} The transaction signature.
  */
-export async function withdrawTokens(
+export async function bulkWithdrawTokens(
   program,
   pollIndexValue,
-  remainingAccounts,
-  signers
+  remainingAccounts
 ) {
   const { pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(
     program,
@@ -146,10 +147,10 @@ export async function withdrawTokens(
     .bulkWithdrawTokens(pollIndexValue)
     .accounts(accounts)
     .remainingAccounts(remainingAccounts)
-    .signers(signers)
     .rpc();
 }
 
+/// Generic functions
 export const getTokenBalance = async (walletPublicKey, mint) => {
   const accounts = walletPublicKey
     ? await connection.getParsedTokenAccountsByOwner(walletPublicKey, { mint })
