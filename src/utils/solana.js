@@ -1,4 +1,3 @@
-import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Keypair, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -14,6 +13,7 @@ export const ANTI_TOKEN_MINT = new PublicKey(
 export const PRO_TOKEN_MINT = new PublicKey(
   process.env.NEXT_PUBLIC_PRO_TOKEN_MINT
 );
+export const MULTISIG_ADDRESS = new PublicKey(ANTITOKEN_MULTISIG);
 
 /// Core functions
 /**
@@ -69,7 +69,7 @@ export async function createPrediction(program, predictionConfig, creator) {
     pollProToken: pollProTokenPda,
     antiMint: ANTI_TOKEN_MINT,
     proMint: PRO_TOKEN_MINT,
-    vault: ANTITOKEN_MULTISIG,
+    vault: MULTISIG_ADDRESS,
     tokenProgram: TOKEN_PROGRAM_ID,
     systemProgram: SystemProgram.programId,
   };
@@ -120,31 +120,31 @@ export async function depositTokens(program, depositConfig, user) {
 /**
  * Withdraws tokens from a poll after equalisation.
  * @param {object} program - The Anchor program instance.
- * @param {BN} pollIndexValue - The poll index (BN).
+ * @param {BN} pollIndex - The poll index (BN).
  * @param {Array} remainingAccounts - An array of additional account objects (e.g., user token accounts).
  * @param {Array} signers - An array of signer keypairs required for the withdrawal.
  * @returns {Promise<string>} The transaction signature.
  */
 export async function bulkWithdrawTokens(
   program,
-  pollIndexValue,
+  pollIndex,
   remainingAccounts
 ) {
   const { pollPda, pollAntiTokenPda, pollProTokenPda } = derivePDAs(
     program,
-    pollIndexValue
+    pollIndex
   );
 
   const accounts = {
     poll: pollPda,
-    authority: ANTITOKEN_MULTISIG,
+    authority: MULTISIG_ADDRESS,
     pollAntiToken: pollAntiTokenPda,
     pollProToken: pollProTokenPda,
     tokenProgram: TOKEN_PROGRAM_ID,
   };
 
   return await program.methods
-    .bulkWithdrawTokens(pollIndexValue)
+    .bulkWithdrawTokens(pollIndex)
     .accounts(accounts)
     .remainingAccounts(remainingAccounts)
     .rpc();

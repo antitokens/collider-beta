@@ -5,7 +5,7 @@ import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 
 // Solana utils
-export const PROGRAM_ID = "AMXPSQ9nWyHUqq7dB1KaPf3Wm9SMTofi7jFFGYp6pfFW";
+export const PROGRAM_ID = "3zKqVU2RiWXPe3bvTjQ869UF6qng2LoGBKEFmUqh8BzA";
 export const ANTITOKEN_MULTISIG =
   "BVkN9PdWJA8YYJCHdkd46Y4HUPhvSUf38qcHYgFUopBh";
 export const ANCHOR_PROVIDER_URL = "https://api.devnet.solana.com";
