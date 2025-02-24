@@ -25,7 +25,7 @@ export default {
         "accent-orange": "#FF4D00",
         "accent-steel": "rgb(123, 191, 255)",
         "accent-cement": "rgb(58, 182, 193)",
-        scrollbar: "rgba(198,124,37,1)",
+        scrollbar: "rgb(171, 171, 171)",
       },
       fontFamily: {
         grotesk: ["OCR A Std", "sans-serif"],

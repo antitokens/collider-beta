@@ -119,7 +119,7 @@ button.wallet-adapter-button-trigger {
 }
 .scrollbar::-webkit-scrollbar-thumb {
   background-color: theme("colors.scrollbar"); /* Use Tailwind color */
-  border-radius: 10px;
+  border-radius: 2px;
 }
 .scrollbar::-webkit-scrollbar-track {
   background: transparent;
