@@ -1,4 +1,5 @@
 import React from "react";
+import { Dropdown } from "./Dropdown";
 
 const UTCDateTimePicker = ({
   value,
@@ -6,86 +7,59 @@ const UTCDateTimePicker = ({
   minDate,
   disabled,
   className = "",
-  step = 1, // hours step
+  step = 1,
 }) => {
   const date = value ? new Date(value) : null;
   const min = minDate ? new Date(minDate) : null;
 
-  // Get next N days starting from min date or today
   const getAvailableDates = () => {
     const startDate = min || new Date();
     startDate.setUTCMinutes(0, 0, 0);
-
-    const dates = [];
-    for (let i = 0; i < 30; i++) {
-      // Show next 30 days
-      const date = new Date(startDate);
-      date.setUTCDate(date.getUTCDate() + i);
-      dates.push(date);
-    }
-    return dates;
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(startDate);
+      d.setUTCDate(startDate.getUTCDate() + i);
+      return d;
+    });
   };
 
-  // Get available hours based on selected date and min date
   const getAvailableHours = (selectedDate) => {
-    const hours = [];
-    if (!selectedDate) return hours;
-
-    // If step is 24 (end time picker), use the hour from min date
-    if (step === 24 && min) {
-      hours.push(min.getUTCHours());
-      return hours;
-    }
+    if (!selectedDate) return [];
+    if (step === 24 && min) return [min.getUTCHours()];
 
     const startHour =
       selectedDate.toISOString().slice(0, 10) ===
       min?.toISOString().slice(0, 10)
-        ? min.getUTCHours() + 1 // If same day as min, start from next hour
+        ? min.getUTCHours() + 1
         : 0;
 
-    for (let i = startHour; i < 24; i += step) {
-      hours.push(i);
-    }
-    return hours;
-  };
-
-  const formatDateOption = (date) => {
-    return (
-      date.toISOString().slice(0, 10) +
-      " (" +
-      date.toUTCString().slice(0, 3) +
-      ")"
+    return Array.from(
+      { length: Math.ceil((24 - startHour) / step) },
+      (_, i) => startHour + i * step
     );
   };
 
-  const formatHourOption = (hour) => {
-    return hour.toString().padStart(2, "0") + ":00 UTC";
-  };
+  const formatDateOption = (date) =>
+    `${date.toISOString().slice(0, 10)} (${date.toUTCString().slice(0, 3)})`;
+  const formatHourOption = (hour) =>
+    `${hour.toString().padStart(2, "0")}:00 UTC`;
 
-  const handleDateChange = (e) => {
-    const selectedDate = new Date(e.target.value);
-    if (date) {
-      // Keep existing hour if valid, otherwise use first available hour
-      const availableHours = getAvailableHours(selectedDate);
-      const hour = availableHours.includes(date.getUTCHours())
+  const handleDateChange = (selectedValue) => {
+    const selectedDate = new Date(selectedValue);
+    const availableHours = getAvailableHours(selectedDate);
+    selectedDate.setUTCHours(
+      availableHours.includes(date?.getUTCHours())
         ? date.getUTCHours()
-        : availableHours[0];
-      selectedDate.setUTCHours(hour, 0, 0, 0);
-    } else {
-      // Set to first available hour
-      const availableHours = getAvailableHours(selectedDate);
-      selectedDate.setUTCHours(availableHours[0], 0, 0, 0);
-    }
+        : availableHours[0],
+      0,
+      0,
+      0
+    );
     onChange(selectedDate.toISOString());
   };
 
-  const handleHourChange = (e) => {
-    const hourValue = parseInt(e.target.value);
-    if (isNaN(hourValue) || hourValue < 0 || hourValue > 23) {
-      return; // Invalid hour value, don't update
-    }
+  const handleHourChange = (selectedValue) => {
     const newDate = new Date(date);
-    newDate.setUTCHours(hourValue, 0, 0, 0);
+    newDate.setUTCHours(parseInt(selectedValue), 0, 0, 0);
     onChange(newDate.toISOString());
   };
 
@@ -94,36 +68,27 @@ const UTCDateTimePicker = ({
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <select
-        className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 font-sfmono text-sm"
-        value={date ? date.toISOString().slice(0, 10) : ""}
-        onChange={handleDateChange}
+      <Dropdown
+        selected={date ? date.toISOString().slice(0, 10) : ""}
+        onSelect={handleDateChange}
         disabled={disabled}
-      >
-        <option value="">Select date</option>
-        {availableDates.map((date) => (
-          <option
-            key={date.toISOString()}
-            value={date.toISOString().slice(0, 10)}
-          >
-            {formatDateOption(date)}
-          </option>
-        ))}
-      </select>
+        placeholder="Select date"
+        options={availableDates.map((d) => ({
+          value: d.toISOString().slice(0, 10),
+          label: formatDateOption(d),
+        }))}
+      />
 
-      <select
-        className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 font-sfmono text-sm"
-        value={date ? date.getUTCHours() : ""}
-        onChange={handleHourChange}
+      <Dropdown
+        selected={date ? date.getUTCHours() : ""}
+        onSelect={handleHourChange}
         disabled={disabled || !date}
-      >
-        <option value="">Hour (UTC)</option>
-        {availableHours.map((hour) => (
-          <option key={hour} value={hour}>
-            {formatHourOption(hour)}
-          </option>
-        ))}
-      </select>
+        placeholder="Hour (UTC)"
+        options={availableHours.map((h) => ({
+          value: h,
+          label: formatHourOption(h),
+        }))}
+      />
     </div>
   );
 };

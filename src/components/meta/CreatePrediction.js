@@ -230,7 +230,7 @@ const CreatePrediction = ({
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 font-sfmono text-sm placeholder:text-gray-600"
+                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-300 font-sfmono text-sm placeholder:text-gray-600"
                     placeholder="Enter prediction title (required)"
                     required
                     maxLength={64}
@@ -261,7 +261,7 @@ const CreatePrediction = ({
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-secondary text-gray-300 h-24 font-sfmono text-sm placeholder:text-gray-600"
+                    className="w-full px-4 py-2 bg-black border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-300 h-24 font-sfmono text-sm placeholder:text-gray-600"
                     placeholder="Enter prediction description (required)"
                     required
                     maxLength={256}
